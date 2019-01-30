@@ -28,10 +28,10 @@ namespace StockService.StockProcessor
                 return;
             }
 
-            // StockDocument Ç÷ÉfÉVÉäÉAÉâÉCÉY
+            // StockDocument „Å∏„Éá„Ç∑„É™„Ç¢„É©„Ç§„Ç∫
             var documents = input.ToObject<StockDocument[]>();
 
-            // ç›å…èÓïÒÇ SQL DB Ç…èëÇ´çûÇﬁ
+            // Âú®Â∫´ÊÉÖÂ†±„Çí SQL DB „Å´Êõ∏„ÅçËæº„ÇÄ
             var entities = documents.SelectMany(x => x.Items.Select(xs => new StockEntity
                                     {
                                         DocumentId = x.Id,
@@ -53,7 +53,7 @@ namespace StockService.StockProcessor
                 await context.SaveChangesAsync();
             }
 
-            // ïœçXí ímÇ SignalR Ç≈ëóêMÇ∑ÇÈ
+            // Â§âÊõ¥ÈÄöÁü•„Çí SignalR „ÅßÈÄÅ‰ø°„Åô„Çã
             foreach (var group in documents.GroupBy(x => new { x.CompanyCode, x.StoreCode }))
             {
                 await signalRMessages.AddAsync(new SignalRMessage
@@ -63,7 +63,7 @@ namespace StockService.StockProcessor
                 });
             }
 
-            // Application Insights Ç…í ím
+            // Application Insights „Å´ÈÄöÁü•
             foreach (var document in documents)
             {
                 _telemetryClient.TrackTrace("End Stock Processor", new Dictionary<string, string> { { "ActivityId", document.ActivityId } });
