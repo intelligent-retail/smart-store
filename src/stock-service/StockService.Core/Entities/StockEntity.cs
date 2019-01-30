@@ -2,7 +2,6 @@
 
 namespace StockService.Entities
 {
-    // TODO: スキーマを確認する
     public class StockEntity
     {
         public long Id { get; set; }
