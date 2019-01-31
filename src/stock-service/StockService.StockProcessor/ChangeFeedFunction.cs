@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,8 +20,7 @@ namespace StockService.StockProcessor
         [FunctionName(nameof(ChangeFeedFunction))]
         public static async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockLease", LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true)]
                                      JArray input,
-                                     [SignalR(ConnectionStringSetting = "SignalRConnection", HubName = "monitor")]
-                                     IAsyncCollector<SignalRMessage> signalRMessages,
+                                     IBinder binder,
                                      ILogger log)
         {
             if (input == null || input.Count <= 0)
@@ -33,19 +33,19 @@ namespace StockService.StockProcessor
 
             // 在庫情報を SQL DB に書き込む
             var entities = documents.SelectMany(x => x.Items.Select(xs => new StockEntity
-                                    {
-                                        DocumentId = x.Id,
-                                        TransactionId = x.TransactionId,
-                                        TransactionDate = x.TransactionDate,
-                                        TransactionType = x.TransactionType,
-                                        LocationCode = x.LocationCode,
-                                        CompanyCode = x.CompanyCode,
-                                        StoreCode = x.StoreCode,
-                                        TerminalCode = x.TerminalCode,
-                                        LineNo = xs.LineNo,
-                                        ItemCode = xs.ItemCode,
-                                        Quantity = xs.Quantity
-                                    }));
+            {
+                DocumentId = x.Id,
+                TransactionId = x.TransactionId,
+                TransactionDate = x.TransactionDate,
+                TransactionType = x.TransactionType,
+                LocationCode = x.LocationCode,
+                CompanyCode = x.CompanyCode,
+                StoreCode = x.StoreCode,
+                TerminalCode = x.TerminalCode,
+                LineNo = xs.LineNo,
+                ItemCode = xs.ItemCode,
+                Quantity = xs.Quantity
+            }));
 
             using (var context = new StockDbContext())
             {
@@ -53,14 +53,20 @@ namespace StockService.StockProcessor
                 await context.SaveChangesAsync();
             }
 
-            // 変更通知を SignalR で送信する
-            foreach (var group in documents.GroupBy(x => new { x.CompanyCode, x.StoreCode }))
+            // SignalR Service への接続文字列がセットされている場合のみ有効化
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SignalRConnection", EnvironmentVariableTarget.Process)))
             {
-                await signalRMessages.AddAsync(new SignalRMessage
+                var signalRMessages = binder.Bind<IAsyncCollector<SignalRMessage>>(new SignalRAttribute { ConnectionStringSetting = "SignalRConnection", HubName = "monitor" });
+
+                // 変更通知を SignalR で送信する
+                foreach (var group in documents.GroupBy(x => new { x.CompanyCode, x.StoreCode }))
                 {
-                    Target = "update",
-                    Arguments = new object[] { group.Key.CompanyCode, group.Key.StoreCode }
-                });
+                    await signalRMessages.AddAsync(new SignalRMessage
+                    {
+                        Target = "update",
+                        Arguments = new object[] { group.Key.CompanyCode, group.Key.StoreCode }
+                    });
+                }
             }
 
             // Application Insights に通知
