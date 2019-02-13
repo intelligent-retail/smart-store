@@ -168,6 +168,9 @@
         "assetsName": {
             "type": "string"
         },
+        "assetsContainerName": {
+            "type": "string"
+        },
         "storageAccountsSkuName": {
             "type": "string",
             "allowedValues": [
@@ -380,7 +383,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('stockCommandApiStorageAccountsName'))]",
-                "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]"
+                "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
             ]
         },
         {
@@ -438,7 +442,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('stockQueryApiStorageAccountsName'))]",
-                "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]"
+                "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
+                "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), parameters('sqlDatabaseName'))]"
             ]
         },
         {
@@ -500,7 +505,9 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('stockProcessorStorageAccountsName'))]",
-                "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]"
+                "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
+                "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), parameters('sqlDatabaseName'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
             ]
         },
         {
@@ -553,11 +560,12 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('itemMasterApiStorageAccountsName'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('itemMasterApiStorageAccountsName'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))]"
             ]
         },
         {
-            "comments": "item-master-api",
+            "comments": "item-service",
             "name": "[variables('itemServiceAssetsStorageAccountsName')]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2018-07-01",
@@ -567,6 +575,18 @@
             "kind": "[parameters('storageAccountsKind')]",
             "location": "[parameters('appInsightsLocation')]",
             "properties": {}
+        },
+        {
+            "comments": "item-service",
+            "name": "[concat(variables('itemServiceAssetsStorageAccountsName'), '/default/', parameters('assetsContainerName'))]",
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2018-07-01",
+            "properties": {
+              "publicAccess": "Container"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('itemServiceAssetsStorageAccountsName'))]"
+            ]
         },
         {
             "comments": "stock-service",
