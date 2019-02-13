@@ -83,6 +83,9 @@
         "assetsName": {
             "value": "assets"
         },
+        "assetsContainerName": {
+            "value": "item-images"
+        },
         "storageAccountsSkuName": {
             "value": "Standard_LRS"
         },

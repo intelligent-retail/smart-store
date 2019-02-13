@@ -1,0 +1,57 @@
+{
+    "companyCode": "00100",
+    "description": "筆ペン",
+    "descriptionLong": "筆ペン",
+    "descriptionShort": "ﾌﾃﾞﾍﾟﾝ",
+    "entryDate": "2009/08/04 12:06:04",
+    "imageUrls": [
+        "https://sample.blob.core.windows.net/item-images/testimage.png"
+    ],
+    "itemCode": "4901427401646",
+    "itemDetails": null,
+    "lastUpdateDate": "2009/10/22 20:42:29",
+    "manufacturerCode": "01427",
+    "mdHierarchies": [
+        {
+            "description": "筆記用具",
+            "descriptionShort": "ﾋｯｷﾖｳｸﾞ",
+            "entryDate": "2009/07/29 12:04:35",
+            "lastUpdateDate": "2009/07/29 12:04:35",
+            "mdHierarchyCode": "00290200",
+            "mdHierarchyLevel": 3,
+            "parentCode": "0029",
+            "taxCode": "01"
+        },
+        {
+            "description": "文具",
+            "descriptionShort": "ﾌﾞﾝｸﾞ",
+            "entryDate": "2009/07/22 19:41:19",
+            "lastUpdateDate": "2009/07/22 19:41:19",
+            "mdHierarchyCode": "0029",
+            "mdHierarchyLevel": 2,
+            "parentCode": "0001",
+            "taxCode": "01"
+        },
+        {
+            "description": "大分類",
+            "descriptionShort": "大分類",
+            "entryDate": "2009/03/26 00:00:00",
+            "lastUpdateDate": "2009/03/26 00:00:00",
+            "mdHierarchyCode": "0001",
+            "mdHierarchyLevel": 1,
+            "parentCode": "0001",
+            "taxCode": "01"
+        }
+    ],
+    "storeCode": "12345",
+    "tax": {
+        "description": "内税8%",
+        "rate": 8,
+        "roundDigit": 0,
+        "roundMethod": "01",
+        "taxCode": "01",
+        "taxType": "01"
+    },
+    "unitCost": 0,
+    "unitPrice": 600
+}
