@@ -18,7 +18,8 @@ namespace StockService.StockProcessor
     public static class ChangeFeedFunction
     {
         [FunctionName(nameof(ChangeFeedFunction))]
-        public static async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockLease", LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true)]
+        public static async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockLease",
+                                         LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true, FeedPollDelay = 500)]
                                      JArray input,
                                      IBinder binder,
                                      ILogger log)
@@ -28,10 +29,10 @@ namespace StockService.StockProcessor
                 return;
             }
 
-            // StockDocument ã¸ãƒ‡ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
+            // StockDocument ‚ÖƒfƒVƒŠƒAƒ‰ƒCƒY
             var documents = input.ToObject<StockDocument[]>();
 
-            // åœ¨åº«æƒ…å ±ã‚’ SQL DB ã«æ›¸ãè¾¼ã‚€
+            // İŒÉî•ñ‚ğ SQL DB ‚É‘‚«‚Ş
             var entities = documents.SelectMany(x => x.Items.Select(xs => new StockEntity
             {
                 DocumentId = x.Id,
@@ -44,7 +45,7 @@ namespace StockService.StockProcessor
                 TerminalCode = x.TerminalCode,
                 LineNo = xs.LineNo,
                 ItemCode = xs.ItemCode,
-                Quantity = xs.Quantity
+                Quantity = -xs.Quantity
             }));
 
             using (var context = new StockDbContext())
@@ -53,23 +54,26 @@ namespace StockService.StockProcessor
                 await context.SaveChangesAsync();
             }
 
-            // SignalR Service ã¸ã®æ¥ç¶šæ–‡å­—åˆ—ãŒã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚‹å ´åˆã®ã¿æœ‰åŠ¹åŒ–
+            // SignalR Service ‚Ö‚ÌÚ‘±•¶š—ñ‚ªƒZƒbƒg‚³‚ê‚Ä‚¢‚éê‡‚Ì‚İ—LŒø‰»
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SignalRConnection", EnvironmentVariableTarget.Process)))
             {
                 var signalRMessages = binder.Bind<IAsyncCollector<SignalRMessage>>(new SignalRAttribute { ConnectionStringSetting = "SignalRConnection", HubName = "monitor" });
 
-                // å¤‰æ›´é€šçŸ¥ã‚’ SignalR ã§é€ä¿¡ã™ã‚‹
-                foreach (var group in documents.GroupBy(x => new { x.CompanyCode, x.StoreCode }))
+                // •ÏX’Ê’m‚ğ SignalR ‚Å‘—M‚·‚é
+                foreach (var document in documents)
                 {
-                    await signalRMessages.AddAsync(new SignalRMessage
+                    foreach (var item in document.Items)
                     {
-                        Target = "update",
-                        Arguments = new object[] { group.Key.CompanyCode, group.Key.StoreCode }
-                    });
+                        await signalRMessages.AddAsync(new SignalRMessage
+                        {
+                            Target = "update",
+                            Arguments = new object[] { document.TerminalCode, item.ItemCode }
+                        });
+                    }
                 }
             }
 
-            // Application Insights ã«é€šçŸ¥
+            // Application Insights ‚É’Ê’m
             foreach (var document in documents)
             {
                 _telemetryClient.TrackTrace("End Stock Processor", new Dictionary<string, string> { { "ActivityId", document.ActivityId } });

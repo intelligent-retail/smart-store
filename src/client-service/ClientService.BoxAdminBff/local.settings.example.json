@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "SignalRConnection": "Endpoint=https://***.service.signalr.net;AccessKey=***;Version=1.0;",
+    "StockByStoreApi": "https://***.azurewebsites.net/api/v1/company/{0}/store/{1}/query?code=***",
+    "StockByTerminalApi": "https://***.azurewebsites.net/api/v1/company/{0}/store/{1}/terminal/{2}/query?code=***",
+    "ItemMasterApi": "https://***.azurewebsites.net/api/v1/company/{0}/store/{1}/items?code=***"
+  }
+}
