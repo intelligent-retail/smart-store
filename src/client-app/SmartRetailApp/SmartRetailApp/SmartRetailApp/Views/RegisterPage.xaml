@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="SmartRetailApp.Views.RegisterPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:SmartRetailApp"
+    Title="商品カート"
+    NavigationPage.HasNavigationBar="False">
+
+    <StackLayout Orientation="Vertical">
+
+        <!--  Header  -->
+        <Frame Padding="0,10" BackgroundColor="DimGray">
+            <StackLayout HorizontalOptions="Center" Orientation="Vertical">
+                <StackLayout HorizontalOptions="Center" Orientation="Horizontal">
+                    <Label HorizontalTextAlignment="Center" TextColor="White">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span x:Name="lblUserName" />
+                                <Span Text="さん" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label
+                        x:Name="lblBoxName"
+                        FontSize="Small"
+                        HorizontalTextAlignment="Center"
+                        TextColor="White" />
+                </StackLayout>
+                <Label
+                    FontSize="Small"
+                    HorizontalTextAlignment="Center"
+                    TextColor="White">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="入店時間: " />
+                            <Span x:Name="lblEnterDate" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label
+                    FontSize="Small"
+                    HorizontalTextAlignment="Center"
+                    TextColor="White">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="最終更新日: " />
+                            <Span x:Name="lblUpdateDate" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Entry
+                    x:Name="DeviceId"
+                    FontSize="Small"
+                    HorizontalTextAlignment="Center"
+                    TextColor="White" />
+            </StackLayout>
+        </Frame>
+
+        <!--  Content  -->
+        <Label
+            x:Name="lblEmpty"
+            HorizontalTextAlignment="Center"
+            Text="商品をボックスから取り出してください"
+            VerticalOptions="CenterAndExpand" />
+        <ListView
+            x:Name="listView"
+            Margin="10,0"
+            HasUnevenRows="false"
+            IsVisible="False"
+            ItemsSource="{Binding}"
+            RowHeight="100"
+            SelectionMode="None"
+            SeparatorVisibility="Default">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid RowSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="7*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="1" />
+                            </Grid.RowDefinitions>
+
+                            <Image Margin="0,2" Source="{Binding Image}" />
+                            <StackLayout Grid.Column="1" Orientation="Vertical">
+                                <Label
+                                    Margin="0,10,0,0"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="2"
+                                    Text="{Binding ItemName}" />
+                                <Label Margin="0,0,0,10" HorizontalTextAlignment="End">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="＠" />
+                                            <Span Text="{Binding UnitPrice}" />
+                                            <Span Text="円 " />
+                                            <Span Text="{Binding Quantity}" />
+                                            <Span Text="点 " />
+                                            <Span Text="&#xA;" />
+                                            <Span
+                                                FontAttributes="Bold"
+                                                FontSize="Large"
+                                                Text="{Binding Amount}" />
+                                            <Span Text=" 円" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </StackLayout>
+
+                            <BoxView
+                                Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill"
+                                WidthRequest="1"
+                                Color="LightGray" />
+
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!--  Footer  -->
+        <Grid Margin="40,2,10,0" RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="7*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  １列目  -->
+            <Label
+                Grid.Row="0"
+                FontAttributes="Bold"
+                FontFamily="Bold"
+                Text="合計:"
+                VerticalOptions="Center" />
+            <Label
+                Grid.Row="1"
+                FontSize="Small"
+                Text="(内消費税)"
+                VerticalOptions="Center" />
+            <Label
+                Grid.Row="2"
+                FontAttributes="Bold"
+                FontFamily="Bold"
+                Text="合計点数:"
+                VerticalOptions="Center" />
+
+            <!--  ２列目  -->
+            <Label
+                Grid.Row="0"
+                Grid.Column="1"
+                FontAttributes="Bold"
+                FontSize="Large"
+                HorizontalTextAlignment="End">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span x:Name="lblTotalAmount" />
+                        <Span Text=" 円" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label
+                Grid.Row="1"
+                Grid.Column="1"
+                FontSize="Small"
+                HorizontalTextAlignment="End">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span x:Name="lblTaxAmount" />
+                        <Span Text=" 円" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label
+                Grid.Row="2"
+                Grid.Column="1"
+                FontAttributes="Bold"
+                FontSize="Large"
+                HorizontalTextAlignment="End">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span x:Name="lblTotalQuantities" />
+                        <Span Text=" 点" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+        </Grid>
+
+        <Frame
+            Padding="5"
+            BackgroundColor="FloralWhite"
+            CornerRadius="0">
+            <StackLayout HorizontalOptions="Center" Orientation="Vertical">
+                <Label TextColor="Black">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="お買い物終了後ボックスの扉を閉じて下さい。" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <!--  カートUI更新とレシートUIへ遷移を追加  -->
+                <StackLayout HorizontalOptions="Center" Orientation="Horizontal">
+                    <Button
+                        Margin="0"
+                        Padding="0"
+                        Clicked="ClickUpdateCart"
+                        FontSize="Micro"
+                        Text="カート更新" />
+                    <Button
+                        Clicked="ClickPushReceiptPage"
+                        FontSize="Micro"
+                        Text="レシート表示" />
+                </StackLayout>
+            </StackLayout>
+        </Frame>
+
+    </StackLayout>
+
+</ContentPage>

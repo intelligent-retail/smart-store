@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="SmartRetailApp.Views.LoginPage"
+             xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <StackLayout VerticalOptions="Center">
+        <ActivityIndicator x:Name="loadingIndicator"
+                           IsRunning="true"
+                           Color="Blue" />
+
+        <StackLayout x:Name="statckLayout"
+                     Orientation="Vertical">
+            <Label Margin="0,20"
+                   HorizontalTextAlignment="Center"
+                   Text="MS Smart Retail アプリにようこそ" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="使い方" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="1.「買い物を開始します」をタップすると" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="カメラが起動します" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="2.カメラでボックスのQRコードを撮影します" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="3.ボックスが開き買い物が開始になります" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="4.お好きな商品をボックスから取り出します" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="5.カート一覧が更新されます" />
+            <Label HorizontalTextAlignment="Center"
+                   Text="6.ボックスを閉じると買い物が終了し決済が完了します" />
+
+            <StackLayout Margin="0,10,0,0"
+                         HorizontalOptions="Center"
+                         Orientation="Horizontal">
+                <Label Text="Boxの名前"
+                       VerticalOptions="Center" />
+                <Editor x:Name="edtBoxName"
+                        VerticalOptions="Center" />
+            </StackLayout>
+
+            <Button Margin="50,0"
+                    Clicked="LoginClicked"
+                    Text="買い物を開始します" />
+        </StackLayout>
+    </StackLayout>
+
+</ContentPage>
