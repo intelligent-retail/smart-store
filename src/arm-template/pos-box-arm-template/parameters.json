@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "japaneast"
+    },
+    "suffix": {
+      "value": ""
+    },
+    "storageAccountsSuffix": {
+      "value": "st"
+    },
+    "posServiceGroupName": {
+      "value": "pos-service"
+    },
+    "posApiName": {
+      "value": "pos-api"
+    },
+    "posApiAppServicePlanName": {
+      "value": "aspPosBox"
+    },
+    "posApiAppServicePlanSku": {
+      "value": "B1"
+    },
+    "boxIotHubSku": {
+      "value": "F1"
+    },
+    "boxServiceGroupName": {
+      "value": "box-service"
+    },
+    "boxApiName": {
+      "value": "box-api"
+    },
+    "boxApiAppServicePlanName": {
+      "value": "aspPosBox"
+    },
+    "boxApiAppServicePlanSku": {
+      "value": "B1"
+    },
+    "appInsightsLocation": {
+      "value": "southeastasia"
+    }
+  }
+}

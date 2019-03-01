@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "CosmosDbConnectionString": "AccountEndpoint=https://***-pos-service.documents.azure.com:443/;AccountKey=***;",
+    "ApplicationTimeZone": "Tokyo Standard Time",
+    "FunctionsApiKeyHeader": "x-functions-key",
+    "ItemMasterUri": "https://***-item-master-api.azurewebsites.net/api/v1/company/{company-code}/store/{store-code}/items",
+    "ItemMasterApiKey": "<enter item master service api key>",
+    "StockUri": "https://***-stock-command-api.azurewebsites.net/api/v1/stocks",
+    "StockApiKey": "<enter stock service api key>"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "CosmosDbConnectionString": "AccountEndpoint=https://***-box-service.documents.azure.com:443/;AccountKey=***;",
+    "IotHubConnectionString": "HostName=***-box-service.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=***",
+    "IotHubEventConnectionString": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=***;EntityPath=***-box-service",
+    "NotificationApiKeyHeader": "X-API-Token",
+    "NotificationApiKey": "xxxnotificationxxx",
+    "NotificationUri": "<enter app center push uri>",
+    "PosApiKeyHeader": "x-functions-key",
+    "PosApiKey": "xxxposapixxx",
+    "PosCartsUri": "https://***-pos-api.azurewebsites.net/api/v1/carts/",
+    "PosCartItemsPath": "items/",
+    "PosCartSubtotalPath": "subtotal/",
+    "PosCartPaymentsPath": "payments/",
+    "PosCartBillPath": "bill/"
+  }
+}

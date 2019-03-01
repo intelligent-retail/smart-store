@@ -10,7 +10,9 @@
 
 - 統合商品マスタ: `/src/item-service/`
 - 在庫管理: `/src/stock-service`
+- Box管理サービス: `/src/box-service`
+- POSサービス: `/src/pos-service`
 
 ## Getting Started
 
-Azure のリソースのデプロイおよびプロビジョニングについては、 [src/arm-template/README](src/arm-template/README.md) をご参照ください。
+Azure のリソースのデプロイおよびプロビジョニングについては、 [src/arm-template/README](src/arm-template/README.md), [src/arm-template/pos-box-arm-template/README](src/arm-template/pos-box-arm-template/README.md) をご参照ください。

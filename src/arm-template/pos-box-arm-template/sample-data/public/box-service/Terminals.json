@@ -1,0 +1,22 @@
+[
+    {
+        "boxId": "SmartBox1",
+        "companyCode": "00100",
+        "storeCode": "12345",
+        "terminalNo": 1,
+        "terminalName": "スマートな箱",
+        "boxType": "1",
+        "boxSize": "10",
+        "boxDeviceId": "SmartBox1_Device"
+    },
+    {
+        "boxId": "SmartBox2",
+        "companyCode": "00100",
+        "storeCode": "12345",
+        "terminalNo": 2,
+        "terminalName": "スマートな箱2",
+        "boxType": "1",
+        "boxSize": "10",
+        "boxDeviceId": "SmartBox2_Device"
+    }
+]
