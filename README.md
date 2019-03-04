@@ -8,10 +8,11 @@
 
 このサンプル実装には以下の機能が含まれています。
 
-- 統合商品マスタ: `/src/item-service/`
+- 統合商品マスタ: `/src/item-service`
 - 在庫管理: `/src/stock-service`
 - Box管理サービス: `/src/box-service`
 - POSサービス: `/src/pos-service`
+- Boxクライアントアプリ: `/src/client-app`
 
 ## Getting Started
 
