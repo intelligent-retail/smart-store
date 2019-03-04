@@ -328,3 +328,7 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp/Models/Constant\.cs
+src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp\.Android/google-services\.json
+
