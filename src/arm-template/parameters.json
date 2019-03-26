@@ -75,7 +75,7 @@
             "value": "P1V2"
         },
         "appInsightsLocation": {
-            "value": "southeastasia"
+            "value": "japaneast"
         },
         "stockServiceAppInsights": {
             "value": "stock-backend"

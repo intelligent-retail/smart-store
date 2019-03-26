@@ -573,7 +573,7 @@
                 "name": "[parameters('storageAccountsSkuName')]"
             },
             "kind": "[parameters('storageAccountsKind')]",
-            "location": "[parameters('appInsightsLocation')]",
+            "location": "[parameters('location')]",
             "properties": {}
         },
         {
