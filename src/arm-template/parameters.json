@@ -14,28 +14,28 @@
         "itemServiceGroupName": {
             "value": "item-service"
         },
-        "sqlServerName": {
+        "stockServiceSqlServerName": {
             "value": "sql"
         },
-        "sqlServerAdminUserName": {
+        "stockServiceSqlServerAdminUserName": {
             "value": "smartretaildba"
         },
-        "sqlDatabaseSkuName": {
+        "stockServiceSqlDatabaseSkuName": {
             "value": "S0"
         },
-        "sqlDatabaseSkuTier": {
+        "stockServiceSqlDatabaseSkuTier": {
             "value": "Standard"
         },
-        "sqlDatabaseName": {
+        "stockServiceSqlDatabaseName": {
             "value": "StockBackend"
         },
-        "sqlDatabaseMaxDataSize": {
+        "stockServiceSqlDatabaseMaxDataSize": {
             "value": 20
         },
-        "sqlDatabaseMaxDataSizeUnit": {
+        "stockServiceSqlDatabaseMaxDataSizeUnit": {
             "value": "GB"
         },
-        "sqlDatabaseCollation": {
+        "stockServiceSqlDatabaseCollation": {
             "value": "Japanese_CI_AS"
         },
         "stockCommandApi": {

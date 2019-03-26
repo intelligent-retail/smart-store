@@ -15,7 +15,7 @@ RESOURCE_GROUP=<resource group name>
 LOCATION=japaneast
 
 PREFIX=<prefix string within 2 characters>
-SQL_SERVER_ADMIN_PASSWORD=<sql server admin password>
+STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD=<sql server admin password>
 
 # リソースグループを作成する
 az group create \
@@ -29,7 +29,7 @@ az group deployment create \
     --parameters @src/arm-template/parameters.json \
     --parameters \
         prefix=${PREFIX} \
-        sqlServerAdminPassword=${SQL_SERVER_ADMIN_PASSWORD}
+        stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}
 ```
 
 ## プロビジョニング
@@ -93,7 +93,7 @@ SQL_DATABASE_NAME=$(az sql db list \
 
 sqlcmd -S ${SQL_SERVER_ENDPOINT} \
     -U ${SQL_SERVER_ADMIN_USER} \
-    -P "${SQL_SERVER_ADMIN_PASSWORD}" \
+    -P "${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}" \
     -d ${SQL_DATABASE_NAME} \
     -i src/arm-template/createStocksInStockBackend.sql
 

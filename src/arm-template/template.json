@@ -28,16 +28,16 @@
         "itemServiceGroupName": {
             "type": "string"
         },
-        "sqlServerName": {
+        "stockServiceSqlServerName": {
             "type": "string"
         },
-        "sqlServerAdminUserName": {
+        "stockServiceSqlServerAdminUserName": {
             "type": "string"
         },
-        "sqlServerAdminPassword": {
+        "stockServiceSqlServerAdminPassword": {
             "type": "securestring"
         },
-        "sqlDatabaseSkuName": {
+        "stockServiceSqlDatabaseSkuName": {
             "type": "string",
             "allowedValues": [
                 "Basic",
@@ -58,7 +58,7 @@
                 "P15"
             ]
         },
-        "sqlDatabaseSkuTier": {
+        "stockServiceSqlDatabaseSkuTier": {
             "type": "string",
             "allowedValues": [
                 "Basic",
@@ -66,16 +66,16 @@
                 "Premium"
             ]
         },
-        "sqlDatabaseName": {
+        "stockServiceSqlDatabaseName": {
             "type": "string"
         },
-        "sqlDatabaseMaxDataSize": {
+        "stockServiceSqlDatabaseMaxDataSize": {
             "type": "int",
             "metadata": {
                 "description": "Specify numeric amount of SQL Database Max Data Size without unit."
             }
         },
-        "sqlDatabaseMaxDataSizeUnit": {
+        "stockServiceSqlDatabaseMaxDataSizeUnit": {
             "type": "string",
             "allowedValues": [
                 "GB",
@@ -85,7 +85,7 @@
                 "description": "Select the unit of SQL Database Max Data Size."
             }
         },
-        "sqlDatabaseCollation": {
+        "stockServiceSqlDatabaseCollation": {
             "type": "string",
             "metadata": {
                 "description": "example value: Japanese_CI_AS"
@@ -206,8 +206,8 @@
         "stockServiceCosmosDbName": "[concat(parameters('prefix'), variables('delimiter'), parameters('stockServiceGroupName'), parameters('suffix'))]",
         "itemServiceCosmosDbName": "[concat(parameters('prefix'), variables('delimiter'), parameters('itemServiceGroupName'), parameters('suffix'))]",
 
-        "sqlServerName": "[concat(parameters('prefix'), variables('delimiter'), parameters('sqlServerName'), parameters('suffix'))]",
-        "sqlDatabaseMaxSizeBytes": "[mul(parameters('sqlDatabaseMaxDataSize'), variables('bytesConversion')[parameters('sqlDatabaseMaxDataSizeUnit')])]",
+        "stockServiceSqlServerName": "[concat(parameters('prefix'), variables('delimiter'), parameters('stockServiceGroupName'), variables('delimiter'), parameters('stockServiceSqlServerName'), parameters('suffix'))]",
+        "stockServiceSqlDatabaseMaxSizeBytes": "[mul(parameters('stockServiceSqlDatabaseMaxDataSize'), variables('bytesConversion')[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')])]",
 
         "stockServiceAppServicePlanName": "[concat(parameters('prefix'), variables('delimiter'), parameters('stockServiceAppServicePlan'), parameters('suffix'))]",
         "itemServiceAppServicePlanName": "[concat(parameters('prefix'), variables('delimiter'), parameters('itemServiceAppServicePlan'), parameters('suffix'))]",
@@ -270,34 +270,34 @@
             }
         },
         {
-            "name": "[variables('sqlServerName')]",
+            "name": "[variables('stockServiceSqlServerName')]",
             "type": "Microsoft.Sql/servers",
             "apiVersion": "2015-05-01-preview",
             "location": "[variables('location')]",
             "properties": {
-                "administratorLogin": "[parameters('sqlServerAdminUserName')]",
-                "administratorLoginPassword": "[parameters('sqlServerAdminPassword')]"
+                "administratorLogin": "[parameters('stockServiceSqlServerAdminUserName')]",
+                "administratorLoginPassword": "[parameters('stockServiceSqlServerAdminPassword')]"
             }
         },
         {
-            "name": "[concat(variables('sqlServerName'), '/', parameters('sqlDatabaseName'))]",
+            "name": "[concat(variables('stockServiceSqlServerName'), '/', parameters('stockServiceSqlDatabaseName'))]",
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "2017-10-01-preview",
             "location": "[variables('location')]",
             "sku": {
-                "name": "[parameters('sqlDatabaseSkuName')]",
-                "tier": "[parameters('sqlDatabaseSkuTier')]"
+                "name": "[parameters('stockServiceSqlDatabaseSkuName')]",
+                "tier": "[parameters('stockServiceSqlDatabaseSkuTier')]"
             },
             "properties": {
-                "collation": "[parameters('sqlDatabaseCollation')]",
-                "maxSizeBytes": "[variables('sqlDatabaseMaxSizeBytes')]"
+                "collation": "[parameters('stockServiceSqlDatabaseCollation')]",
+                "maxSizeBytes": "[variables('stockServiceSqlDatabaseMaxSizeBytes')]"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+                "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
             ]
         },
         {
-            "name": "[concat(variables('sqlServerName'), '/AllowAllWindowsAzureIps')]",
+            "name": "[concat(variables('stockServiceSqlServerName'), '/AllowAllWindowsAzureIps')]",
             "type": "Microsoft.Sql/servers/firewallRules",
             "apiVersion": "2015-05-01-preview",
             "properties": {
@@ -305,7 +305,7 @@
                 "endIpAddress": "0.0.0.0"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
+                "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
             ]
         },
         {
@@ -428,7 +428,7 @@
                         },
                         {
                             "name": "SqlConnection",
-                            "value": "[concat('Server=tcp:', reference(variables('sqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('sqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('sqlServerName')).administratorLogin, ';Password=', parameters('sqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+                            "value": "[concat('Server=tcp:', reference(variables('stockServiceSqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('stockServiceSqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('stockServiceSqlServerName')).administratorLogin, ';Password=', parameters('stockServiceSqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
                         }
                     ],
                     "alwaysOn": true,
@@ -443,7 +443,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('stockQueryApiStorageAccountsName'))]",
                 "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
-                "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), parameters('sqlDatabaseName'))]"
+                "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), parameters('stockServiceSqlDatabaseName'))]"
             ]
         },
         {
@@ -491,7 +491,7 @@
                         },
                         {
                             "name": "SqlConnection",
-                            "value": "[concat('Server=tcp:', reference(variables('sqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('sqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('sqlServerName')).administratorLogin, ';Password=', parameters('sqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+                            "value": "[concat('Server=tcp:', reference(variables('stockServiceSqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('stockServiceSqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('stockServiceSqlServerName')).administratorLogin, ';Password=', parameters('stockServiceSqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
                         }
                     ],
                     "alwaysOn": true,
@@ -506,7 +506,7 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('stockProcessorStorageAccountsName'))]",
                 "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
-                "[resourceId('Microsoft.Sql/servers/databases', variables('sqlServerName'), parameters('sqlDatabaseName'))]",
+                "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), parameters('stockServiceSqlDatabaseName'))]",
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
             ]
         },
