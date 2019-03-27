@@ -1,0 +1,96 @@
+openapi: 3.0.2
+info:
+  title: 在庫トランAPI
+  version: 0.1.0
+  description: "在庫トランザクションの更新API"
+  license:
+    name: MIT license
+    url: https://opensource.org/licenses/mit-license.php
+servers:
+- url: 'https://{functionName}.azurewebsites.net/api/{apiVersion}'
+  description: "Azure Functions server"
+  variables:
+    functionName:
+      default: sr-stock-command-api
+    apiVersion:
+      default: v1
+- url: http://localhost:7071/api/{apiVersion}
+  description: "Local server"
+  variables:
+    apiVersion:
+      default: v1
+paths:
+  /stocks:
+    post:
+      operationId: stocks
+      description: |
+        在庫トランザクションの配列を受け取り、在庫DBを更新する。
+      summary: 在庫トランザクションの更新
+      requestBody:
+        description: 在庫トランザクション用のJSON
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                transactionId:
+                  type: integer
+                  example: 2345678901
+                transactionDate:
+                  type: string
+                  example: 2018/11/20 16:48:00
+                transactionType:
+                  type: string
+                  example: "01"
+                locationCode:
+                  type: string
+                  example: "002"
+                companyCode:
+                  type: string
+                  example: "00100"
+                storeCode:
+                  type: string
+                  example: "12345"
+                terminalCode:
+                  type: string
+                  example: "1"
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lineNo:
+                        type: integer
+                        example: 1
+                      itemCode:
+                        type: string
+                        example: "4901427401646"
+                      quantity:
+                        type: integer
+                        example: 1
+        required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: |
+            無効なトランザクションがリクエストされた場合のエラー
+
+            下記のいずれかのエラーが該当します。
+
+            - Required POST data
+              - リクエストデータが空である
+            - Invalid TransactionType: \<transaction type>
+              - 引当の状態が無効である
+            - Invalid TransactionId: \<transaction id>
+              - 仮引当のデータが存在しない
+            - Consistency Error TransactionId: \<transaction id>
+              - 仮引当と本引当のデータ整合性に問題がある
+      security:
+      - api_key: []
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: x-functions-key
+      in: header

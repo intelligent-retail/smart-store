@@ -1,0 +1,436 @@
+openapi: 3.0.2
+info:
+  title: POS API
+  version: 1.0.0
+  description: POSサービスのAPI
+  license:
+    name: MIT license
+    url: https://opensource.org/licenses/mit-license.php
+servers:
+- url: 'https://{functionName}.azurewebsites.net/api/{apiVersion}'
+  description: "Azure Functions server"
+  variables:
+    functionName:
+      default: pos-command-api
+    apiVersion:
+      default: v1
+- url: http://localhost:7071/api/{apiVersion}
+  description: "Local server"
+  variables:
+    apiVersion:
+      default: v1
+paths:
+  /carts:
+    post:
+      operationId: createCart
+      description: 企業・店舗・端末・ユーザ情報を元にカートを作成します。
+      summary: カート作成要求
+      requestBody:
+        description: 作成するカート情報
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                companyCode:
+                  type: string
+                  example: "00100"
+                storeCode:
+                  type: string
+                  example: "12345"
+                terminalNo:
+                  type: integer
+                  format: int32
+                  example: 1
+                userId:
+                  type: string
+                  example: "1"
+                userName:
+                  type: string
+                  example: "テストユーザ"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            'application/json':
+              schema:
+                properties:
+                  cartId:
+                    type: string
+                    example: 748D99C-5338-4209-B4CF-4300580F474D
+        400:
+          description: Bad Request
+      security:
+      - api_key: []
+  /carts/{cartId}:
+    get:
+      operationId: getCart
+      description: カート状態の情報を取得します。
+      summary: カート状態取得
+      parameters:
+      - name: cartId
+        in: path
+        description: 取得したいカートID
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  cart:
+                    $ref: "#/components/schemas/cart"
+                  store:
+                    $ref: "#/components/schemas/store"
+                  user:
+                    $ref: "#/components/schemas/user"
+        404:
+          description: Not Found
+      security:
+      - api_key: []
+    delete:
+      operationId: cancelTransaction
+      description: 取引を中止します。(中止取引を作成します)
+      summary: 取引中止
+      parameters:
+      - name: cartId
+        in: path
+        description: 操作対象のカートID
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
+      security:
+      - api_key: []
+  /carts/{cartId}/bill:
+    post:
+      operationId: bill
+      description: 取引を確定します。
+      summary: 取引確定
+      parameters:
+      - name: cartId
+        in: path
+        description: 操作対象のカートID
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
+      security:
+      - api_key: []
+  /carts/{cartId}/Items:
+    post:
+      operationId: addItems
+      description: 商品と数量を元にカートに商品を登録します。
+      summary: 商品追加
+      parameters:
+      - name: cartId
+        in: path
+        description: 操作対象のカートID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: 追加する商品情報
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/addItems"
+        required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
+      security:
+      - api_key: []
+  /carts/{cartId}/Items/{itemCode}:
+    delete:
+      operationId: deleteItem
+      description: 商品と数量を元にカートの商品を削除します。
+      summary: 商品削除
+      parameters:
+      - name: cartId
+        in: path
+        description: 操作対象のカートID
+        required: true
+        schema:
+          type: string
+      - name: itemCode
+        in: path
+        description: 削除する商品コード
+        required: true
+        schema:
+          type: string
+      - name: quantity
+        in: query
+        description: 削除する商品数量
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
+      security:
+      - api_key: []
+  /carts/{cartId}/payments:
+    post:
+      operationId: payments
+      description: 支払情報を追加します。
+      summary: 支払い追加
+      parameters:
+      - name: cartId
+        in: path
+        description: 操作対象のカートID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: 追加する支払い情報
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                payments:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/addPayments"
+        required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
+      security:
+      - api_key: []
+  /carts/{cartId}/subtotal:
+    post:
+      operationId: subtotal
+      description: 小計モードに遷移します。
+      summary: 小計
+      parameters:
+      - name: cartId
+        in: path
+        description: 操作対象のカートID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: 確定した商品情報
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items: 
+                    $ref: "#/components/schemas/addItems"
+        required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
+      security:
+      - api_key: []
+components:
+  schemas: 
+    addItems:
+      type: object
+      properties:
+        itemCode:
+          type: string
+          example: "4901520113903"
+        quantity:
+          type: integer
+          format: int32
+          example: 1
+    addPayments:
+      type: object
+      properties:
+        paymentCode:
+          type: string
+          example: "01"
+        amount:
+          type: integer
+          format: int32
+          example: 0
+    store:
+      type: object
+      properties:
+        storeCode:
+          type: string
+          example: 0001
+        storeName:
+          type: string
+          example: テスト店
+        terminalNo:
+          type: integer
+          format: int32
+          example: 1
+    user:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: 000001
+        userName:
+          type: string
+          example: テストユーザ
+    cart:
+      type: object
+      properties:
+        cartId:
+          type: string
+          example: 748D99C-5338-4209-B4CF-4300580F474D
+        totalAmount:
+          type: number
+          format: double
+          example: 1.0
+        subtotalAmount:
+          type: number
+          format: double
+          example: 1.0
+        totalQuantity:
+          type: integer
+          format: int32
+          example: 1
+        depositAmount:
+          type: number
+          format: double
+          example: 1.0
+        changeAmount:
+          type: number
+          format: double
+          example: 1.0
+        balance:
+          type: number
+          format: double
+          example: 1.0
+        receiptNo:
+          type: integer
+          format: int64
+          example: 1
+        receiptText:
+          type: string
+          example: 
+        transactionNo:
+          type: integer
+          format: int64
+          example: 1
+        cartStatus:
+          type: string
+          example: 01
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/cartLineItems"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/cartPayments"
+        taxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/cartTaxes" 
+    cartLineItems:
+      type: object
+      properties:
+        lineNo:
+          type: integer
+          format: int32
+          example: 1
+        itemCode:
+          type: string
+          example: "49000000000009"
+        itemName:
+          type: string
+          example: テスト商品
+        unitPrice:
+          type: number
+          format: double
+          example: 1.0
+        quantity:
+          type: integer
+          format: int32
+          example: 1
+        amount:
+          type: number
+          format: double
+          example: 1.0
+        imageUrls:
+              type: array
+              items:
+                type: string
+              example:
+                - "https://SmartRetail.co.jp/itemimages/12345/4901427401646.jpg"
+    cartPayments:
+      type: object
+      properties:
+        paymentNo:
+          type: integer
+          format: int32
+          example: 1
+        paymentCode:
+          type: string
+          example: 01
+        paymentName:
+          type: string
+          example: 電子マネー
+        paymentAmount:
+          type: number
+          format: double
+          example: 1.0
+    cartTaxes:
+      type: object
+      properties:
+        taxNo:
+          type: integer
+          format: int32
+          example: 1
+        taxName:
+          type: string
+          example: 内税8%
+        taxAmount:
+          type: number
+          format: double
+          example: 1.0
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: x-functions-key
+      in: header

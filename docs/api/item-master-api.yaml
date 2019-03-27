@@ -1,0 +1,172 @@
+openapi: 3.0.2
+info:
+  title: 商品マスタ取得API
+  version: 1.0.0
+  description: "商品マスタ取得API"
+  license:
+    name: MIT license
+    url: https://opensource.org/licenses/mit-license.php
+servers:
+- url: 'https://{functionName}.azurewebsites.net/api/{apiVersion}'
+  description: "Azure Functions server"
+  variables:
+    functionName:
+      default: sr-item-master-api
+    apiVersion:
+      default: v1
+- url: http://localhost:7071/api/{apiVersion}
+  description: "Local server"
+  variables:
+    apiVersion:
+      default: v1
+paths:
+  /company/{company-code}/store/{store-code}/items:
+    post:
+      operationId: items
+      description: ストアコード、商品コードを指定し、商品マスタを取得する
+      summary: 商品マスタの取得
+      parameters:
+      - name: company-code
+        in: path
+        description: "企業コード（例: 00100）"
+        required: true
+        schema:
+          type: string
+        example: "00100"
+      - name: store-code
+        in: path
+        description: "ストアコード（例: 12345）"
+        required: true
+        schema:
+          type: string
+        example: "12345"
+      requestBody:
+        description: 商品コードの配列
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                itemCodes:
+                  type: array
+                  items:
+                    description: 商品コード
+                    type: string
+                    example: "4901427401646"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        companyCode:
+                          type: string
+                          example: "00100"
+                        description:
+                          type: string
+                          example: 筆ペン
+                        descriptionLong:
+                          type: string
+                          example: 筆ペン
+                        descriptionShort:
+                          type: string
+                          example: ﾌﾃﾞﾍﾟﾝ
+                        entryDate:
+                          type: string
+                          example: 2009/08/04 12:06:04
+                        id:
+                          type: string
+                          example: b875b7dd-8548-4de8-ac92-d926873e0d19
+                        imageUrls:
+                          type: array
+                          items:
+                            type: string
+                            example: https://xxxxxx/testimage.jpeg
+                        itemCode:
+                          type: string
+                          example: 4901427401646
+                        itemDetails:
+                          type: array
+                          items:
+                            type: object
+                        lastUpdateDate:
+                          type: string
+                          example: 2009/10/22 20:42:29
+                        manufacturerCode:
+                          type: string
+                          example: null
+                        mdHierarchies:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              description:
+                                type: string
+                                example: 筆記用具
+                              descriptionShort:
+                                type: string
+                                example: ﾋｯｷﾖｳｸﾞ
+                              entryDate:
+                                type: string
+                                example: 2009/07/29 12:04:35
+                              lastUpdateDate:
+                                type: string
+                                example: 2009/07/29 12:04:35
+                              mdHierarchyCode:
+                                type: string
+                                example: "00290200"
+                              mdHierarchyLevel:
+                                type: integer
+                                example: 3
+                              parentCode:
+                                type: string
+                                example: "0029"
+                              taxCode:
+                                type: string
+                                example: "01"
+                        storeCode:
+                          type: string
+                          example: "12345"
+                        tax:
+                          type: object
+                          properties:
+                            description:
+                              type: string
+                              example: 内税8%
+                            rate:
+                              type: integer
+                              example: 8
+                            roundDigit:
+                              type: integer
+                              example: 0
+                            roundMethod:
+                              type: string
+                              example: "01"
+                            taxCode:
+                              type: string
+                              example: "01"
+                            taxType:
+                              type: string
+                              example: "01"
+                        unitCost:
+                          type: integer
+                          example: 0
+                        unitPrice:
+                          type: integer
+                          example: 600
+      security:
+      - api_key: []
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: x-functions-key
+      in: header

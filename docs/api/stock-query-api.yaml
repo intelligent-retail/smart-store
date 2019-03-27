@@ -1,0 +1,184 @@
+openapi: 3.0.2
+info:
+  title: 在庫照会API
+  version: 0.1.0
+  description: "在庫データを照会するAPI"
+  license:
+    name: MIT license
+    url: https://opensource.org/licenses/mit-license.php
+servers:
+- url: 'https://{functionName}.azurewebsites.net/api/{apiVersion}'
+  description: "Azure Functions server"
+  variables:
+    functionName:
+      default: sr-stock-query-api
+    apiVersion:
+      default: v1
+- url: http://localhost:7071/api/{apiVersion}
+  description: "Local server"
+  variables:
+    apiVersion:
+      default: v1
+paths:
+  /company/{company-code}/store/{store-code}/terminal/{terminal-code}/item/{item-code}/query:
+    post:
+      operationId: query-by-item-code
+      description: |
+        下記のコードを指定して在庫データを照会する
+        - 企業コード
+        - ストアコード
+        - ターミナルコード
+        - 商品コード
+      summary: 在庫照会API(商品別)
+      parameters:
+      - name: company-code
+        in: path
+        description: "企業コード（例: 00100）"
+        required: true
+        schema:
+          type: string
+        example: "00100"
+      - name: store-code
+        in: path
+        description: "ストアコード（例: 12345）"
+        required: true
+        schema:
+          type: string
+        example: "12345"
+      - name: terminal-code
+        in: path
+        description: "ターミナルコード（例: 1）"
+        required: true
+        schema:
+          type: string
+        example: "1"
+      - name: item-code
+        in: path
+        description: "商品コード（例: 4901427401646）"
+        required: true
+        schema:
+          type: string
+        example: "4901427401646"
+      responses:
+        200:
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        itemCode:
+                          type: string
+                          example: "4901427401646"
+                        quantity:
+                          type: integer
+      security:
+      - api_key: []
+  /company/{company-code}/store/{store-code}/query:
+    post:
+      operationId: query-by-store-code
+      description: |
+        下記のコードを指定して在庫データを照会する
+        - 企業コード
+        - ストアコード
+      summary: 在庫照会API(ストア別)
+      parameters:
+      - name: company-code
+        in: path
+        description: "企業コード（例: 00100）"
+        required: true
+        schema:
+          type: string
+        example: "00100"
+      - name: store-code
+        in: path
+        description: "ストアコード（例: 12345）"
+        required: true
+        schema:
+          type: string
+        example: "12345"
+      responses:
+        200:
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        terminalCode:
+                          type: string
+                          example: "1"
+                        itemCode:
+                          type: string
+                          example: "4901427401646"
+                        quantity:
+                          type: integer
+      security:
+      - api_key: []
+  /company/{company-code}/store/{store-code}/terminal/{terminal-code}/query:
+    post:
+      operationId: query-by-terminal-code
+      description: |
+        下記のコードを指定して在庫データを照会する
+        - 企業コード
+        - ストアコード
+        - ターミナルコード
+      summary: 在庫照会API(ターミナル別)
+      parameters:
+      - name: company-code
+        in: path
+        description: "企業コード（例: 00100）"
+        required: true
+        schema:
+          type: string
+        example: "00100"
+      - name: store-code
+        in: path
+        description: "ストアコード（例: 12345）"
+        required: true
+        schema:
+          type: string
+        example: "12345"
+      - name: terminal-code
+        in: path
+        description: "ターミナルコード（例: 1）"
+        required: true
+        schema:
+          type: string
+        example: "1"
+      responses:
+        200:
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        itemCode:
+                          type: string
+                          example: "4901427401646"
+                        quantity:
+                          type: integer
+      security:
+      - api_key: []
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: x-functions-key
+      in: header

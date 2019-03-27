@@ -1,0 +1,267 @@
+openapi: 3.0.2
+info:
+  title: BOX管理API
+  version: 1.0.0
+  description: BOX管理サービスのAPI
+  license:
+    name: MIT license
+    url: https://opensource.org/licenses/mit-license.php
+servers:
+- url: 'https://{functionName}.azurewebsites.net/api/{apiVersion}'
+  description: "Azure Functions server"
+  variables:
+    functionName:
+      default: box-command-api
+    apiVersion:
+      default: v1
+- url: http://localhost:7071/api/{apiVersion}
+  description: "Local server"
+  variables:
+    apiVersion:
+      default: v1
+paths:
+  /carts:
+    post:
+      operationId: carts
+      description: Smart Box と スマホアプリのデバイスIDを元にPOSサービスにカート作成を依頼します。
+      summary: カート作成要求
+      requestBody:
+        description: 取引開始要求用のJSON
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                boxId:
+                  type: string
+                  example: SmartBox1
+                deviceId:
+                  type: string
+                  example: 0D561207-9924-4D64-AF3F-5DED7741EC45
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            'application/json':
+              schema:
+                properties:
+                  cartId:
+                    type: string
+                    example: 748D99C-5338-4209-B4CF-4300580F474D
+      security:
+      - api_key: []
+  /carts/{cartId}/bill:
+    get:
+      operationId: cartBill
+      description: POSサービスから精算時のカート情報を取得します。
+      summary: カート状態取得(精算)
+      parameters:
+      - name: cartId
+        in: path
+        description: 取得したいカートID
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  cart:
+                    $ref: "#/components/schemas/cart"
+                  store:
+                    $ref: "#/components/schemas/store"
+                  user:
+                    $ref: "#/components/schemas/user"
+      security:
+      - api_key: []
+  /carts/{cartId}/items:
+    get:
+      operationId: cartItems
+      description: POSサービスからカート情報を取得します。
+      summary: カート状態取得(明細)
+      parameters:
+      - name: cartId
+        in: path
+        description: 取得したいカートID
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  cart:
+                    $ref: "#/components/schemas/cart"
+                  store:
+                    $ref: "#/components/schemas/store"
+                  user:
+                    $ref: "#/components/schemas/user"
+      security:
+      - api_key: []
+  /devices/{deviceId}/status/reset:
+    post:
+      operationId: resetBox
+      description: Box管理サービスが保持しているSmart Boxの状態を初期化します。
+      summary: Smart Box 状態初期化
+      parameters:
+      - name: deviceId
+        in: path
+        description: 初期化したいSmart Box Id
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+      security:
+      - api_key: []
+components:
+  schemas: 
+    store:
+      type: object
+      properties:
+        storeCode:
+          type: string
+          example: 0001
+        storeName:
+          type: string
+          example: テスト店
+        terminalNo:
+          type: integer
+          format: int32
+          example: 1
+    user:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: 000001
+        userName:
+          type: string
+          example: テストユーザ
+    cart:
+      type: object
+      properties:
+        cartId:
+          type: string
+          example: 748D99C-5338-4209-B4CF-4300580F474D
+        totalAmount:
+          type: number
+          format: double
+          example: 1.0
+        subtotalAmount:
+          type: number
+          format: double
+          example: 1.0
+        totalQuantity:
+          type: integer
+          format: int32
+          example: 1
+        depositAmount:
+          type: number
+          format: double
+          example: 1.0
+        changeAmount:
+          type: number
+          format: double
+          example: 1.0
+        balance:
+          type: number
+          format: double
+          example: 1.0
+        receiptNo:
+          type: integer
+          format: int64
+          example: 1
+        receiptText:
+          type: string
+          example: 
+        transactionNo:
+          type: integer
+          format: int64
+          example: 1
+        cartStatus:
+          type: string
+          example: 01
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/lineItems"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/payments"
+        taxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/taxes" 
+    lineItems:
+      type: object
+      properties:
+        lineNo:
+          type: integer
+          format: int32
+          example: 1
+        itemCode:
+          type: string
+          example: "49000000000009"
+        itemName:
+          type: string
+          example: テスト商品
+        unitPrice:
+          type: number
+          format: double
+          example: 1.0
+        quantity:
+          type: integer
+          format: int32
+          example: 1
+        amount:
+          type: number
+          format: double
+          example: 1.0
+    payments:
+      type: object
+      properties:
+        paymentNo:
+          type: integer
+          format: int32
+          example: 1
+        paymentCode:
+          type: string
+          example: 01
+        paymentName:
+          type: string
+          example: 電子マネー
+        paymentAmount:
+          type: number
+          format: double
+          example: 1.0
+    taxes:
+      type: object
+      properties:
+        taxNo:
+          type: integer
+          format: int32
+          example: 1
+        taxName:
+          type: string
+          example: 内税8%
+        taxAmount:
+          type: number
+          format: double
+          example: 1.0
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: x-functions-key
+      in: header
