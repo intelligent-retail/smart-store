@@ -48,7 +48,7 @@
             "value": "stock-query-api"
         },
         "stockQueryApiZipUrl": {
-            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/StockService.StockQuery.zip"
+            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockQuery.zip"
         },
         "stockProcessor": {
             "value": "stock-processor"
