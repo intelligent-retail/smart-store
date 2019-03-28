@@ -54,7 +54,7 @@
             "value": "stock-processor"
         },
         "stockProcessorZipUrl": {
-            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/StockService.StockProcessor.zip"
+            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockProcessor.zip"
         },
         "itemMasterApi": {
             "value": "item-master-api"
