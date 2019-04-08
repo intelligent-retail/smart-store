@@ -201,3 +201,237 @@ BOX_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
     /t.ConnectionString:"${BOX_SERVICE_COSMOSDB_CONNSTR};Database=${BOX_DB_NAME};" \
     /t.Collection:Terminals
 ```
+
+## POS サービスの疎通確認
+
+作成した POS サービスが正常に動作するか、疎通確認を行います。  
+疎通確認には Swagger を使用します。Swagger の基本的な使用方法は以下を参照してください。  
+[../../../docs/api/README.md](../../../docs/api/README.md)
+
+以下の POS サービス定義を開き、functionName (※) の設定、Authorize を行ってください。  
+[../../../docs/api/pos-service-api.yaml](../../../docs/api/pos-service-api.yaml)
+
+※functionName は \<your prefix\>-pos-api となります。  
+　apiVersion については既定値の v1 から変更しません。
+
+### 1.カート作成要求 API
+
+Request body にパラメータを設定し Execute を押します。  
+※パラメータは以下の既定値から変更しません。
+
+``` JSON
+{
+  "companyCode": "00100",
+  "storeCode": "12345",
+  "terminalNo": 1,
+  "userId": "1",
+  "userName": "テストユーザ"
+}
+```
+
+Server response として Code 201 (Created)、Response body に以下のような値が返ってくれば成功です。
+
+``` JSON
+{
+  "cartId": "598f75b8-d124-4395-937b-120775a99e34"
+}
+```
+
+※cartId はランダムに決定されるため、上記 cartId はサンプル値です。毎回異なる値が返ってきます。
+
+これでカートが作成され、カートの ID が割り振られたことになりますので、  
+以降の API ではこの cartId を使用してカートの操作を行います。
+
+### 2.カート状態取得 API
+
+Parameters「cartId」に「1.カート作成要求 API」で得た cartId を入力し、Execute を押します。  
+Server response として Code 200 (OK)、Response body に以下のような値が返ってくれば成功です。
+
+``` JSON
+{
+  "store": {
+    "storeCode": "12345",
+    "storeName": "Smart Retail 六本木店",
+    "terminalNo": 1
+  },
+  "user": {
+    "userId": "1",
+    "userName": "テストユーザ"
+  },
+  "cart": {
+    "cartId": "598f75b8-d124-4395-937b-120775a99e34",
+    "totalAmount": 0,
+    "subtotalAmount": 0,
+    "totalQuantity": 0,
+    "receiptNo": 1,
+    "receiptText": "",
+    "depositAmount": 0,
+    "changeAmount": 0,
+    "balance": 0,
+    "transactionNo": 1,
+    "cartStatus": "01",
+    "lineItems": [],
+    "payments": [],
+    "taxes": []
+  }
+}
+```
+
+※cartStatus で扱う状態は以下のものです。  
+　01：商品登録  
+　02：小計  
+　03：取引完了  
+　04：取引中止
+
+### 3.取引中止 API
+
+Parameters「cartId」に「1.カート作成要求 API」で得た cartId を入力し、Execute を押します。  
+Server response として Code 200 (OK) が返ってくれば成功です。
+
+この状態で「2.カート状態取得 API」を実行すると  
+　「receiptText」に「取引中止＜売上＞」といった文言を含むレシート情報  
+　「cartStatus」に 04 (取引中止)  
+が設定されたカート情報を取得できます。  
+※カート情報は 7 日間保持された後、自動的に消えます。
+
+取引を中止したカートのため、これ以降は「2.カート状態取得 API」以外の API 受け付けはできなくなります。  
+(実行した場合は Code 400 (Bad Request) が返ってきます)
+
+### 4.商品追加 API
+
+※もう一度「1.カート作成要求 API」を実行し、新たなカートを作成したものとして進めます。
+
+Parameters「cartId」に「1.カート作成要求 API」で得た cartId を入力し、  
+Request body に以下のパラメータを設定し Execute を押します。
+
+``` JSON
+{
+  "items": [
+    {
+      "itemCode": "4901427401646",
+      "quantity": 2
+    }
+  ]
+}
+```
+
+Server response として Code 200 (OK) が返ってくれば成功です。
+
+この状態で「2.カート状態取得 API」を実行すると  
+　「lineItems」に数量 ２ の筆ペン  
+　「totalAmount」に 1200  
+が設定される等、カートに商品が追加されたことを確認できます。
+
+### 5.商品削除 API
+
+Parameters「cartId」に「1.カート作成要求 API」で得た cartId を入力、  
+「itemCode」に 4901427401646 を入力、「quantity」に 1 を入力し Execute を押します。  
+Server response として Code 200 (OK) が返ってくれば成功です。
+
+この状態で「2.カート状態取得 API」を実行すると「lineItems」の筆ペンが数量 1 になっていることが確認できます。
+
+### 6.小計 API
+
+Parameters「cartId」に「1.カート作成要求 API」で得た cartId を入力し、  
+Request body に以下のパラメータを設定し Execute を押します。
+
+``` JSON
+{
+  "items": [
+    {
+      "itemCode": "4901427401646",
+      "quantity": 1
+    }
+  ]
+}
+```
+
+Server response として Code 200 (OK) が返ってくれば成功です。  
+この状態で「2.カート状態取得 API」を実行すると「cartStatus」が 02 (小計) になっていることが確認できます。
+
+### 7.支払い追加 API
+
+Parameters「cartId」に「1.カート作成要求 API」で得た cartId を入力し、Execute を押します。  
+パラメータは以下の既定値から変更しません。
+
+``` JSON
+{
+  "payments": [
+    {
+      "paymentCode": "01",
+      "amount": 0
+    }
+  ]
+}
+```
+
+Server response として Code 200 (OK) が返ってくれば成功です。  
+この状態で「2.カート状態取得 API」を実行すると以下の支払い情報が設定されていることが確認できます。
+
+``` JSON
+"payments": [
+  {
+    "paymentNo": 1,
+    "paymentCode": "01",
+    "paymentName": "クレジット",
+    "paymentAmount": 600
+  }
+],
+```
+
+### 8.取引確定 API
+
+Parameters「cartId」に「1.カート作成要求 API」で得た cartId を入力し、Execute を押します。  
+Server response として Code 200 (OK) が返ってくれば成功です。
+
+この状態で「2.カート状態取得 API」を実行すると
+　「receiptText」に「領 収 書」といった文言を含むレシート情報  
+　「cartStatus」に 03 (取引完了)  
+が設定されたカート情報を取得できます。  
+
+取引を完了したカートのため、これ以降は「2.カート状態取得 API」以外の API 受け付けはできなくなります。  
+(実行した場合は Code 400 (Bad Request) が返ってきます)
+
+## BOX 管理サービスの疎通確認
+
+作成した BOX 管理サービスが正常に動作するか、疎通確認を行います。  
+疎通確認にはスマホアプリ、BOX シミュレーターを使用します。(※詳細な使用方法は省略します)
+
+### 1.買い物の開始
+
+スマホアプリを起動し「買い物を開始します」ボタンをタッチします。  
+スマホカメラで「SmartBox1」のQRコードを読み込みます。  
+「商品をボックスから取り出してください」という文言が画面に表示されていることを確認します。
+
+※念のため、CosmosDB のコレクション「Carts」に新しいドキュメントが  
+　生成されていることを確認すると、より確実です。
+
+### 2.BOX の扉を開ける
+
+BOX シミュレーターを起動します。  
+以下の画像を参考に fudepen を 3 個の状態に設定し、箱を開けます。
+![sim001](images/sim001.jpg)
+
+CosmosDB のコレクション「Stocks」に以下の内容で  
+新しいドキュメントが生成されていることを確認します。
+
+``` JSON
+    "boxId": "SmartBox1",
+    "eventType": "0",
+    "skuCode": "fudepen",
+    "quantity": 3,
+```
+
+### 3.BOX から商品を取り出す
+
+以下の画像を参考に fudepen を 1 個、箱から取り出します。
+![sim002](images/sim002.jpg)
+
+スマホアプリの画面が更新され、筆ペンが明細に表示されることを確認します。
+
+### 4.BOX の扉を閉める
+
+以下の画像を参考に fudepen の最終在庫が 2 個となる状態に設定し、箱を閉めます。
+![sim003](images/sim003.jpg)
+
+スマホアプリの画面が更新され、買い物が終了したことを確認します。
