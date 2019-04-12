@@ -205,11 +205,14 @@ BOX_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
 ## POS サービスの疎通確認
 
 作成した POS サービスが正常に動作するか、疎通確認を行います。  
-疎通確認には Swagger を使用します。Swagger の基本的な使用方法は以下を参照してください。  
-[../../../docs/api/README.md](../../../docs/api/README.md)
+全体のシーケンスは以下のドキュメントをご参照ください。  
+[SmartStore シーケンス図](/docs/images/smartStore-sequenceDiagram.png)
 
-以下の POS サービス定義を開き、functionName (※) の設定、Authorize を行ってください。  
-[../../../docs/api/pos-service-api.yaml](../../../docs/api/pos-service-api.yaml)
+疎通確認には Swagger を使用します。Swagger の基本的な使用方法は以下のドキュメントをご参照ください。  
+[API 定義ファイルの利用方法](/docs/api/README.md)
+
+以下の POS サービス API 定義ドキュメントをご参照頂き、functionName (※) の設定、Authorize を行ってください。  
+[POS サービス API 定義](/docs/api/pos-service-api.yaml)
 
 ※functionName は \<your prefix\>-pos-api となります。  
 　apiVersion については既定値の v1 から変更しません。
