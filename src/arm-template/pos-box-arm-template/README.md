@@ -15,10 +15,12 @@ RESOURCE_GROUP=<resource group name>
 LOCATION=japaneast
 
 PREFIX=<prefix string within 2 characters>
-ITEM_MASTER_API_KEY=<item service api key>
-ITEM_MASTER_URI=https://<item service name>.azurewebsites.net/api/v1/company/{company-code}/store/{store-code}/items
-STOCK_API_KEY=<stock service api key>
-STOCK_URI=https://<stock service name>.azurewebsites.net/api/v1/stocks
+
+TEMPLATE_URL=https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template
+
+ITEM_MASTER_URI=https://$(az functionapp show --resource-group ${RESOURCE_GROUP} --name ${PREFIX}-item-master-api --query "defaultHostName" --output tsv)/api/v1/company/{company-code}/store/{store-code}/items
+STOCK_COMMAND_URI=https://$(az functionapp show --resource-group ${RESOURCE_GROUP} --name ${PREFIX}-stock-command-api --query "defaultHostName" --output tsv)/api/v1/stocks
+
 NOTIFICATION_API_KEY=<app center push api key>
 NOTIFICATION_URI=https://api.appcenter.ms/v0.1/apps/<app center push name>/SmartRetailApp.Android/push/notifications
 POS_API_KEY=<pos api key>
@@ -31,17 +33,25 @@ az group create \
 # 作成したリソースグループの中に、リソースをデプロイする
 az group deployment create \
     --resource-group ${RESOURCE_GROUP} \
-    --template-file src/arm-template/pos-box-arm-template/template.json \
-    --parameters @src/arm-template/pos-box-arm-template/parameters.json \
+    --template-uri ${TEMPLATE_URL}/template.json \
+    --parameters ${TEMPLATE_URL}/parameters.json \
     --parameters \
         prefix=${PREFIX} \
-        itemMasterApiKey=${ITEM_MASTER_API_KEY} \
         itemMasterUri=${ITEM_MASTER_URI} \
-        stockApiKey=${STOCK_API_KEY} \
-        stockUri=${STOCK_URI} \
+        stockUri=${STOCK_COMMAND_URI} \
         notificationApiKey=${NOTIFICATION_API_KEY} \
         notificationUri=${NOTIFICATION_URI} \
         posApiKey=${POS_API_KEY}
+
+# item-service と stock-service の api key を pos-api に設定する
+ITEM_MASTER_API_KEY=<item service api key>
+STOCK_COMMAND_API_KEY=<stock service command api key>
+az functionapp config appsettings set \
+    --resource-group ${RESOURCE_GROUP} \
+    --name ${PREFIX}-pos-api \
+    --settings \
+        ItemMasterApiKey=${ITEM_MASTER_API_KEY} \
+        StockApiKey=${STOCK_COMMAND_API_KEY}
 ```
 
 ## プロビジョニング

@@ -22,10 +22,26 @@
         "description": "Set like `-dev`. Or, if suffix is not needed, leave blank."
       }
     },
-    "storageAccountsSuffix": {
-      "type": "string"
+    "delimiter": {
+      "type": "string",
+      "defaultValue": "-"
     },
-    "posServiceGroupName": {
+    "storageAccountsSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_RAGRS",
+        "Standard_GRS",
+        "Premium_LRS",
+        "Premium_ZRS"
+      ]
+    },
+    "storageAccountsKind": {
+      "type": "string",
+      "allowedValues": ["Storage", "StorageV2"]
+    },
+    "storageAccountsSuffix": {
       "type": "string"
     },
     "posApiName": {
@@ -37,34 +53,22 @@
     "posApiAppServicePlanSku": {
       "type": "string"
     },
-    "boxIotHubSku": {
+    "itemMasterUri": {
       "type": "string"
     },
-    "boxServiceGroupName": {
+    "stockUri": {
       "type": "string"
     },
     "boxApiName": {
+      "type": "string"
+    },
+    "boxIotHubSku": {
       "type": "string"
     },
     "boxApiAppServicePlanName": {
       "type": "string"
     },
     "boxApiAppServicePlanSku": {
-      "type": "string"
-    },
-    "appInsightsLocation": {
-      "type": "string"
-    },
-    "itemMasterApiKey": {
-      "type": "string"
-    },
-    "itemMasterUri": {
-      "type": "string"
-    },
-    "stockApiKey": {
-      "type": "string"
-    },
-    "stockUri": {
       "type": "string"
     },
     "notificationApiKey": {
@@ -78,270 +82,133 @@
     }
   },
   "variables": {
-    "delimiter": "-",
-    "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
-
-    "boxIotHubName": "[concat(parameters('prefix'), variables('delimiter'), parameters('boxServiceGroupName'), parameters('suffix'))]",
-
-    "posCosmosDbAccountName": "[concat(parameters('prefix'), variables('delimiter'), parameters('posServiceGroupName'), parameters('suffix'))]",
-    "boxCosmosDbAccountName": "[concat(parameters('prefix'), variables('delimiter'), parameters('boxServiceGroupName'), parameters('suffix'))]",
-
-    "posApiAppServicePlanName": "[concat(parameters('prefix'), variables('delimiter'), parameters('posApiAppServicePlanName'), parameters('suffix'))]",
-    "boxApiAppServicePlanName": "[concat(parameters('prefix'), variables('delimiter'), parameters('boxApiAppServicePlanName'), parameters('suffix'))]",
-    "boxApiAppServicePlanUniqueResourceName": "[if(equals(parameters('posApiAppServicePlanName'), parameters('boxApiAppServicePlanName')), concat(variables('boxApiAppServicePlanName'), 'dummy'), variables('boxApiAppServicePlanName'))]",
-
-    "posApiFunctionName": "[concat(parameters('prefix'), variables('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), variables('delimiter'), '')]",
-
-    "boxApiFunctionName": "[concat(parameters('prefix'), variables('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
-    "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), variables('delimiter'), '')]",
-
-    "appInsightsName": "[concat(parameters('prefix'), variables('delimiter'), 'api-frontend', parameters('suffix'))]",
-
-    "posCartsUri": "[concat('https://', variables('posApiFunctionName'), '.azurewebsites.net/api/v1/carts/')]"
+    "posApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
+    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
+    "commonParameters": {
+      "location": {
+        "value": "[parameters('location')]"
+      },
+      "prefix": {
+        "value": "[parameters('prefix')]"
+      },
+      "suffix": {
+        "value": "[parameters('suffix')]"
+      },
+      "delimiter": {
+        "value": "[parameters('delimiter')]"
+      }
+    },
+    "storageParameters": {
+      "storageAccountsSkuName": {
+        "value": "[parameters('storageAccountsSkuName')]"
+      },
+      "storageAccountsKind": {
+        "value": "[parameters('storageAccountsKind')]"
+      },
+      "storageAccountsSuffix": {
+        "value": "[parameters('storageAccountsSuffix')]"
+      }
+    },
+    "commonTemplateParameters": {
+      "posApiFunctionName": {
+        "value": "[variables('posApiFunctionName')]"
+      },
+      "boxApiFunctionName": {
+        "value": "[variables('boxApiFunctionName')]"
+      }
+    },
+    "posServiceParameters": {
+      "posApiName": {
+        "value": "[parameters('posApiName')]"
+      },
+      "posApiFunctionName": {
+        "value": "[variables('posApiFunctionName')]"
+      },
+      "posApiAppServicePlanName": {
+        "value": "[parameters('posApiAppServicePlanName')]"
+      },
+      "posApiAppServicePlanSku": {
+        "value": "[parameters('posApiAppServicePlanSku')]"
+      },
+      "itemMasterUri": {
+        "value": "[parameters('itemMasterUri')]"
+      },
+      "stockUri": {
+        "value": "[parameters('stockUri')]"
+      }
+    },
+    "boxServiceParameters": {
+      "boxIotHubSku": {
+        "value": "[parameters('boxIotHubSku')]"
+      },
+      "boxApiName": {
+        "value": "[parameters('boxApiName')]"
+      },
+      "boxApiAppServicePlanName": {
+        "value": "[parameters('boxApiAppServicePlanName')]"
+      },
+      "boxApiAppServicePlanSku": {
+        "value": "[parameters('boxApiAppServicePlanSku')]"
+      },
+      "notificationApiKey": {
+        "value": "[parameters('notificationApiKey')]"
+      },
+      "notificationUri": {
+        "value": "[parameters('notificationUri')]"
+      },
+      "posApiKey": {
+        "value": "[parameters('posApiKey')]"
+      }
+    }
   },
   "resources": [
     {
-      "name": "[variables('boxIotHubName')]",
-      "type": "Microsoft.Devices/IotHubs",
-      "apiVersion": "2018-04-01",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "[parameters('boxIotHubSku')]",
-        "capacity": 1
-      },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "commonTemplate",
       "properties": {
-        "routing": {
-          "routes": [
-            {
-              "name": "AI",
-              "source": "DeviceMessages",
-              "condition": "IS_ARRAY($body.items)\r\nAND (($body.message_type = 'stock_start') OR ($body.message_type = 'stock_diff_trading') OR ($body.message_type = 'stock_end'))",
-              "endpointNames": [
-                "events"
-              ],
-              "isEnabled": true
-            }
-          ]
-        }
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
+          "contentVersion": "1.0.1.0"
+        },
+        "parameters": "[union(variables('commonParameters'), variables('commonTemplateParameters'))]"
       }
     },
     {
-      "name": "[variables('posCosmosDbAccountName')]",
-      "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2015-04-08",
-      "location": "[variables('location')]",
-      "tags": {
-        "defaultExperience": "Core (SQL)"
-      },
-      "kind": "GlobalDocumentDB",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "posServiceTemplate",
       "properties": {
-        "databaseAccountOfferType": "Standard",
-        "locations": [
-          {
-            "locationName": "[variables('location')]"
-          }
-        ]
-      }
-    },
-    {
-      "name": "[variables('boxCosmosDbAccountName')]",
-      "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2015-04-08",
-      "location": "[variables('location')]",
-      "tags": {
-        "defaultExperience": "Core (SQL)"
-      },
-      "kind": "GlobalDocumentDB",
-      "properties": {
-        "databaseAccountOfferType": "Standard",
-        "locations": [
-          {
-            "locationName": "[variables('location')]"
-          }
-        ]
-      }
-    },
-    {
-      "name": "[variables('posApiAppServicePlanName')]",
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "[parameters('posApiAppServicePlanSku')]"
-      },
-      "properties": {}
-    },
-    {
-      "condition": "[not(equals(variables('posApiAppServicePlanName'),variables('boxApiAppServicePlanName')))]",
-      "name": "[variables('boxApiAppServicePlanUniqueResourceName')]",
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "[parameters('boxApiAppServicePlanSku')]"
-      },
-      "properties": {}
-    },
-    {
-      "name": "[variables('appInsightsName')]",
-      "type": "Microsoft.Insights/components",
-      "apiVersion": "2015-05-01",
-      "location": "[parameters('appInsightsLocation')]",
-      "tags": {
-        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('posApiFunctionName'))]": "Resource",
-        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('boxApiFunctionName'))]": "Resource"
-      },
-      "kind": "web",
-      "properties": {
-        "Application_Type": "web"
-      }
-    },
-    {
-      "name": "[variables('posApiStorageAccountsName')]",
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
-      "sku": {
-        "name": "Standard_LRS"
-      },
-      "kind": "Storage",
-      "location": "[variables('location')]",
-      "properties": {}
-    },
-    {
-      "name": "[variables('posApiFunctionName')]",
-      "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
-      "kind": "functionapp",
-      "location": "[variables('location')]",
-      "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]",
-        "siteConfig": {
-          "appSettings": [
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
-            },
-            {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "1"
-            },
-            {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
-            },
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('posApiStorageAccountsName'), ';AccountKey=', listKeys(variables('posApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
-            },
-            {
-              "name": "CosmosDbConnectionString",
-              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName')), '2015-04-08').primaryMasterKey)]"
-            },
-            {
-              "name": "ItemMasterApiKey",
-              "value": "[parameters('itemMasterApiKey')]"
-            },
-            {
-              "name": "ItemMasterUri",
-              "value": "[parameters('itemMasterUri')]"
-            },
-            {
-              "name": "StockApiKey",
-              "value": "[parameters('stockApiKey')]"
-            },
-            {
-              "name": "StockUri",
-              "value": "[parameters('stockUri')]"
-            }
-          ],
-          "alwaysOn": true,
-          "cors": {
-            "allowedOrigins": [
-              "*"
-            ]
-          }
-        }
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'pos-service-template.json')]",
+          "contentVersion": "1.0.1.0"
+        },
+        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('posServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}}')))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('posApiStorageAccountsName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))]"
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
       ]
     },
     {
-      "name": "[variables('boxApiStorageAccountsName')]",
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
-      "sku": {
-        "name": "Standard_LRS"
-      },
-      "kind": "Storage",
-      "location": "[variables('location')]",
-      "properties": {}
-    },
-    {
-      "name": "[variables('boxApiFunctionName')]",
-      "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
-      "kind": "functionapp",
-      "location": "[variables('location')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "boxServiceTemplate",
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]",
-        "siteConfig": {
-          "appSettings": [
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
-            },
-            {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "1"
-            },
-            {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
-            },
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('boxApiStorageAccountsName'), ';AccountKey=', listKeys(variables('boxApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
-            },
-            {
-              "name": "CosmosDbConnectionString",
-              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName')), '2015-04-08').primaryMasterKey)]"
-            },
-            {
-              "name": "NotificationApiKey",
-              "value": "[parameters('notificationApiKey')]"
-            },
-            {
-              "name": "NotificationUri",
-              "value": "[parameters('notificationUri')]"
-            },
-            {
-              "name": "PosApiKey",
-              "value": "[parameters('posApiKey')]"
-            },
-            {
-              "name": "PosCartsUri",
-              "value": "[variables('posCartsUri')]"
-            }
-          ],
-          "alwaysOn": true,
-          "cors": {
-            "allowedOrigins": [
-              "*"
-            ]
-          }
-        }
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'box-service-template.json')]",
+          "contentVersion": "1.0.1.0"
+        },
+        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('boxServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"posApiAppServicePlanName\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiAppServicePlanName.value, '\"}, \"posApiFunctionUrl\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiFunctionUrl.value, '\"}}')))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('boxApiStorageAccountsName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))]"
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]",
+        "[resourceId('Microsoft.Resources/deployments', 'posServiceTemplate')]"
       ]
     }
-  ]
+  ],
+  "outputs": {
+  }
 }

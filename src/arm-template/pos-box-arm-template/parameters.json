@@ -8,11 +8,14 @@
     "suffix": {
       "value": ""
     },
+    "storageAccountsSkuName": {
+      "value": "Standard_LRS"
+    },
+    "storageAccountsKind": {
+      "value": "Storage"
+    },
     "storageAccountsSuffix": {
       "value": "st"
-    },
-    "posServiceGroupName": {
-      "value": "pos-service"
     },
     "posApiName": {
       "value": "pos-api"
@@ -26,9 +29,6 @@
     "boxIotHubSku": {
       "value": "F1"
     },
-    "boxServiceGroupName": {
-      "value": "box-service"
-    },
     "boxApiName": {
       "value": "box-api"
     },
@@ -37,9 +37,6 @@
     },
     "boxApiAppServicePlanSku": {
       "value": "B1"
-    },
-    "appInsightsLocation": {
-      "value": "japaneast"
     }
   }
 }
