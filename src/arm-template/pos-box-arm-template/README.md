@@ -16,7 +16,7 @@ LOCATION=japaneast
 
 PREFIX=<prefix string within 2 characters>
 
-TEMPLATE_URL=https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template
+TEMPLATE_URL=https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/pos-box-arm-template
 
 ITEM_MASTER_URI=https://$(az functionapp show --resource-group ${RESOURCE_GROUP} --name ${PREFIX}-item-master-api --query "defaultHostName" --output tsv)/api/v1/company/{company-code}/store/{store-code}/items
 STOCK_COMMAND_URI=https://$(az functionapp show --resource-group ${RESOURCE_GROUP} --name ${PREFIX}-stock-command-api --query "defaultHostName" --output tsv)/api/v1/stocks
