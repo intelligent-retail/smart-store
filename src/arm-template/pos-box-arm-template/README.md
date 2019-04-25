@@ -69,7 +69,7 @@ Azure CLI にて 以下を参考に IoT Hub の IoT デバイスを作成しま�
 ```bash
 # Set variables following above, if you did not set them
 RESOURCE_GROUP=<resource group name>
-IOT_HUB_NAME=<iot hub name>
+IOT_HUB_NAME=$(az iot hub list --resource-group ${RESOURCE_GROUP} --query '[0].name' --output tsv)
 
 # Install the Azure CLI extension for device identity
 az extension add --name azure-cli-iot-ext
@@ -92,11 +92,11 @@ Azure CLI にて以下を参考にIoT Hub と Box管理サービスの紐づけ�
 ```bash
 # Set variables following above, if you did not set them
 RESOURCE_GROUP=<resource group name>
-IOT_HUB_NAME=<iot hub name>
-BOX_FUNCTIONS_NAME=<box service name>
+IOT_HUB_NAME=$(az iot hub list --resource-group ${RESOURCE_GROUP} --query '[0].name' --output tsv)
+BOX_FUNCTIONS_NAME=${PREFIX}-box-api
 
 # Create parameters
-IOT_CONN_STR=$(az iot hub show-connection-string --resource-group ${RESOURCE_GROUP} --hub-name ${IOT_HUB_NAME} --output tsv)
+IOT_CONN_STR=$(az iot hub show-connection-string --resource-group ${RESOURCE_GROUP} --name ${IOT_HUB_NAME} --output tsv)
 EVENT_HUB_ENDPOINT=$(az iot hub show --query properties.eventHubEndpoints.events.endpoint --name ${IOT_HUB_NAME} --output tsv)
 ENTITY_PATH=$(az iot hub show --query properties.eventHubEndpoints.events.path --name ${IOT_HUB_NAME} --output tsv)
 SHARED_ACCESS_KEY=$(az iot hub policy show --resource-group ${RESOURCE_GROUP} --name iothubowner --hub-name ${IOT_HUB_NAME} --query primaryKey --output tsv)
@@ -116,8 +116,8 @@ Box管理サービス・POSサービスのマスタを Azure Cosmos DB に準備
 
 # Set variables following above, if you did not set them
 RESOURCE_GROUP=<resource group name>
-POS_DB_ACCOUNT_NAME=<cosmos db used for pos service name>
-BOX_DB_ACCOUNT_NAME=<cosmos db used for box management service name>
+POS_DB_ACCOUNT_NAME=${PREFIX}-pos-service
+BOX_DB_ACCOUNT_NAME=${PREFIX}-box-service
 
 # Create cosmosdb database and collection
 POS_DB_NAME='smartretailpos'
