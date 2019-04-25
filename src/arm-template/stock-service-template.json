@@ -1,0 +1,416 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.1.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If you would like to specify the location of resources that is different from resource group, specify here. Or leave blank then the deployment use the resource group's location."
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix string should be within 2 characters."
+      }
+    },
+    "suffix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Set like `-dev`. Or, if suffix is not needed, leave blank."
+      }
+    },
+    "delimiter": {
+      "type": "string",
+      "defaultValue": "-"
+    },
+    "storageAccountsSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_RAGRS",
+        "Standard_GRS",
+        "Premium_LRS",
+        "Premium_ZRS"
+      ]
+    },
+    "storageAccountsKind": {
+      "type": "string",
+      "allowedValues": ["Storage", "StorageV2"]
+    },
+    "storageAccountsSuffix": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "stockServiceSqlServerAdminUserName": {
+      "type": "string"
+    },
+    "stockServiceSqlServerAdminPassword": {
+      "type": "securestring"
+    },
+    "stockServiceSqlDatabaseSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S6",
+        "S7",
+        "S9",
+        "S12",
+        "P1",
+        "P2",
+        "P4",
+        "P6",
+        "P11",
+        "P15"
+      ]
+    },
+    "stockServiceSqlDatabaseSkuTier": {
+      "type": "string",
+      "allowedValues": ["Basic", "Standard", "Premium"]
+    },
+    "stockServiceSqlDatabaseMaxDataSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Specify numeric amount of SQL Database Max Data Size without unit."
+      }
+    },
+    "stockServiceSqlDatabaseMaxDataSizeUnit": {
+      "type": "string",
+      "allowedValues": ["GB", "MB"],
+      "metadata": {
+        "description": "Select the unit of SQL Database Max Data Size."
+      }
+    },
+    "stockServiceSqlDatabaseCollation": {
+      "type": "string",
+      "metadata": {
+        "description": "example value: Japanese_CI_AS"
+      }
+    },
+    "stockCommandApiZipUrl": {
+      "type": "string"
+    },
+    "stockQueryApiZipUrl": {
+      "type": "string"
+    },
+    "stockProcessorZipUrl": {
+      "type": "string"
+    },
+    "stockServiceAppServicePlanSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1V2",
+        "P2V2",
+        "P3V2",
+        "P1",
+        "P2",
+        "P3"
+      ]
+    }
+  },
+  "variables": {
+    "bytesConversion": {
+      "GB": 1073741824,
+      "MB": 1048576
+    },
+    "stockServiceGroupName": "stock-service",
+    "stockServiceSqlDatabaseName": "StockBackend",
+    "stockCommandApi": "stock-command-api",
+    "stockQueryApi": "stock-query-api",
+    "stockProcessor": "stock-processor",
+    "stockServiceAppServicePlan": "asp01",
+    "stockServiceAppInsights": "stock-backend",
+    "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
+    "stockServiceCosmosDbName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceGroupName'), parameters('suffix'))]",
+    "stockServiceSqlServerName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceGroupName'), parameters('delimiter'), 'sql', parameters('suffix'))]",
+    "stockServiceSqlDatabaseMaxSizeBytes": "[mul(parameters('stockServiceSqlDatabaseMaxDataSize'), variables('bytesConversion')[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')])]",
+    "stockServiceAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceAppServicePlan'), parameters('suffix'))]",
+    "stockCommandApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockCommandApi'), parameters('suffix'))]",
+    "stockCommandApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockCommandApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "stockCommandApiAppService": "stockServiceAppServicePlanName",
+    "stockQueryApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockQueryApi'), parameters('suffix'))]",
+    "stockQueryApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockQueryApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "stockQueryApiAppService": "stockServiceAppServicePlanName",
+    "stockProcessorFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockProcessor'), parameters('suffix'))]",
+    "stockProcessorStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockProcessor'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "stockProcessorAppService": "stockServiceAppServicePlanName",
+    "stockServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceAppInsights'), parameters('suffix'))]"
+  },
+  "resources": [
+    {
+      "name": "[variables('stockServiceCosmosDbName')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2015-04-08",
+      "location": "[variables('location')]",
+      "tags": {
+        "defaultExperience": "Core (SQL)"
+      },
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [
+          {
+            "locationName": "[variables('location')]"
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('stockServiceSqlServerName')]",
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[variables('location')]",
+      "properties": {
+        "administratorLogin": "[parameters('stockServiceSqlServerAdminUserName')]",
+        "administratorLoginPassword": "[parameters('stockServiceSqlServerAdminPassword')]"
+      }
+    },
+    {
+      "name": "[concat(variables('stockServiceSqlServerName'), '/', variables('stockServiceSqlDatabaseName'))]",
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2017-10-01-preview",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('stockServiceSqlDatabaseSkuName')]",
+        "tier": "[parameters('stockServiceSqlDatabaseSkuTier')]"
+      },
+      "properties": {
+        "collation": "[parameters('stockServiceSqlDatabaseCollation')]",
+        "maxSizeBytes": "[variables('stockServiceSqlDatabaseMaxSizeBytes')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockServiceSqlServerName'), '/AllowAllWindowsAzureIps')]",
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2015-05-01-preview",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
+      ]
+    },
+    {
+      "name": "[variables('stockServiceAppServicePlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('stockServiceAppServicePlanSkuName')]"
+      },
+      "properties": {}
+    },
+    {
+      "comments": "stock-command-api",
+      "name": "[variables('stockCommandApiStorageAccountsName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "sku": {
+        "name": "[parameters('storageAccountsSkuName')]"
+      },
+      "kind": "[parameters('storageAccountsKind')]",
+      "location": "[variables('location')]",
+      "properties": {}
+    },
+    {
+      "comments": "stock-command-api",
+      "name": "[variables('stockCommandApiFunctionName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp",
+      "location": "[variables('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockCommandApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockCommandApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "[parameters('stockCommandApiZipUrl')]"
+            },
+            {
+              "name": "CosmosDBConnection",
+              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
+            }
+          ],
+          "alwaysOn": true,
+          "cors": {
+            "allowedOrigins": ["*"]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('stockCommandApiStorageAccountsName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+      ]
+    },
+    {
+      "comments": "stock-query-api",
+      "name": "[variables('stockQueryApiStorageAccountsName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "sku": {
+        "name": "[parameters('storageAccountsSkuName')]"
+      },
+      "kind": "[parameters('storageAccountsKind')]",
+      "location": "[variables('location')]",
+      "properties": {}
+    },
+    {
+      "comments": "stock-query-api",
+      "name": "[variables('stockQueryApiFunctionName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp",
+      "location": "[variables('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockQueryApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockQueryApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "[parameters('stockQueryApiZipUrl')]"
+            },
+            {
+              "name": "SqlConnection",
+              "value": "[concat('Server=tcp:', reference(variables('stockServiceSqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('stockServiceSqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('stockServiceSqlServerName')).administratorLogin, ';Password=', parameters('stockServiceSqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+            }
+          ],
+          "alwaysOn": true,
+          "cors": {
+            "allowedOrigins": ["*"]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('stockQueryApiStorageAccountsName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
+        "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]"
+      ]
+    },
+    {
+      "comments": "stock-processor",
+      "name": "[variables('stockProcessorStorageAccountsName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "sku": {
+        "name": "[parameters('storageAccountsSkuName')]"
+      },
+      "kind": "[parameters('storageAccountsKind')]",
+      "location": "[variables('location')]",
+      "properties": {}
+    },
+    {
+      "comments": "stock-processor",
+      "name": "[variables('stockProcessorFunctionName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp",
+      "location": "[variables('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockProcessorStorageAccountsName'), ';AccountKey=', listKeys(variables('stockProcessorStorageAccountsName'),'2018-07-01').keys[0].value)]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "[parameters('stockProcessorZipUrl')]"
+            },
+            {
+              "name": "CosmosDBConnection",
+              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
+            },
+            {
+              "name": "SqlConnection",
+              "value": "[concat('Server=tcp:', reference(variables('stockServiceSqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('stockServiceSqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('stockServiceSqlServerName')).administratorLogin, ';Password=', parameters('stockServiceSqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+            }
+          ],
+          "alwaysOn": true,
+          "cors": {
+            "allowedOrigins": ["*"]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('stockProcessorStorageAccountsName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
+        "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+      ]
+    },
+    {
+      "comments": "stock-service",
+      "name": "[variables('stockServiceAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[parameters('location')]",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('stockProcessorFunctionName'))]": "Resource",
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('stockCommandApiFunctionName'))]": "Resource",
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('stockQueryApiFunctionName'))]": "Resource"
+      },
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
+    }
+  ]
+}

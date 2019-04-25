@@ -1,99 +1,57 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "location": {
-            "value": "japaneast"
-        },
-        "suffix": {
-            "value": ""
-        },
-        "stockServiceGroupName": {
-            "value": "stock-service"
-        },
-        "itemServiceGroupName": {
-            "value": "item-service"
-        },
-        "stockServiceSqlServerName": {
-            "value": "sql"
-        },
-        "stockServiceSqlServerAdminUserName": {
-            "value": "smartretaildba"
-        },
-        "stockServiceSqlDatabaseSkuName": {
-            "value": "S0"
-        },
-        "stockServiceSqlDatabaseSkuTier": {
-            "value": "Standard"
-        },
-        "stockServiceSqlDatabaseName": {
-            "value": "StockBackend"
-        },
-        "stockServiceSqlDatabaseMaxDataSize": {
-            "value": 20
-        },
-        "stockServiceSqlDatabaseMaxDataSizeUnit": {
-            "value": "GB"
-        },
-        "stockServiceSqlDatabaseCollation": {
-            "value": "Japanese_CI_AS"
-        },
-        "stockCommandApi": {
-            "value": "stock-command-api"
-        },
-        "stockCommandApiZipUrl": {
-            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/StockService.StockCommand.zip"
-        },
-        "stockQueryApi": {
-            "value": "stock-query-api"
-        },
-        "stockQueryApiZipUrl": {
-            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockQuery.zip"
-        },
-        "stockProcessor": {
-            "value": "stock-processor"
-        },
-        "stockProcessorZipUrl": {
-            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockProcessor.zip"
-        },
-        "itemMasterApi": {
-            "value": "item-master-api"
-        },
-        "itemMasterApiZipUrl": {
-            "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/ItemService.ItemMaster.zip"
-        },
-        "stockServiceAppServicePlan": {
-            "value": "asp01"
-        },
-        "stockServiceAppServicePlanSkuName": {
-            "value": "P1V2"
-        },
-        "itemServiceAppServicePlan": {
-            "value": "asp02"
-        },
-        "itemServiceAppServicePlanSkuName": {
-            "value": "P1V2"
-        },
-        "appInsightsLocation": {
-            "value": "japaneast"
-        },
-        "stockServiceAppInsights": {
-            "value": "stock-backend"
-        },
-        "assetsName": {
-            "value": "assets"
-        },
-        "assetsContainerName": {
-            "value": "item-images"
-        },
-        "storageAccountsSkuName": {
-            "value": "Standard_LRS"
-        },
-        "storageAccountsKind": {
-            "value": "Storage"
-        },
-        "storageAccountsSuffix": {
-            "value": "st"
-        }
-    }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.1.0",
+  "parameters": {
+    "location": {
+      "value": "japaneast"
+    },
+    "suffix": {
+      "value": ""
+    },
+    "storageAccountsSkuName": {
+      "value": "Standard_LRS"
+    },
+    "storageAccountsKind": {
+      "value": "Storage"
+    },
+    "storageAccountsSuffix": {
+      "value": "st"
+    },
+    "itemMasterApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/ItemService.ItemMaster.zip"
+    },
+    "itemServiceAppServicePlanSkuName": {
+      "value": "P1V2"
+    },
+    "stockServiceSqlServerAdminUserName": {
+      "value": "smartretaildba"
+    },
+    "stockServiceSqlDatabaseSkuName": {
+      "value": "S0"
+    },
+    "stockServiceSqlDatabaseSkuTier": {
+      "value": "Standard"
+    },
+    "stockServiceSqlDatabaseMaxDataSize": {
+      "value": 20
+    },
+    "stockServiceSqlDatabaseMaxDataSizeUnit": {
+      "value": "GB"
+    },
+    "stockServiceSqlDatabaseCollation": {
+      "value": "Japanese_CI_AS"
+    },
+    "stockCommandApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/StockService.StockCommand.zip"
+    },
+    "stockQueryApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockQuery.zip"
+    },
+    "stockProcessorZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockProcessor.zip"
+    },
+    "stockServiceAppServicePlanSkuName": {
+      "value": "P1V2"
+    } 
+  }
 }
