@@ -1,0 +1,180 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.1.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If you would like to specify the location of resources that is different from resource group, specify here. Or leave blank then the deployment use the resource group's location."
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix string should be within 2 characters."
+      }
+    },
+    "suffix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Set like `-dev`. Or, if suffix is not needed, leave blank."
+      }
+    },
+    "delimiter": {
+      "type": "string",
+      "defaultValue": "-"
+    },
+    "storageAccountsSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_RAGRS",
+        "Standard_GRS",
+        "Premium_LRS",
+        "Premium_ZRS"
+      ]
+    },
+    "storageAccountsKind": {
+      "type": "string",
+      "allowedValues": ["Storage", "StorageV2"]
+    },
+    "storageAccountsSuffix": {
+      "type": "string"
+    },
+    "posApiName": {
+      "type": "string"
+    },
+    "posApiFunctionName": {
+      "type": "string"
+    },
+    "posApiAppServicePlanName": {
+      "type": "string"
+    },
+    "posApiAppServicePlanSku": {
+      "type": "string"
+    },
+    "itemMasterUri": {
+      "type": "string"
+    },
+    "stockUri": {
+      "type": "string"
+    },
+    "appInsightsName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "posServiceGroupName": "pos-service",
+    "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
+    "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posServiceGroupName'), parameters('suffix'))]",
+    "posApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiAppServicePlanName'), parameters('suffix'))]",
+    "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]"
+  },
+  "resources": [
+    {
+      "name": "[variables('posCosmosDbAccountName')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2015-04-08",
+      "location": "[variables('location')]",
+      "tags": {
+        "defaultExperience": "Core (SQL)"
+      },
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [
+          {
+            "locationName": "[variables('location')]"
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('posApiAppServicePlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('posApiAppServicePlanSku')]"
+      },
+      "properties": {}
+    },
+    {
+      "name": "[variables('posApiStorageAccountsName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "sku": {
+        "name": "[parameters('storageAccountsSkuName')]"
+      },
+      "kind": "[parameters('storageAccountsKind')]",
+      "location": "[variables('location')]",
+      "properties": {}
+    },
+    {
+      "name": "[parameters('posApiFunctionName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp",
+      "location": "[variables('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "1"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('posApiStorageAccountsName'), ';AccountKey=', listKeys(variables('posApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
+            },
+            {
+              "name": "CosmosDbConnectionString",
+              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName')), '2015-04-08').primaryMasterKey)]"
+            },
+            {
+              "name": "ItemMasterUri",
+              "value": "[parameters('itemMasterUri')]"
+            },
+            {
+              "name": "StockUri",
+              "value": "[parameters('stockUri')]"
+            }
+          ],
+          "alwaysOn": true,
+          "cors": {
+            "allowedOrigins": [
+              "*"
+            ]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('posApiStorageAccountsName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "posApiAppServicePlanName": {
+      "type": "string",
+      "value": "[variables('posApiAppServicePlanName')]"
+    },
+    "posApiFunctionUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2018-02-01').defaultHostName]"
+    }
+  }
+}

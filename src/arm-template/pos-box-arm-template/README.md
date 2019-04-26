@@ -15,10 +15,12 @@ RESOURCE_GROUP=<resource group name>
 LOCATION=japaneast
 
 PREFIX=<prefix string within 2 characters>
-ITEM_MASTER_API_KEY=<item service api key>
-ITEM_MASTER_URI=https://<item service name>.azurewebsites.net/api/v1/company/{company-code}/store/{store-code}/items
-STOCK_API_KEY=<stock service api key>
-STOCK_URI=https://<stock service name>.azurewebsites.net/api/v1/stocks
+
+TEMPLATE_URL=https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/pos-box-arm-template
+
+ITEM_MASTER_URI=https://$(az functionapp show --resource-group ${RESOURCE_GROUP} --name ${PREFIX}-item-master-api --query "defaultHostName" --output tsv)/api/v1/company/{company-code}/store/{store-code}/items
+STOCK_COMMAND_URI=https://$(az functionapp show --resource-group ${RESOURCE_GROUP} --name ${PREFIX}-stock-command-api --query "defaultHostName" --output tsv)/api/v1/stocks
+
 NOTIFICATION_API_KEY=<app center push api key>
 NOTIFICATION_URI=https://api.appcenter.ms/v0.1/apps/<app center push name>/SmartRetailApp.Android/push/notifications
 POS_API_KEY=<pos api key>
@@ -31,17 +33,25 @@ az group create \
 # 作成したリソースグループの中に、リソースをデプロイする
 az group deployment create \
     --resource-group ${RESOURCE_GROUP} \
-    --template-file src/arm-template/pos-box-arm-template/template.json \
-    --parameters @src/arm-template/pos-box-arm-template/parameters.json \
+    --template-uri ${TEMPLATE_URL}/template.json \
+    --parameters ${TEMPLATE_URL}/parameters.json \
     --parameters \
         prefix=${PREFIX} \
-        itemMasterApiKey=${ITEM_MASTER_API_KEY} \
         itemMasterUri=${ITEM_MASTER_URI} \
-        stockApiKey=${STOCK_API_KEY} \
-        stockUri=${STOCK_URI} \
+        stockUri=${STOCK_COMMAND_URI} \
         notificationApiKey=${NOTIFICATION_API_KEY} \
         notificationUri=${NOTIFICATION_URI} \
         posApiKey=${POS_API_KEY}
+
+# item-service と stock-service の api key を pos-api に設定する
+ITEM_MASTER_API_KEY=<item service api key>
+STOCK_COMMAND_API_KEY=<stock service command api key>
+az functionapp config appsettings set \
+    --resource-group ${RESOURCE_GROUP} \
+    --name ${PREFIX}-pos-api \
+    --settings \
+        ItemMasterApiKey=${ITEM_MASTER_API_KEY} \
+        StockApiKey=${STOCK_COMMAND_API_KEY}
 ```
 
 ## プロビジョニング
@@ -59,7 +69,7 @@ Azure CLI にて 以下を参考に IoT Hub の IoT デバイスを作成しま�
 ```bash
 # Set variables following above, if you did not set them
 RESOURCE_GROUP=<resource group name>
-IOT_HUB_NAME=<iot hub name>
+IOT_HUB_NAME=$(az iot hub list --resource-group ${RESOURCE_GROUP} --query '[0].name' --output tsv)
 
 # Install the Azure CLI extension for device identity
 az extension add --name azure-cli-iot-ext
@@ -82,11 +92,11 @@ Azure CLI にて以下を参考にIoT Hub と Box管理サービスの紐づけ�
 ```bash
 # Set variables following above, if you did not set them
 RESOURCE_GROUP=<resource group name>
-IOT_HUB_NAME=<iot hub name>
-BOX_FUNCTIONS_NAME=<box service name>
+IOT_HUB_NAME=$(az iot hub list --resource-group ${RESOURCE_GROUP} --query '[0].name' --output tsv)
+BOX_FUNCTIONS_NAME=${PREFIX}-box-api
 
 # Create parameters
-IOT_CONN_STR=$(az iot hub show-connection-string --resource-group ${RESOURCE_GROUP} --hub-name ${IOT_HUB_NAME} --output tsv)
+IOT_CONN_STR=$(az iot hub show-connection-string --resource-group ${RESOURCE_GROUP} --name ${IOT_HUB_NAME} --output tsv)
 EVENT_HUB_ENDPOINT=$(az iot hub show --query properties.eventHubEndpoints.events.endpoint --name ${IOT_HUB_NAME} --output tsv)
 ENTITY_PATH=$(az iot hub show --query properties.eventHubEndpoints.events.path --name ${IOT_HUB_NAME} --output tsv)
 SHARED_ACCESS_KEY=$(az iot hub policy show --resource-group ${RESOURCE_GROUP} --name iothubowner --hub-name ${IOT_HUB_NAME} --query primaryKey --output tsv)
@@ -106,8 +116,8 @@ Box管理サービス・POSサービスのマスタを Azure Cosmos DB に準備
 
 # Set variables following above, if you did not set them
 RESOURCE_GROUP=<resource group name>
-POS_DB_ACCOUNT_NAME=<cosmos db used for pos service name>
-BOX_DB_ACCOUNT_NAME=<cosmos db used for box management service name>
+POS_DB_ACCOUNT_NAME=${PREFIX}-pos-service
+BOX_DB_ACCOUNT_NAME=${PREFIX}-box-service
 
 # Create cosmosdb database and collection
 POS_DB_NAME='smartretailpos'

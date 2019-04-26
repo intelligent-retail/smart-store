@@ -11,7 +11,7 @@ servers:
   description: "Azure Functions server"
   variables:
     functionName:
-      default: pos-command-api
+      default: pos-api
     apiVersion:
       default: v1
 - url: http://localhost:7071/api/{apiVersion}
