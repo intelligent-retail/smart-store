@@ -176,6 +176,30 @@
             {
               "name": "PosCartsUri",
               "value": "[variables('posCartsUri')]"
+            },
+            {
+              "name": "NotificationApiKeyHeader",
+              "value": "X-API-Token"
+            },
+            {
+              "name": "PosApiKeyHeader",
+              "value": "x-functions-key"
+            },
+            {
+              "name": "PosCartItemsPath",
+              "value": "items/"
+            },
+            {
+              "name": "PosCartSubtotalPath",
+              "value": "subtotal/"
+            },
+            {
+              "name": "PosCartPaymentsPath",
+              "value": "payments/"
+            },
+            {
+              "name": "PosCartBillPath",
+              "value": "bill/"
             }
           ],
           "alwaysOn": true,
