@@ -56,15 +56,6 @@
     "boxApiAppServicePlanSku": {
       "type": "string"
     },
-    "notificationApiKey": {
-      "type": "string"
-    },
-    "notificationUri": {
-      "type": "string"
-    },
-    "posApiKey": {
-      "type": "string"
-    },
     "posApiAppServicePlanName": {
       "type": "string"
     },
@@ -181,18 +172,6 @@
             {
               "name": "CosmosDbConnectionString",
               "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName')), '2015-04-08').primaryMasterKey)]"
-            },
-            {
-              "name": "NotificationApiKey",
-              "value": "[parameters('notificationApiKey')]"
-            },
-            {
-              "name": "NotificationUri",
-              "value": "[parameters('notificationUri')]"
-            },
-            {
-              "name": "PosApiKey",
-              "value": "[parameters('posApiKey')]"
             },
             {
               "name": "PosCartsUri",

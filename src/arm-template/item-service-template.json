@@ -187,5 +187,11 @@
         "[resourceId('Microsoft.Storage/storageAccounts', variables('itemServiceAssetsStorageAccountsName'))]"
       ]
     }
-  ]
+  ],
+  "outputs": {
+    "itemMasterUri": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName')), '2018-02-01').defaultHostName]"
+    }
+  }
 }

@@ -59,7 +59,7 @@
     "itemMasterUri": {
       "type": "string"
     },
-    "stockUri": {
+    "stockCommandUri": {
       "type": "string"
     },
     "appInsightsName": {
@@ -148,8 +148,8 @@
               "value": "[parameters('itemMasterUri')]"
             },
             {
-              "name": "StockUri",
-              "value": "[parameters('stockUri')]"
+              "name": "stockCommandUri",
+              "value": "[parameters('stockCommandUri')]"
             }
           ],
           "alwaysOn": true,
