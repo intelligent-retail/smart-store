@@ -200,6 +200,14 @@
             {
               "name": "PosCartBillPath",
               "value": "bill/"
+            },
+            {
+              "name": "IotHubConnectionString",
+              "value": "[concat('HostName=', reference(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').hostName, ';SharedAccessKeyName=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].keyName, ';SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].primaryKey)]"
+            },
+            {
+              "name": "IotHubEventConnectionString",
+              "value": "[concat('Endpoint=', reference(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].keyName, ';SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].primaryKey, ';EntityPath=', reference(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').eventHubEndpoints.events.path)]"
             }
           ],
           "alwaysOn": true,
@@ -213,7 +221,8 @@
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('boxApiStorageAccountsName'))]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))]",
+        "[resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName'))]"
       ]
     }
   ]

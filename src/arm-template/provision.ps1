@@ -1,20 +1,3 @@
-# item-service と stock-service の api key を pos-api に設定する
-az functionapp config appsettings set `
-    --resource-group ${RESOURCE_GROUP} `
-    --name ${PREFIX}-pos-api `
-    --settings `
-        ItemMasterApiKey=${ITEM_MASTER_API_KEY} `
-        StockApiKey=${STOCK_COMMAND_API_KEY}
-
-# # pos-service の api key と通知の設定を box-api に設定する
-# az functionapp config appsettings set `
-#     --resource-group ${RESOURCE_GROUP} `
-#     --name ${BOX_FUNCTIONS_NAME} `
-#     --settings `
-#         NotificationApiKey=${NOTIFICATION_API_KEY} `
-#         NotificationUri=${NOTIFICATION_URI} `
-#         PosApiKey=${POS_API_KEY}
-
 # Get a server name of SQL Server
 $SQL_SERVER_NAME=az sql server list `
     --resource-group ${RESOURCE_GROUP} `
@@ -57,13 +40,11 @@ az sql server firewall-rule delete `
     --server ${SQL_SERVER_NAME} `
     --name temp
 
-# Set IoT Hub
+# Create device identity
 $IOT_HUB_NAME=az iot hub list `
   --resource-group ${RESOURCE_GROUP} `
   --query '[0].name' `
   --output tsv
-
-az extension add --name azure-cli-iot-ext
 
 az iot hub device-identity create `
   --resource-group ${RESOURCE_GROUP} `
@@ -81,38 +62,6 @@ az iot hub device-identity create `
   --resource-group $RESOURCE_GROUP `
   --hub-name $IOT_HUB_NAME `
   --device-id SmartBox2_Device
-
-$IOT_CONN_STR=az iot hub show-connection-string `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${IOT_HUB_NAME} `
-  --output tsv
-$EVENT_HUB_ENDPOINT=az iot hub show `
-  --query properties.eventHubEndpoints.events.endpoint `
-  --name ${IOT_HUB_NAME} `
-  --output tsv
-$ENTITY_PATH=az iot hub show `
-  --query properties.eventHubEndpoints.events.path `
-  --name ${IOT_HUB_NAME} `
-  --output tsv
-$SHARED_ACCESS_KEY=az iot hub policy show `
-  --resource-group ${RESOURCE_GROUP} `
-  --name iothubowner `
-  --hub-name ${IOT_HUB_NAME} `
-  --query primaryKey `
-  --output tsv
-$IOT_EVENT_HUB_CONN_STR="Endpoint=${EVENT_HUB_ENDPOINT};SharedAccessKeyName=iothubowner;SharedAccessKey=${SHARED_ACCESS_KEY};EntityPath=${ENTITY_PATH}"
-
-# Set functions settings
-$BOX_FUNCTIONS_NAME="${PREFIX}-box-api"
-az webapp config appsettings set `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${BOX_FUNCTIONS_NAME} `
-  --settings `
-    NotificationApiKey=${NOTIFICATION_API_KEY} `
-    NotificationUri=${NOTIFICATION_URI} `
-    PosApiKey=${POS_API_KEY} `
-    IotHubConnectionString=${IOT_CONN_STR} `
-    IotHubEventConnectionString=${IOT_EVENT_HUB_CONN_STR}
 
 # Create collections of Cosmos DB for item-service
 $ITEM_SERVICE_COSMOSDB_DATABASE="00100"
@@ -160,11 +109,6 @@ az cosmosdb database create `
   --name ${POS_DB_ACCOUNT_NAME} `
   --db-name ${POS_DB_NAME} `
   --throughput 500
-az cosmosdb database create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${BOX_DB_ACCOUNT_NAME} `
-  --db-name ${BOX_DB_NAME} `
-  --throughput 400
 az cosmosdb collection create `
   --resource-group ${RESOURCE_GROUP} `
   --name ${POS_DB_ACCOUNT_NAME} `
@@ -214,6 +158,11 @@ dt `
 $BOX_DB_ACCOUNT_NAME="${PREFIX}-box-service"
 $BOX_DB_NAME="smartretailboxmanagement"
 
+az cosmosdb database create `
+  --resource-group ${RESOURCE_GROUP} `
+  --name ${BOX_DB_ACCOUNT_NAME} `
+  --db-name ${BOX_DB_NAME} `
+  --throughput 400
 az cosmosdb collection create `
   --resource-group ${RESOURCE_GROUP} `
   --name ${BOX_DB_ACCOUNT_NAME} `
