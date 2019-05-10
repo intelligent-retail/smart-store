@@ -30,17 +30,19 @@ namespace SmartRetailApp.Services
             try
             {
                 var content = new StringContent(jsonText, Encoding.UTF8, "application/json");
-                content.Headers.Add("x-functions-key", Constant.ApiKey);
-                var response = await httpClient.PostAsync(Constant.CartsApiName, content);
+                content.Headers.Add("x-functions-key", Settings.Instance.ApiKey);
+
+                var cartApi = Settings.Instance.MainUrl + Settings.Instance.CartsApiName;
+                var response = await httpClient.PostAsync(cartApi, content);
 
                 if (response.IsSuccessStatusCode)
                 {
                     // 戻り値のJSONをDownloadItemに変換
-                    return JsonConvert.DeserializeObject<CartStartResult>(response.Content.ReadAsStringAsync().Result);
+                    return JsonConvert.DeserializeObject<CartStartResult>(await response.Content.ReadAsStringAsync());
                 }
 
                 // エラー
-                return JsonConvert.DeserializeObject<CartStartResult>(response.Content.ReadAsStringAsync().Result);
+                return JsonConvert.DeserializeObject<CartStartResult>(await response.Content.ReadAsStringAsync());
             }
             catch (Exception ex)
             {
@@ -61,16 +63,17 @@ namespace SmartRetailApp.Services
         {
             try
             {
-                var url = $"{Constant.CartsApiName}/{cartId}/{action}";
+                var cartApi = Settings.Instance.MainUrl + Settings.Instance.CartsApiName;
+                var url = $"{cartApi}/{cartId}/{action}";
                 using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
                 {
-                    requestMessage.Headers.Add("x-functions-key",Constant.ApiKey);
+                    requestMessage.Headers.Add("x-functions-key",Settings.Instance.ApiKey);
                     var response = await httpClient.SendAsync(requestMessage);
 
                     if (response.IsSuccessStatusCode)
                     {
                         // 戻り値のJSONをDownloadItemに変換
-                        return JsonConvert.DeserializeObject<CartStatus>(response.Content.ReadAsStringAsync().Result);
+                        return JsonConvert.DeserializeObject<CartStatus>(await response.Content.ReadAsStringAsync());
                     }
 
                     return new CartStatus
