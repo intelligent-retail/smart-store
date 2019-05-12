@@ -1,9 +1,9 @@
 ﻿using Microsoft.AppCenter;
 using Microsoft.AppCenter.Push;
-using SmartRetailApp.Models;
 using SmartRetailApp.Views;
 using System;
 using System.Threading.Tasks;
+using SmartRetailApp.Models;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 

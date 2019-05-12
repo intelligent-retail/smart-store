@@ -31,7 +31,9 @@ namespace SmartRetailApp.Services
             {
                 var content = new StringContent(jsonText, Encoding.UTF8, "application/json");
                 content.Headers.Add("x-functions-key", Constant.ApiKey);
-                var response = await httpClient.PostAsync(Constant.CartsApiName, content);
+
+                var apiUrl = Constant.MainUrl + Constant.CartsApiName;
+                var response = await httpClient.PostAsync(apiUrl, content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -61,10 +63,12 @@ namespace SmartRetailApp.Services
         {
             try
             {
-                var url = $"{Constant.CartsApiName}/{cartId}/{action}";
+                var apiUrl = Constant.MainUrl + Constant.CartsApiName;
+                var url = $"{apiUrl}/{cartId}/{action}";
+
                 using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
                 {
-                    requestMessage.Headers.Add("x-functions-key",Constant.ApiKey);
+                    requestMessage.Headers.Add("x-functions-key", Constant.ApiKey);
                     var response = await httpClient.SendAsync(requestMessage);
 
                     if (response.IsSuccessStatusCode)
