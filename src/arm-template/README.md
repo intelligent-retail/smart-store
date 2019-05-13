@@ -2,6 +2,8 @@
 
 ## デプロイ用環境について
 
+### インストールするソフトウェア
+
 - Visual Studio
 - Visual Studio Code
 - Azure CLI
@@ -9,6 +11,11 @@
 - `sqlcmd` ユーティリティ
 - Data migration tool ( `dt` コマンド)
 - git
+
+### チェック項目
+
+- Azure ポータルに自身のAzureアカウントでログインできていることを確認する
+- `az account show` を実行し、Azure CLIで自身のAzureアカウントでログインできていることを確認する
 
 ### Visual Studio について
 
@@ -149,6 +156,13 @@ az group deployment create \
 - IoT Hub とBOX管理サービスの紐づけ
 - 各 Cosmos DB のデータベース、コレクション作成
 
+### 実行前の確認
+
+- `az extension show --name azure-cli-iot-ext` を実行し、Azure CLIにIoT拡張機能がインストールされていることを確認する
+- `sqlcmd -?` を実行し、sqlcmdユーティリティがインストールされていることを確認する
+- `dt` を実行し、dtコマンドがインストールされていることを確認する
+  - インストールされていない場合は、 PowerShell のスクリプトは利用できません
+
 ### PowerShell によるプロビジョニング
 
 ```ps1
@@ -191,11 +205,38 @@ cd smart-store
 
 ## 各 Functions に API key を設定する
 
+Azure Functions に API key を設定します。
 
+Azure Functions の API key は、関数全体、または関数個別に設定することができます。ここでは、作業簡略化のため、同じ値のキーを関数全体に設定します。
+
+1. Azureポータルで、デプロイした Auzre Functions のひとつを開き、「Function App の設定」を開きます。
+2. 「Function App の設定」画面で、「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
+3. 「名前」の欄に `app` と入力し、「保存」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
+4. 保存されたら、「アクション」欄の「コピー」をクリックし、生成されたキーをコピーします。
+
+次に、コピーしたキーをほかの Azure Functions に設定します。
+
+1. 他の Azure Functions を開き、「Function App の設定」画面に移動します。
+2. 「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
+3. 「名前」に `app` 、「値」にコピーしたキーをはりつけて、「保存」ボタンをクリックし保存します。
+4. その他の Azure Functions も同様に設定します。
 
 ## Azure Functions の Application Settings に設定を追加する
 
 ※ 変数は前項から引き継いでるものとします。
+
+前項で設定した API key とプッシュ通知の情報を Azure Functions の Application Settings に追加します。
+
+後述の手順のうち、下記の変数には、Azure Functions で設定した API key を指定してください。
+
+- `ITEM_MASTER_API_KEY`
+- `STOCK_COMMAND_API_KEY`
+- `POS_API_KEY`
+
+また、下記の変数には、それぞれプッシュ通知のキーとURLを指定してください。
+
+- `NOTIFICATION_API_KEY`
+- `NOTIFICATION_URI`
 
 ### PowerShell による Azure Functions の Application Settings の更新
 
