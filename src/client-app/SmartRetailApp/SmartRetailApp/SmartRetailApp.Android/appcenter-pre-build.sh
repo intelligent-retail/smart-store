@@ -25,7 +25,7 @@ APP_CONSTANT_FILE=$APPCENTER_SOURCE_DIRECTORY/src/client-app/SmartRetailApp/Smar
 if [ -e "$APP_CONSTANT_FILE" ]
 then
     echo "Updating MainUrl to $MainUrl in Constant.cs"
-    sed -i '' 's#MainUrl = "[-A-Za-z0-9:_./]*"#MainUrl = "'$MainUrl'"#' $APP_CONSTANT_FILE
+    sed -i '' 's#MainUrl = "[{}-A-Za-z0-9:_./]*"#MainUrl = "'$MainUrl'"#' $APP_CONSTANT_FILE
 
     echo "File content:"
     cat $APP_CONSTANT_FILE
