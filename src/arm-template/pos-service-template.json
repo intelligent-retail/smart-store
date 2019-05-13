@@ -59,7 +59,7 @@
     "itemMasterUri": {
       "type": "string"
     },
-    "stockUri": {
+    "stockCommandUri": {
       "type": "string"
     },
     "appInsightsName": {
@@ -71,7 +71,9 @@
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posServiceGroupName'), parameters('suffix'))]",
     "posApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiAppServicePlanName'), parameters('suffix'))]",
-    "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]"
+    "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "itemMasterUri": "[concat(parameters('itemMasterUri'),'/api/v1/company/{company-code}/store/{store-code}/items')]",
+    "stockCommandUri": "[concat(parameters('stockCommandUri'), '/api/v1/stocks')]"
   },
   "resources": [
     {
@@ -145,11 +147,19 @@
             },
             {
               "name": "ItemMasterUri",
-              "value": "[parameters('itemMasterUri')]"
+              "value": "[variables('itemMasterUri')]"
             },
             {
               "name": "StockUri",
-              "value": "[parameters('stockUri')]"
+              "value": "[variables('stockCommandUri')]"
+            },
+            {
+              "name": "ApplicationTimeZone",
+              "value": "Tokyo Standard Time"
+            },
+            {
+              "name": "FunctionsApiKeyHeader",
+              "value": "x-functions-key"
             }
           ],
           "alwaysOn": true,

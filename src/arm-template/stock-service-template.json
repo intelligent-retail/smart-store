@@ -412,5 +412,11 @@
         "Application_Type": "web"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "stockCommandUri": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName')), '2018-02-01').defaultHostName]"
+    }
+  }
 }
