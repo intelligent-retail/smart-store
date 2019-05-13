@@ -2,9 +2,6 @@
 {
     public class Constant
     {
-        // APIのURL
-        public const string MainUrl = "your_MainUrl";
-
         // Cart API の名前
         public const string CartsApiName = "your_CartsApiName";
 
