@@ -16,20 +16,24 @@
 
 ## プロジェクトをビルドするために必要な作業
 プロジェクトをビルドするために以下の作業が必要になります。
-1. `Constant.cs` を作成して `SmartRetailApp` プロジェクトに追加してください。
+1. `Constant.cs` の定数を書き換えて `SmartRetailApp` プロジェクトに追加してください。
 
 ```c#
 public class Constant
 {
-  public const string CartsApiName = "カート内容を更新するAPIのURL";
-  public const string ApiKey = "APIのキー";
-  public const string AppCenterKeyAndroid = "AppCenter(Android)のキー";
-  public const string AppCenterKeyiOS = "AppCenter(iOS)のキー";
+  // Cart API の名前
+  public const string CartsApiName = "your_CartsApiName";
+  // APIのキー
+  public const string ApiKey = "your_ApiKey";
+  // AppCenter Android用のキー
+  public const string AppCenterKeyAndroid = "your_AppCenterKeyAndroid";
+  // AppCenter iOS用のキー
+  public const string AppCenterKeyiOS = "your_AppCenterKeyiOS";
 }
 ```
 
-2. `google-services.json` の追加（ `SmartRetailApp.Android` のみ）
-   - [FireBase](https://console.firebase.google.com/) で作成したアプリから`google-services.json` をダウンロードして、`SmartRetailApp.Android` プロジェクトに追加してください。
+2. `google-services.json` のコピー（ `SmartRetailApp.Android` のみ）
+   - [FireBase](https://console.firebase.google.com/) で作成したアプリから　`google-services.json` をダウンロードして、`SmartRetailApp.Android` プロジェクトの `google-services.json` （最初は空）へコピペしてください。
 
 ## App Center でビルドする場合
 `App Center` では上記の `Constant.cs` の各値と `google-services.json` の内容を `App Center Build` に変数（`Environment variables`）を設定することで継続的にビルド（ `Continous Integration` ）をおこなうことができます。
