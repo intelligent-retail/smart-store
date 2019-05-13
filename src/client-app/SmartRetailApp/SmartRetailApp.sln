@@ -1,13 +1,18 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2050
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartRetailApp.Android", "SmartRetailApp\SmartRetailApp.Android\SmartRetailApp.Android.csproj", "{98611F41-E025-4AF4-B10A-B014E70BD0F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartRetailApp.iOS", "SmartRetailApp\SmartRetailApp.iOS\SmartRetailApp.iOS.csproj", "{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartRetailApp", "SmartRetailApp\SmartRetailApp\SmartRetailApp.csproj", "{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD77DFEB-7017-4BE7-9F8B-E4D027A902CE}"
+	ProjectSection(SolutionItems) = preProject
+		appcenter-pre-build.sh = appcenter-pre-build.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
