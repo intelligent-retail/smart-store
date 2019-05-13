@@ -16,7 +16,7 @@
 - App name: でアプリケーション名の入力、OS: は Android、Platform: は Xamarin を選択します
 - 右下の `Add new app` をクリックします
 
-![](images\appcenter-001.png)
+![](images/appcenter-001.png)
 
 ### 2. AppCenter で Push 環境を設定する
 - 作成したアプリケーションを選択して、Push をクリックします
@@ -28,7 +28,7 @@
 - 右上の「コンソールへ移動」をクリックします
 - 「プロジェクトを追加する」をクリックします
 
-![](images\appcenter-005.png)
+![](images/appcenter-005.png)
 
 ### 4. Firebase で Cloud Messaging を追加する
 
@@ -37,12 +37,12 @@
 - 「Android パッケージ名」は Xamarin の Android プロジェクト → プロパティ → Android マニフェスト → 「パッケージ名」をコピペします。 
 - 「アプリを登録」をクリックすると `google-services.json` をダウンロードできるのでこれを保存しておきます（Xamarin プロジェクトで使用します）
 
-![](images\appcenter-006.png)
+![](images/appcenter-006.png)
 
 ### 5. Firebase と App Center Push を関連付ける
 - Firebase の設定画面の「クラウドメッセージング」の「サーバーキー」をコピーします
 - App Center の `Add Server Key` にペーストします
 
-![](images\appcenter-007.png)
+![](images/appcenter-007.png)
 
 参考: [Get Started with Xamarin](https://docs.microsoft.com/en-us/appcenter/sdk/getting-started/xamarin)
