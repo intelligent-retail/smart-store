@@ -14,18 +14,15 @@ then
     cat $GOOGLE_JSON_FILE
 fi
 
-if [ ! -n "$MainUrl" ]
-then
-    echo "You need define the MainUrl variable in App Center"
-    exit
-fi
-
 APP_CONSTANT_FILE=$APPCENTER_SOURCE_DIRECTORY/src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp/Models/Constant.cs
 
 if [ -e "$APP_CONSTANT_FILE" ]
 then
-    echo "Updating MainUrl to $MainUrl in Constant.cs"
     sed -i '' 's#MainUrl = "[-A-Za-z0-9:_./]*"#MainUrl = "'$MainUrl'"#' $APP_CONSTANT_FILE
+    sed -i '' 's#CartsApiName = "[-A-Za-z0-9:_./]*"#CartsApiName = "'$CartsApiName'"#' $APP_CONSTANT_FILE
+    sed -i '' 's#ApiKey = "[-A-Za-z0-9:_./]*"#ApiKey = "'$ApiKey'"#' $APP_CONSTANT_FILE
+    sed -i '' 's#AppCenterKeyAndroid = "[-A-Za-z0-9:_./]*"#AppCenterKeyAndroid = "'$AppCenterKeyAndroid'"#' $APP_CONSTANT_FILE
+    sed -i '' 's#AppCenterKeyiOS = "[-A-Za-z0-9:_./]*"#AppCenterKeyiOS = "'$AppCenterKeyiOS'"#' $APP_CONSTANT_FILE
 
     echo "File content:"
     cat $APP_CONSTANT_FILE
