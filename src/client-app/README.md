@@ -16,6 +16,10 @@
 
 ## プロジェクトをビルドするために必要な作業
 プロジェクトをビルドするために以下の作業が必要になります。
+
+1. Constant.cs の書き換え
+1. google-services.json のコピー（ Android のみ）
+
 ### Constant.cs の書き換え
 共通プロジェクトの `Models/Constant.cs` の定数を書き換えます。
 ```c#
