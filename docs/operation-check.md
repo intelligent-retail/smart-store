@@ -2,8 +2,7 @@
 
 ## 動作確認に必要な環境
 
-- Swagger UI
-  - https://swagger.io/tools/swagger-ui/
+- [Swagger UI](https://swagger.io/tools/swagger-ui/)
 - Boxシミュレータ（現時点では非公開のため、利用されたい方はお問い合わせください。）
 
 ### あると便利なツール
@@ -14,31 +13,97 @@
 
 ## API の動作確認について
 
-_WIP_
+このプロジェクトに含まれるAPIは、OpenAPI に基づいたフォーマットで定義しており、Swagger UI などのGUI ツールで閲覧することができます。
 
-## 統合商品マスターの動作確認
+API 定義ファイルの利用法については、下記をご参考ください。
 
-_WIP_
+- [API 定義ファイルの利用方法](/docs/api/README.md)
 
+## 商品マスタの動作確認
+
+### 商品マスタ 定義ファイル
+
+Swagger UI で下記定義ファイルを開き、動作確認を行います。
+
+- 商品マスタ取得API 定義
+  - 相対パス: [/docs/api/item-master-api.yaml](/docs/api/item-master-api.yaml)
+  - 外部参照用URL: https://raw.githubusercontent.com/intelligent-retail/smart-store/master/docs/api/item-master-api.yaml
+
+### 商品マスタ取得API の動作確認
+
+#### 商品マスタ取得API の動作確認 手順
+
+1. `functionName` に `<your prefix>-item-master-api` にように設定する
+2. 「商品マスタの取得」と書かれたAPIを開く
+3. パラメータを確認し、「Execute」ボタンをクリックして実行する
+
+#### 商品マスタ取得API の動作確認 期待結果
+
+_Server response_ の下記項目を確認する。
+
+- _Code_ が `200` であること
+- _Response body_ として商品一覧が返却されること
+- _Response body_ の商品の `itemCode` がパラメータで指定したコードであること
 
 ## 在庫管理サービスの動作確認
 
-_WIP_
+### 在庫管理サービス 定義ファイル
+
+- 在庫トランAPI 定義
+  - 相対パス: [/docs/api/stock-command-api.yaml](/docs/api/item-master-api.yaml)
+  - 外部参照用URL: https://raw.githubusercontent.com/intelligent-retail/smart-store/master/docs/api/stock-command-api.yaml
+- 在庫照会API 定義
+  - 相対パス: [/docs/api/stock-query-api.yaml](/docs/api/item-master-api.yaml)
+  - 外部参照用URL: https://raw.githubusercontent.com/intelligent-retail/smart-store/master/docs/api/stock-query-api.yaml
+
+### 在庫トランAPI の動作確認
+
+#### 在庫トランAPI の動作確認 手順
+
+1. `functionName` に `<your prefix>-stock-command-api` にように設定する
+2. 「在庫トランザクションの更新」と書かれたAPIを開く
+3. パラメータを確認し、「Execute」ボタンをクリックして実行する
+
+#### 在庫トランAPI の動作確認 期待結果
+
+_Server response_ の下記項目を確認する。
+
+- _Code_ が `200` であること
+- _Response body_ として `OK` が返却されること
+
+### 在庫照会API の動作確認
+
+#### 在庫照会API の動作確認 手順
+
+1. `functionName` に `<your prefix>-stock-query-api` にように設定する
+2. 「在庫照会API(商品別)」と書かれたAPIを開く
+3. パラメータを確認し、「Execute」ボタンをクリックして実行する
+
+#### 在庫照会API の動作確認 期待結果
+
+_Server response_ の下記項目を確認する。
+
+- _Code_ が `200` であること
+- _Response body_ の `itemCode` がパラメータで指定したコードであること
+- _Response body_ の `quantity` が在庫トランAPIを実行した回数分のマイナス値であること
 
 ## POS サービスの疎通確認
 
-作成した POS サービスが正常に動作するか、疎通確認を行います。  
-全体のシーケンスは以下のドキュメントをご参照ください。  
-[SmartStore シーケンス図](/docs/images/smartStore-sequenceDiagram.png)
+作成した POS サービスが正常に動作するか、疎通確認を行います。
+全体のシーケンスは以下のドキュメントをご参照ください。
 
-疎通確認には Swagger を使用します。Swagger の基本的な使用方法は以下のドキュメントをご参照ください。  
-[API 定義ファイルの利用方法](/docs/api/README.md)
+- [SmartStore シーケンス図](/docs/images/smartStore-sequenceDiagram.png)
 
-以下の POS サービス API 定義ドキュメントをご参照頂き、functionName (※) の設定、Authorize を行ってください。  
-[POS サービス API 定義](/docs/api/pos-service-api.yaml)
+### POS サービス 定義ファイル
 
-※functionName は \<your prefix\>-pos-api となります。  
-　apiVersion については既定値の v1 から変更しません。
+以下の POS サービス API 定義ドキュメントをご参照頂き、functionName (※) の設定、Authorize を行ってください。
+
+- POS サービス API 定義
+  - 相対パス: [/docs/api/pos-service-api.yaml](/docs/api/pos-service-api.yaml)
+  - 外部参照用URL: https://raw.githubusercontent.com/intelligent-retail/smart-store/master/docs/api/pos-service-api.yaml
+
+※ `functionName` は `<your prefix>-pos-api` となります。  
+　`apiVersion` については既定値の `v1` から変更しません。
 
 ### 1.カート作成要求 API
 
