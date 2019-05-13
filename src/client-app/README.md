@@ -31,6 +31,51 @@ public class Constant
 2. `google-services.json` の追加（ `SmartRetailApp.Android` のみ）
    - [FireBase](https://console.firebase.google.com/) で作成したアプリから`google-services.json` をダウンロードして、`SmartRetailApp.Android` プロジェクトに追加してください。
 
+## App Center でビルドする場合
+`App Center` では上記の `Constant.cs` の各値と `google-services.json` の内容を `App Center Build` に変数（`Environment variables`）を設定することで継続的にビルド（ `Continous Integration` ）をおこなうことができます。
+
+ここでは `master` ブランチにプッシュされる都度ビルドを行う設定を説明します。
+
+1. `App Center` で `Build` をクリックします
+2. ビルドをおこなうブランチ（ここでは `master` ブランチ）の設定ボタンをクリックします
+
+![](images/client-app-02.png)
+
+3. `Build app` の設定でビルドをおこなうプロジェクトを選択します。`Build this branch on every push` をチェックするとプッシュされる都度ビルドが実行されます。
+
+![](images/client-app-03.png)
+
+4. `Environment variables` の設定を `on` にして各変数をコピペします。
+
+|  変数名  |  値  |
+| ---- | ---- |
+|  GOOGLE_JSON  |  google-services.json の内容  |
+|  CartsApiName  |  API の URL  |
+|  ApiKey  |  API の Key  |
+|  AppCenterKeyAndroid  |  Android 用 App Center 用のキー  |
+|  AppCenterKeyiOS  |  iOS 用 App Center 用のキー  |
+
+![](images/client-app-01.png)
+
+5. `Sign Builds` で `Android` 用の証明書を設定します
+
+|  変数名  |  説明  |
+| ---- | ---- |
+|  Keystore file  |  署名ファイルをアップロードします(※)  |
+|  Keystore password  |  パスワード  |
+|  Key alias  |  エイリアス  |
+|  Key password  |  Keystore password と同じパスワード  |
+
+※ 署名ファイルは Windows の場合 `C:\Users\{User}\AppData\Local\Xamarin\Mono for Android\Keystore\SmartRetailApp\SmartRetailApp.keystore` に作成されています。
+
+![](images/client-app-04.png)
+
+6. `Save` または `Save and Build` をクリックして保存します
+7. ビルドされた `.apk` ファイルは `Download` ボタンでダウンロードできます。また `Distribute` をクリックするとコラボレーターにビルド後の .apk ファイルを自動的に配信をすることもできます。
+
+![](images/client-app-05.png)
+
+
 ## ライセンス
 
 ### AppCenter-SDK-DotNet
