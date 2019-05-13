@@ -300,6 +300,26 @@ az functionapp config appsettings set \
 
 ## Visual Studio で pos-service と box-service の Functions をデプロイする
 
+ここでは、POS管理サービスとBOX管理サービスの Functions について、Visual Studio を使ってコードをデプロイします。
+
+### POS管理サービスのコードをデプロイする
+
+1. Visual Studio を起動する
+2. `src/pos-service/PosService.sln` を開く
+3. 「Solution Explorer」の `PosService` ソリューションの `PosService` プロジェクトを右クリックする
+4. 「Publish」をクリックする
+5. 「Pick a publish target」ダイアログで、「Azure Function App」タブを開く
+6. 「Select Existing」を選択し、「Run from package file (recommended)」にチェックを付ける
+7. 右下のプルダウンから「Create profile」を選択する
+8. 「Subscription」「View」「Search」を操作して、デプロイ先の Azure Functions を選択し、「OK」ボタンをクリックする
+9. 「Publish」画面で、作成したプロファイルが表示されていることを確認し、「Publish」ボタンをクリックする
+
+### BOX管理サービスのコードをデプロイする
+
+1. `src/box-service/BoxManagermentService.sln` を開く
+2. 「Solution Explorer」の `BoxManagementService` ソリューションの `BoxManagementService` プロジェクトを右クリックする
+3. 前述の手順と同様に Publish する
+
 ## 動作確認
 
 動作確認は下記ドキュメントをご参照ください。
