@@ -16,7 +16,8 @@
 
 ## プロジェクトをビルドするために必要な作業
 プロジェクトをビルドするために以下の作業が必要になります。
-1. `Constant.cs` の定数を書き換えて `SmartRetailApp` プロジェクトに追加してください。
+1. `Constant.cs` の書き換え
+  - 共通プロジェクトの `Models/Constant.cs` の定数を書き換えます。
 
 ```c#
 public class Constant
@@ -32,7 +33,7 @@ public class Constant
 }
 ```
 
-2. `google-services.json` のコピー（ `SmartRetailApp.Android` のみ）
+1. `google-services.json` のコピー（ `SmartRetailApp.Android` のみ）
    - [FireBase](https://console.firebase.google.com/) で作成したアプリから　`google-services.json` をダウンロードして、`SmartRetailApp.Android` プロジェクトの `google-services.json` （最初は空）へコピペしてください。
 
 ## App Center でビルドする場合
