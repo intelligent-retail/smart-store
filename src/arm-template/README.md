@@ -172,6 +172,10 @@ git clone https://github.com/intelligent-retail/smart-store.git
 # リポジトリのディレクトリに移動する
 cd smart-store
 
+# 必要に応じて、pull しておく
+git checkout master
+git pull
+
 # プログラムの実行権限を確認する
 Get-ExecutionPolicy -List
 
@@ -192,6 +196,10 @@ git clone https://github.com/intelligent-retail/smart-store.git
 
 # リポジトリのディレクトリに移動する
 cd smart-store
+
+# 必要に応じて、pull しておく
+git checkout master
+git pull
 
 # プロビジョニングを実行する
 ./src/arm-template/provision.sh
