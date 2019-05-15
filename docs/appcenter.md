@@ -19,6 +19,7 @@
 ![](images/appcenter-001.png)
 
 ### 2. AppCenter で Push 環境を設定する
+
 - 作成したアプリケーションを選択して、Push をクリックします
 - Xamarin 用のコードをコピーします（Xamarin プロジェクトで使用します）
 
@@ -26,20 +27,38 @@
 
 - [Firebase](https://firebase.google.com/?hl=ja) にログインします
 - 右上の「コンソールへ移動」をクリックします
-- 「プロジェクトを追加する」をクリックします
+- 「プロジェクトを追加する」をクリックし、下記を参考にプロジェクトを作成します
+  - 「プロジェクト名」に任意の名前を入力します
+  - 「地域/ロケーション」は任意で指定します（例: 「アナリティクスの地域」を `日本` 、 「Cloud Firestore のロケーション」を `asia-northeast1` )
+  - 「Firebase 向け Google アナリティクスのデータ共有にデフォルトの設定を使用する」と「測定管理者間のデータ保護条項に同意します」については、必要に応じてチェックをしてください。
 
 ![](images/appcenter-005.png)
 
-### 4. Firebase で Cloud Messaging を追加する
+### 4. Android のパッケージ名を取得する
+
+#### Visual Studio で Android のパッケージ名を確認する場合
+
+- Visual Studio で、 `src/arm-template/client-app/SmartRetailApp/SmartRetailApp.sln` を開きます
+- 「Solution Explorer」の Android プロジェクト（Androidスマートフォンのようなアイコン）の `SmartRetailApp.Android` をクリックします
+- 開いた画面の左メニューから「Android Manifest」を開きます
+- 「Package name:」の値をコピーしておきます
+
+#### コードから Android のパッケージ名を確認する場合
+
+- `src\client-app\SmartRetailApp\SmartRetailApp\SmartRetailApp.Android\Properties\AndroidManifest.xml` を開きます
+- `<manifest>` タグの `package` プロパティの値をコピーしておきます
+
+### 5. Firebase で Cloud Messaging を追加する
 
 - Firebase コンソール（の左上）の設定→「プロジェクトの設定」をクリックします
 - 「Android アプリに Firebase を追加」をクリックします
-- 「Android パッケージ名」は Xamarin の Android プロジェクト → プロパティ → Android マニフェスト → 「パッケージ名」をコピペします。 
+- 「Android パッケージ名」に、4. で取得したパッケージ名を貼り付けます
 - 「アプリを登録」をクリックすると `google-services.json` をダウンロードできるのでこれを保存しておきます（Xamarin プロジェクトで使用します）
 
 ![](images/appcenter-006.png)
 
-### 5. Firebase と App Center Push を関連付ける
+### 6. Firebase と App Center Push を関連付ける
+
 - Firebase の設定画面の「クラウドメッセージング」の「サーバーキー」をコピーします
 - App Center の `Add Server Key` にペーストします
 
