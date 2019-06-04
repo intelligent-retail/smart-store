@@ -51,7 +51,7 @@
 ### 5. Firebase で Cloud Messaging を追加する
 
 - Firebase コンソール（の左上）の設定→「プロジェクトの設定」をクリックします
-- 「Android アプリに Firebase を追加」をクリックします
+- 「General」タブの「Your apps」で、Androidのキャラクターのアイコンをクリックします
 - 「Android パッケージ名」に、4. で取得したパッケージ名を貼り付けます
 - 「アプリを登録」をクリックすると `google-services.json` をダウンロードできるのでこれを保存しておきます（Xamarin プロジェクトで使用します）
 
@@ -60,7 +60,9 @@
 ### 6. Firebase と App Center Push を関連付ける
 
 - Firebase の設定画面の「クラウドメッセージング」の「サーバーキー」をコピーします
-- App Center の `Add Server Key` にペーストします
+- App Center の　Push Notificatins を開き、「Next」ボタンをクリックします
+- 「SET UP FIREBASE」では、上記で作業したのでなにもせず「Next」ボタンをクリックします
+- 「ADD KEY」では、 `Add Server Key` の欄にコピーしたサーバーキーをペーストし、「Done」ボタンをクリックします
 
 ![](images/appcenter-007.png)
 
