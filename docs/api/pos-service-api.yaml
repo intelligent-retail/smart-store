@@ -274,7 +274,7 @@ components:
       properties:
         itemCode:
           type: string
-          example: "4901520113903"
+          example: "4901427401646"
         quantity:
           type: integer
           format: int32
@@ -376,7 +376,7 @@ components:
           example: 1
         itemCode:
           type: string
-          example: "49000000000009"
+          example: "4901427401646"
         itemName:
           type: string
           example: テスト商品
