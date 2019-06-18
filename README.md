@@ -16,4 +16,4 @@
 
 ## Getting Started
 
-Azure のリソースのデプロイおよびプロビジョニングについては、 [src/arm-template/README](src/arm-template/README.md), [src/arm-template/pos-box-arm-template/README](src/arm-template/pos-box-arm-template/README.md) をご参照ください。
+Azure のリソースのデプロイおよびプロビジョニングについては、 [src/arm-template/README](src/arm-template/README.md) をご参照ください。
