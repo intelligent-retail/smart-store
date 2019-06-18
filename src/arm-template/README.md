@@ -179,8 +179,8 @@ git pull
 # プログラムの実行権限を確認する
 Get-ExecutionPolicy -List
 
-# 上記で LocalMachine に RemoteSigned が当たってない場合は、下記を実行する
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+# 上記で CurrentUser に RemoteSigned が当たってない場合は、下記を実行する
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 # プロビジョニングを実行する
 .\src\arm-template\provision.ps1
@@ -331,19 +331,19 @@ az functionapp config appsettings set \
 
 1. Visual Studio を起動する
 2. `src/pos-service/PosService.sln` を開く
-3. 「Solution Explorer」の `PosService` ソリューションの `PosService` プロジェクトを右クリックする
-4. 「Publish」をクリックする
-5. 「Pick a publish target」ダイアログで、「Azure Function App」タブを開く
-6. 「Select Existing」を選択し、「Run from package file (recommended)」にチェックを付ける
-7. 右下のプルダウンから「Create profile」を選択する
-8. 「Subscription」「View」「Search」を操作して、デプロイ先の Azure Functions を選択し、「OK」ボタンをクリックする
-9. 「Publish」画面で、作成したプロファイルが表示されていることを確認し、「Publish」ボタンをクリックする
+3. 「Solution Explorer」（または、「ソリューション エクスプローラー」）の `PosService` ソリューションの `PosService` プロジェクトを右クリックする
+1. 「Publish」（または、「発行」）をクリックする
+1. 「Pick a publish target」（または、「発行先を選択」）ダイアログで、「Azure Function App」（または、「Azure関数アプリ」）タブを開く
+1. 「Select Existing」（または、「既存のものを選択」）を選択し、「Run from package file (recommended)」（または、「パッケージファイルから実行する（推奨）」）にチェックを付ける
+1. 右下のプルダウンから「Create profile」（または、「プロファイルの作成」）を選択する
+1. 「Subscription」「View」「Search」（または、「サブスクリプション」「表示」「検索」）を操作して、デプロイ先の Azure Functions として「<PREFIX>-pos-api」を選択し、「OK」ボタンをクリックする
+1. 「Publish」（または、「発行」）画面で、作成したプロファイルが表示されていることを確認し、「Publish」（または、「発行」）ボタンをクリックする
 
 ### BOX管理サービスのコードをデプロイする
 
 1. `src/box-service/BoxManagermentService.sln` を開く
 2. 「Solution Explorer」の `BoxManagementService` ソリューションの `BoxManagementService` プロジェクトを右クリックする
-3. 前述の手順と同様に Publish する
+3. 前述の手順と同様に操作し、「<PREFIX>-box-api」に Publish する
 
 ## 動作確認
 

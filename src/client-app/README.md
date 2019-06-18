@@ -78,20 +78,21 @@ public class Constant
 |  変数名  |  説明  |
 | ---- | ---- |
 |  Keystore file  |  署名ファイルをアップロードします(※)  |
-|  Keystore password  |  パスワード  |
-|  Key alias  |  エイリアス  |
+|  Keystore password  |  署名ファイルを作成する際に指定したパスワード  |
+|  Key alias  |  署名ファイルを作成する際に指定した Alias (SmartRetailApp)  |
 |  Key password  |  Keystore password と同じパスワード  |
 
 ※ 署名ファイルは、下記の手順で作成します。
 - `google-services.json` を `src\client-app\SmartRetailApp\SmartRetailApp\SmartRetailApp.Android` に置きます。（同名のファイルがあるので、上書きするか、元のファイルを退避してから配置してください。）
 - Visual Studio で `src\client-app\SmartRetailApp\SmartRetailApp.sln` を開きます。
-- Build ターゲットを `Release` に変更します。
-- Solution Explorer の `SmartRetailApp.Android` を右クリックし、 `Archive...` を選択します。 
-- Archive が終わりましたら、右下に表示された `Distribute...` ボタンをクリックします。
-- `Ad Hoc` を選択し、 `+` ボタンをクリックします。 
-- Create Android Keystore ダイアログで、下記を入力し、 `Create` ボタンをクリックします。
-  - Alias と Password を指定します。この Alias と Password は App Center の Sign builds の Environment variables にも指定するので、覚えておいてください。
-  - Full Name に任意の文字列を入力します。
+- 画面上部の Solution Configurations （または、「ソリューション構成」）を `Release` に変更します。
+- Solution Explorer （または、「ソリューション エクスプローラー」）の `SmartRetailApp.Android` を右クリックし、 `Archive...` （または、「アーカイブ...」）を選択します。
+- Archive が終わりましたら、右下に表示された `Distribute...` （または、「配布...」） ボタンをクリックします。
+- `Ad Hoc` （または、「アドホック」）を選択し、 `+` ボタンをクリックします。 
+- Create Android Keystore ダイアログで、下記を入力し、 `Create` （または、「作成」）ボタンをクリックします。
+  - Alias （または、「エイリアス」）に `SmartRetailApp` を入力します。
+  - Password （または、「パスワード」）に任意の文字列を指定します。この Alias と Password は App Center の Sign builds の Environment variables にも指定するので、覚えておいてください。
+  - Full Name （または、「完全名」）に任意の文字列を入力します。
 - この時点で、Windows の場合 `C:\Users\{User}\AppData\Local\Xamarin\Mono for Android\Keystore\SmartRetailApp\SmartRetailApp.keystore` に署名ファイルが作成されます。
 
 ![](images/client-app-04.png)
