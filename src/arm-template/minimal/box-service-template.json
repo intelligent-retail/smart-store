@@ -1,0 +1,229 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.1.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If you would like to specify the location of resources that is different from resource group, specify here. Or leave blank then the deployment use the resource group's location."
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix string should be within 2 characters."
+      }
+    },
+    "suffix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Set like `-dev`. Or, if suffix is not needed, leave blank."
+      }
+    },
+    "delimiter": {
+      "type": "string",
+      "defaultValue": "-"
+    },
+    "storageAccountsSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_RAGRS",
+        "Standard_GRS",
+        "Premium_LRS",
+        "Premium_ZRS"
+      ]
+    },
+    "storageAccountsKind": {
+      "type": "string",
+      "allowedValues": ["Storage", "StorageV2"]
+    },
+    "storageAccountsSuffix": {
+      "type": "string"
+    },
+    "boxIotHubSku": {
+      "type": "string"
+    },
+    "boxApiName": {
+      "type": "string"
+    },
+    "boxApiAppServicePlanName": {
+      "type": "string"
+    },
+    "boxApiAppServicePlanSku": {
+      "type": "string"
+    },
+    "posApiAppServicePlanName": {
+      "type": "string"
+    },
+    "posApiFunctionUrl": {
+      "type": "string"
+    },
+    "appInsightsName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "boxServiceGroupName": "box-service",
+    "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
+    "needToCreateAppServiceForBoxService": "[not(equals(parameters('posApiAppServicePlanName'), parameters('boxApiAppServicePlanName')))]",
+    "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
+    "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
+    "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiAppServicePlanName'), parameters('suffix'))]",
+    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
+    "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]"
+  },
+  "resources": [
+    {
+      "name": "[variables('boxIotHubName')]",
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2018-04-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('boxIotHubSku')]",
+        "capacity": 1
+      },
+      "properties": {
+        "routing": {
+          "routes": [
+            {
+              "name": "AI",
+              "source": "DeviceMessages",
+              "condition": "IS_ARRAY($body.items)\r\nAND (($body.message_type = 'stock_start') OR ($body.message_type = 'stock_diff_trading') OR ($body.message_type = 'stock_end'))",
+              "endpointNames": [
+                "events"
+              ],
+              "isEnabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[variables('boxCosmosDbAccountName')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2015-04-08",
+      "location": "[variables('location')]",
+      "tags": {
+        "defaultExperience": "Core (SQL)"
+      },
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [
+          {
+            "locationName": "[variables('location')]"
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[variables('needToCreateAppServiceForBoxService')]",
+      "name": "[variables('boxApiAppServicePlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('boxApiAppServicePlanSku')]"
+      },
+      "properties": {}
+    },
+    {
+      "name": "[variables('boxApiStorageAccountsName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "sku": {
+        "name": "[parameters('storageAccountsSkuName')]"
+      },
+      "kind": "[parameters('storageAccountsKind')]",
+      "location": "[variables('location')]",
+      "properties": {}
+    },
+    {
+      "name": "[variables('boxApiFunctionName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp",
+      "location": "[variables('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "1"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('boxApiStorageAccountsName'), ';AccountKey=', listKeys(variables('boxApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
+            },
+            {
+              "name": "CosmosDbConnectionString",
+              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName')), '2015-04-08').primaryMasterKey)]"
+            },
+            {
+              "name": "PosCartsUri",
+              "value": "[variables('posCartsUri')]"
+            },
+            {
+              "name": "NotificationApiKeyHeader",
+              "value": "X-API-Token"
+            },
+            {
+              "name": "PosApiKeyHeader",
+              "value": "x-functions-key"
+            },
+            {
+              "name": "PosCartItemsPath",
+              "value": "items/"
+            },
+            {
+              "name": "PosCartSubtotalPath",
+              "value": "subtotal/"
+            },
+            {
+              "name": "PosCartPaymentsPath",
+              "value": "payments/"
+            },
+            {
+              "name": "PosCartBillPath",
+              "value": "bill/"
+            },
+            {
+              "name": "IotHubConnectionString",
+              "value": "[concat('HostName=', reference(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').hostName, ';SharedAccessKeyName=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].keyName, ';SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].primaryKey)]"
+            },
+            {
+              "name": "IotHubEventConnectionString",
+              "value": "[concat('Endpoint=', reference(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].keyName, ';SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').value[0].primaryKey, ';EntityPath=', reference(resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName')), '2018-04-01').eventHubEndpoints.events.path)]"
+            }
+          ],
+          "alwaysOn": true,
+          "cors": {
+            "allowedOrigins": [
+              "*"
+            ]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('boxApiStorageAccountsName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))]",
+        "[resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName'))]"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.1.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If you would like to specify the location of resources that is different from resource group, specify here. Or leave blank then the deployment use the resource group's location."
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix string should be within 2 characters."
+      }
+    },
+    "suffix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Set like `-dev`. Or, if suffix is not needed, leave blank."
+      }
+    },
+    "delimiter": {
+      "type": "string",
+      "defaultValue": "-"
+    },
+    "storageAccountsSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_RAGRS",
+        "Standard_GRS",
+        "Premium_LRS",
+        "Premium_ZRS"
+      ]
+    },
+    "storageAccountsKind": {
+      "type": "string",
+      "allowedValues": ["Storage", "StorageV2"]
+    },
+    "storageAccountsSuffix": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "itemMasterApiZipUrl": {
+      "type": "string"
+    },
+    "itemServiceAppServicePlanSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1V2",
+        "P2V2",
+        "P3V2",
+        "P1",
+        "P2",
+        "P3"
+      ]
+    }
+  },
+  "variables": {
+    "itemServiceGroupName": "item-service",
+    "itemMasterApi": "item-master-api",
+    "itemServiceAppServicePlan": "asp02",
+    "itemServiceAssetsName": "assets",
+    "itemServiceAssetsContainerName": "item-images",
+    "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
+    "itemServiceCosmosDbName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemServiceGroupName'), parameters('suffix'))]",
+    "itemServiceAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemServiceAppServicePlan'), parameters('suffix'))]",
+    "itemMasterApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemMasterApi'), parameters('suffix'))]",
+    "itemMasterApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemMasterApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "itemMasterApiAppService": "itemServiceAppServicePlanName",
+    "itemServiceAssetsStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemServiceGroupName'), variables('itemServiceAssetsName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]"
+  },
+  "resources": [
+    {
+      "name": "[variables('itemServiceCosmosDbName')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2015-04-08",
+      "location": "[variables('location')]",
+      "tags": {
+        "defaultExperience": "Core (SQL)"
+      },
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [
+          {
+            "locationName": "[variables('location')]"
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('itemServiceAppServicePlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('itemServiceAppServicePlanSkuName')]"
+      },
+      "properties": {}
+    },
+    {
+      "comments": "item-master-api",
+      "name": "[variables('itemMasterApiStorageAccountsName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "sku": {
+        "name": "[parameters('storageAccountsSkuName')]"
+      },
+      "kind": "[parameters('storageAccountsKind')]",
+      "location": "[variables('location')]",
+      "properties": {}
+    },
+    {
+      "comments": "item-master-api",
+      "name": "[variables('itemMasterApiFunctionName')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2018-02-01",
+      "kind": "functionapp",
+      "location": "[variables('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('itemMasterApiStorageAccountsName'), ';AccountKey=', listKeys(variables('itemMasterApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "[parameters('itemMasterApiZipUrl')]"
+            },
+            {
+              "name": "CosmosDBConnection",
+              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
+            }
+          ],
+          "alwaysOn": true,
+          "cors": {
+            "allowedOrigins": ["*"]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('itemMasterApiStorageAccountsName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))]"
+      ]
+    },
+    {
+      "comments": "item-service",
+      "name": "[variables('itemServiceAssetsStorageAccountsName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2018-07-01",
+      "sku": {
+        "name": "[parameters('storageAccountsSkuName')]"
+      },
+      "kind": "[parameters('storageAccountsKind')]",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "comments": "item-service",
+      "name": "[concat(variables('itemServiceAssetsStorageAccountsName'), '/default/', variables('itemServiceAssetsContainerName'))]",
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2018-07-01",
+      "properties": {
+        "publicAccess": "Container"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('itemServiceAssetsStorageAccountsName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "itemMasterUri": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName')), '2018-02-01').defaultHostName]"
+    }
+  }
+}

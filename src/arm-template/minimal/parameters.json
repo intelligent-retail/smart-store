@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.1.0",
+  "parameters": {
+    "location": {
+      "value": "japaneast"
+    },
+    "suffix": {
+      "value": ""
+    },
+    "storageAccountsSkuName": {
+      "value": "Standard_LRS"
+    },
+    "storageAccountsKind": {
+      "value": "Storage"
+    },
+    "storageAccountsSuffix": {
+      "value": "st"
+    },
+    "itemMasterApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/ItemService.ItemMaster.zip"
+    },
+    "itemServiceAppServicePlanSkuName": {
+      "value": "P1V2"
+    },
+    "stockServiceSqlServerAdminUserName": {
+      "value": "smartretaildba"
+    },
+    "stockServiceSqlDatabaseSkuName": {
+      "value": "S0"
+    },
+    "stockServiceSqlDatabaseSkuTier": {
+      "value": "Standard"
+    },
+    "stockServiceSqlDatabaseMaxDataSize": {
+      "value": 20
+    },
+    "stockServiceSqlDatabaseMaxDataSizeUnit": {
+      "value": "GB"
+    },
+    "stockServiceSqlDatabaseCollation": {
+      "value": "Japanese_CI_AS"
+    },
+    "stockCommandApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/StockService.StockCommand.zip"
+    },
+    "stockQueryApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockQuery.zip"
+    },
+    "stockProcessorZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockProcessor.zip"
+    },
+    "stockServiceAppServicePlanSkuName": {
+      "value": "P1V2"
+    },
+    "posApiName": {
+      "value": "pos-api"
+    },
+    "posApiAppServicePlanName": {
+      "value": "aspPosBox"
+    },
+    "posApiAppServicePlanSku": {
+      "value": "B1"
+    },
+    "boxIotHubSku": {
+      "value": "F1"
+    },
+    "boxApiName": {
+      "value": "box-api"
+    },
+    "boxApiAppServicePlanName": {
+      "value": "aspPosBox"
+    },
+    "boxApiAppServicePlanSku": {
+      "value": "B1"
+    }
+  }
+}
