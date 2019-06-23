@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.1.0",
+  "contentVersion": "1.0.2.0",
   "parameters": {
     "location": {
       "type": "string",
@@ -50,29 +50,21 @@
     "boxApiName": {
       "type": "string"
     },
-    "boxApiAppServicePlanName": {
-      "type": "string"
-    },
-    "boxApiAppServicePlanSku": {
-      "type": "string"
-    },
-    "posApiAppServicePlanName": {
-      "type": "string"
-    },
     "posApiFunctionUrl": {
       "type": "string"
     },
     "appInsightsName": {
+      "type": "string"
+    },
+    "appServicePlanId": {
       "type": "string"
     }
   },
   "variables": {
     "boxServiceGroupName": "box-service",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
-    "needToCreateAppServiceForBoxService": "[not(equals(parameters('posApiAppServicePlanName'), parameters('boxApiAppServicePlanName')))]",
     "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
     "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
-    "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiAppServicePlanName'), parameters('suffix'))]",
     "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
     "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]"
@@ -122,17 +114,6 @@
       }
     },
     {
-      "condition": "[variables('needToCreateAppServiceForBoxService')]",
-      "name": "[variables('boxApiAppServicePlanName')]",
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "[parameters('boxApiAppServicePlanSku')]"
-      },
-      "properties": {}
-    },
-    {
       "name": "[variables('boxApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2018-07-01",
@@ -150,7 +131,7 @@
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]",
+        "serverFarmId": "[parameters('appServicePlanId')]",
         "siteConfig": {
           "appSettings": [
             {
@@ -219,7 +200,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('boxApiStorageAccountsName'))]",
         "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))]",
         "[resourceId('Microsoft.Devices/IotHubs', variables('boxIotHubName'))]"

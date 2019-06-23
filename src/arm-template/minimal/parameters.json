@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-  "contentVersion": "1.0.1.0",
+  "contentVersion": "1.0.2.0",
   "parameters": {
     "location": {
       "value": "japaneast"
@@ -19,9 +19,6 @@
     },
     "itemMasterApiZipUrl": {
       "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/ItemService.ItemMaster.zip"
-    },
-    "itemServiceAppServicePlanSkuName": {
-      "value": "P1V2"
     },
     "stockServiceSqlServerAdminUserName": {
       "value": "smartretaildba"
@@ -50,17 +47,8 @@
     "stockProcessorZipUrl": {
       "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockProcessor.zip"
     },
-    "stockServiceAppServicePlanSkuName": {
-      "value": "P1V2"
-    },
     "posApiName": {
       "value": "pos-api"
-    },
-    "posApiAppServicePlanName": {
-      "value": "aspPosBox"
-    },
-    "posApiAppServicePlanSku": {
-      "value": "B1"
     },
     "boxIotHubSku": {
       "value": "F1"
@@ -68,11 +56,8 @@
     "boxApiName": {
       "value": "box-api"
     },
-    "boxApiAppServicePlanName": {
-      "value": "aspPosBox"
-    },
-    "boxApiAppServicePlanSku": {
-      "value": "B1"
+    "appServicePlanSkuName": {
+      "value": "P1V2"
     }
   }
 }

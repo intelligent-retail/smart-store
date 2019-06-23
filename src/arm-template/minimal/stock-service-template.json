@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.1.0",
+  "contentVersion": "1.0.2.0",
   "parameters": {
     "location": {
       "type": "string",
@@ -104,24 +104,8 @@
     "stockProcessorZipUrl": {
       "type": "string"
     },
-    "stockServiceAppServicePlanSkuName": {
-      "type": "string",
-      "allowedValues": [
-        "F1",
-        "D1",
-        "B1",
-        "B2",
-        "B3",
-        "S1",
-        "S2",
-        "S3",
-        "P1V2",
-        "P2V2",
-        "P3V2",
-        "P1",
-        "P2",
-        "P3"
-      ]
+    "appServicePlanId": {
+      "type": "string"
     }
   },
   "variables": {
@@ -134,22 +118,17 @@
     "stockCommandApi": "stock-command-api",
     "stockQueryApi": "stock-query-api",
     "stockProcessor": "stock-processor",
-    "stockServiceAppServicePlan": "asp01",
     "stockServiceAppInsights": "stock-backend",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "stockServiceCosmosDbName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceGroupName'), parameters('suffix'))]",
     "stockServiceSqlServerName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceGroupName'), parameters('delimiter'), 'sql', parameters('suffix'))]",
     "stockServiceSqlDatabaseMaxSizeBytes": "[mul(parameters('stockServiceSqlDatabaseMaxDataSize'), variables('bytesConversion')[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')])]",
-    "stockServiceAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceAppServicePlan'), parameters('suffix'))]",
     "stockCommandApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockCommandApi'), parameters('suffix'))]",
     "stockCommandApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockCommandApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
-    "stockCommandApiAppService": "stockServiceAppServicePlanName",
     "stockQueryApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockQueryApi'), parameters('suffix'))]",
     "stockQueryApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockQueryApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
-    "stockQueryApiAppService": "stockServiceAppServicePlanName",
     "stockProcessorFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockProcessor'), parameters('suffix'))]",
     "stockProcessorStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockProcessor'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
-    "stockProcessorAppService": "stockServiceAppServicePlanName",
     "stockServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceAppInsights'), parameters('suffix'))]"
   },
   "resources": [
@@ -211,16 +190,6 @@
       ]
     },
     {
-      "name": "[variables('stockServiceAppServicePlanName')]",
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "[parameters('stockServiceAppServicePlanSkuName')]"
-      },
-      "properties": {}
-    },
-    {
       "comments": "stock-command-api",
       "name": "[variables('stockCommandApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
@@ -240,7 +209,7 @@
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]",
+        "serverFarmId": "[parameters('appServicePlanId')]",
         "siteConfig": {
           "appSettings": [
             {
@@ -271,7 +240,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('stockCommandApiStorageAccountsName'))]",
         "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
         "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
@@ -297,7 +265,7 @@
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
+        "serverFarmId": "[parameters('appServicePlanId')]",
         "siteConfig": {
           "appSettings": [
             {
@@ -328,7 +296,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('stockQueryApiStorageAccountsName'))]",
         "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
         "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]"
@@ -354,7 +321,7 @@
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
+        "serverFarmId": "[parameters('appServicePlanId')]",
         "siteConfig": {
           "appSettings": [
             {
@@ -389,7 +356,6 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('stockProcessorStorageAccountsName'))]",
         "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
         "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]",

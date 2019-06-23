@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.1.0",
+  "contentVersion": "1.0.2.0",
   "parameters": {
     "location": {
       "type": "string",
@@ -46,7 +46,7 @@
     "itemMasterApiZipUrl": {
       "type": "string"
     },
-    "itemServiceAppServicePlanSkuName": {
+    "appServicePlanSkuName": {
       "type": "string",
       "allowedValues": [
         "F1",
@@ -124,44 +124,13 @@
     "stockProcessorZipUrl": {
       "type": "string"
     },
-    "stockServiceAppServicePlanSkuName": {
-      "type": "string",
-      "allowedValues": [
-        "F1",
-        "D1",
-        "B1",
-        "B2",
-        "B3",
-        "S1",
-        "S2",
-        "S3",
-        "P1V2",
-        "P2V2",
-        "P3V2",
-        "P1",
-        "P2",
-        "P3"
-      ]
-    },
     "posApiName": {
-      "type": "string"
-    },
-    "posApiAppServicePlanName": {
-      "type": "string"
-    },
-    "posApiAppServicePlanSku": {
       "type": "string"
     },
     "boxApiName": {
       "type": "string"
     },
     "boxIotHubSku": {
-      "type": "string"
-    },
-    "boxApiAppServicePlanName": {
-      "type": "string"
-    },
-    "boxApiAppServicePlanSku": {
       "type": "string"
     }
   },
@@ -196,9 +165,6 @@
     "itemServiceParameters": {
       "itemMasterApiZipUrl": {
         "value": "[parameters('itemMasterApiZipUrl')]"
-      },
-      "itemServiceAppServicePlanSkuName": {
-        "value": "[parameters('itemServiceAppServicePlanSkuName')]"
       }
     },
     "stockServiceParameters": {
@@ -231,9 +197,6 @@
       },
       "stockProcessorZipUrl": {
         "value": "[parameters('stockProcessorZipUrl')]"
-      },
-      "stockServiceAppServicePlanSkuName": {
-        "value": "[parameters('stockServiceAppServicePlanSkuName')]"
       }
     },
     "commonTemplateParameters": {
@@ -242,6 +205,9 @@
       },
       "boxApiFunctionName": {
         "value": "[variables('boxApiFunctionName')]"
+      },
+      "appServicePlanSkuName": {
+        "value": "[parameters('appServicePlanSkuName')]"
       }
     },
     "posServiceParameters": {
@@ -250,12 +216,6 @@
       },
       "posApiFunctionName": {
         "value": "[variables('posApiFunctionName')]"
-      },
-      "posApiAppServicePlanName": {
-        "value": "[parameters('posApiAppServicePlanName')]"
-      },
-      "posApiAppServicePlanSku": {
-        "value": "[parameters('posApiAppServicePlanSku')]"
       }
     },
     "boxServiceParameters": {
@@ -264,16 +224,23 @@
       },
       "boxApiName": {
         "value": "[parameters('boxApiName')]"
-      },
-      "boxApiAppServicePlanName": {
-        "value": "[parameters('boxApiAppServicePlanName')]"
-      },
-      "boxApiAppServicePlanSku": {
-        "value": "[parameters('boxApiAppServicePlanSku')]"
       }
     }
   },
   "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "commonTemplate",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
+          "contentVersion": "1.0.2.0"
+        },
+        "parameters": "[union(variables('commonParameters'), variables('commonTemplateParameters'))]"
+      }
+    },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2018-05-01",
@@ -282,10 +249,13 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[uri(deployment().properties.templateLink.uri, 'item-service-template.json')]",
-          "contentVersion": "1.0.1.0"
+          "contentVersion": "1.0.2.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('itemServiceParameters'))]"
-      }
+        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('itemServiceParameters'), json(concat('{\"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}}')))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
+      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -295,23 +265,13 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[uri(deployment().properties.templateLink.uri, 'stock-service-template.json')]",
-          "contentVersion": "1.0.1.0"
+          "contentVersion": "1.0.2.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('stockServiceParameters'))]"
-      }
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
-      "name": "commonTemplate",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
-          "contentVersion": "1.0.1.0"
-        },
-        "parameters": "[union(variables('commonParameters'), variables('commonTemplateParameters'))]"
-      }
+        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('stockServiceParameters'), json(concat('{\"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}}')))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
+      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -321,9 +281,9 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[uri(deployment().properties.templateLink.uri, 'pos-service-template.json')]",
-          "contentVersion": "1.0.1.0"
+          "contentVersion": "1.0.2.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('posServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"itemMasterUri\": {\"value\": \"', reference('itemServiceTemplate').outputs.itemMasterUri.value, '\"}, \"stockCommandUri\": {\"value\": \"', reference('stockServiceTemplate').outputs.stockCommandUri.value, '\"}}')))]"
+        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('posServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}, \"itemMasterUri\": {\"value\": \"', reference('itemServiceTemplate').outputs.itemMasterUri.value, '\"}, \"stockCommandUri\": {\"value\": \"', reference('stockServiceTemplate').outputs.stockCommandUri.value, '\"}}')))]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]",
@@ -339,9 +299,9 @@
         "mode": "Incremental",
         "templateLink": {
           "uri": "[uri(deployment().properties.templateLink.uri, 'box-service-template.json')]",
-          "contentVersion": "1.0.1.0"
+          "contentVersion": "1.0.2.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('boxServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"posApiAppServicePlanName\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiAppServicePlanName.value, '\"}, \"posApiFunctionUrl\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiFunctionUrl.value, '\"}}')))]"
+        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('boxServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}, \"posApiFunctionUrl\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiFunctionUrl.value, '\"}}')))]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.1.0",
+  "contentVersion": "1.0.2.0",
   "parameters": {
     "location": {
       "type": "string",
@@ -50,12 +50,6 @@
     "posApiFunctionName": {
       "type": "string"
     },
-    "posApiAppServicePlanName": {
-      "type": "string"
-    },
-    "posApiAppServicePlanSku": {
-      "type": "string"
-    },
     "itemMasterUri": {
       "type": "string"
     },
@@ -64,13 +58,15 @@
     },
     "appInsightsName": {
       "type": "string"
+    },
+    "appServicePlanId": {
+      "type": "string"
     }
   },
   "variables": {
     "posServiceGroupName": "pos-service",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posServiceGroupName'), parameters('suffix'))]",
-    "posApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiAppServicePlanName'), parameters('suffix'))]",
     "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterUri": "[concat('https://', parameters('itemMasterUri'),'/api/v1/company/{company-code}/store/{store-code}/items')]",
     "stockCommandUri": "[concat('https://', parameters('stockCommandUri'), '/api/v1/stocks')]"
@@ -95,16 +91,6 @@
       }
     },
     {
-      "name": "[variables('posApiAppServicePlanName')]",
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "[parameters('posApiAppServicePlanSku')]"
-      },
-      "properties": {}
-    },
-    {
       "name": "[variables('posApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2018-07-01",
@@ -122,7 +108,7 @@
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]",
+        "serverFarmId": "[parameters('appServicePlanId')]",
         "siteConfig": {
           "appSettings": [
             {
@@ -171,17 +157,12 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('posApiStorageAccountsName'))]",
         "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))]"
       ]
     }
   ],
   "outputs": {
-    "posApiAppServicePlanName": {
-      "type": "string",
-      "value": "[variables('posApiAppServicePlanName')]"
-    },
     "posApiFunctionUrl": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2018-02-01').defaultHostName]"

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.1.0",
+  "contentVersion": "1.0.2.0",
   "parameters": {
     "location": {
       "type": "string",
@@ -26,20 +26,36 @@
       "type": "string",
       "defaultValue": "-"
     },
-    "appInsightsName": {
-      "type": "string",
-      "defaultValue": ""
-    },
     "posApiFunctionName": {
       "type": "string"
     },
     "boxApiFunctionName": {
       "type": "string"
+    },
+    "appServicePlanSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1V2",
+        "P2V2",
+        "P3V2",
+        "P1",
+        "P2",
+        "P3"
+      ]
     }
   },
   "variables": {
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
-    "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]"
+    "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]",
+    "appServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), 'common-plan', parameters('suffix'))]"
   },
   "resources": [
     {
@@ -55,12 +71,26 @@
       "properties": {
         "Application_Type": "web"
       }
+    },
+    {
+      "name": "[variables('appServicePlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('appServicePlanSkuName')]"
+      },
+      "properties": {}
     }
   ],
   "outputs": {
     "appInsightsName": {
       "type": "string",
       "value": "[variables('appInsightsName')]"
+    },
+    "appServicePlanId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
     }
   }
 }
