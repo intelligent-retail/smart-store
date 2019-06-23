@@ -55,7 +55,7 @@
   "variables": {
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]",
-    "appServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), 'common-plan', parameters('suffix'))]"
+    "appServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), 'shared-plan', parameters('suffix'))]"
   },
   "resources": [
     {
