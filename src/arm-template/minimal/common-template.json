@@ -1,0 +1,96 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.2.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If you would like to specify the location of resources that is different from resource group, specify here. Or leave blank then the deployment use the resource group's location."
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix string should be within 2 characters."
+      }
+    },
+    "suffix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Set like `-dev`. Or, if suffix is not needed, leave blank."
+      }
+    },
+    "delimiter": {
+      "type": "string",
+      "defaultValue": "-"
+    },
+    "posApiFunctionName": {
+      "type": "string"
+    },
+    "boxApiFunctionName": {
+      "type": "string"
+    },
+    "appServicePlanSkuName": {
+      "type": "string",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1V2",
+        "P2V2",
+        "P3V2",
+        "P1",
+        "P2",
+        "P3"
+      ]
+    }
+  },
+  "variables": {
+    "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
+    "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]",
+    "appServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), 'shared-plan', parameters('suffix'))]"
+  },
+  "resources": [
+    {
+      "name": "[variables('appInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[variables('location')]",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('posApiFunctionName'))]": "Resource",
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('boxApiFunctionName'))]": "Resource"
+      },
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
+    },
+    {
+      "name": "[variables('appServicePlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2018-02-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('appServicePlanSkuName')]"
+      },
+      "properties": {}
+    }
+  ],
+  "outputs": {
+    "appInsightsName": {
+      "type": "string",
+      "value": "[variables('appInsightsName')]"
+    },
+    "appServicePlanId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+    }
+  }
+}
