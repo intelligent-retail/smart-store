@@ -1,3 +1,5 @@
+<details>
+  <summary>CHINESE</summary>
 # Smart Store sample application
 
 このリポジトリは、 [Smart Store リファレンスアーキテクチャー](https://news.microsoft.com/ja-jp/2019/01/29/blog-smart-store/) に基づくサンプル実装です。
@@ -17,3 +19,30 @@
 ## Getting Started
 
 Azure のリソースのデプロイおよびプロビジョニングについては、 [src/arm-template/README](src/arm-template/README.md) をご参照ください。
+
+</details>
+
+<details>
+  <summary>ENGLISH</summary>
+
+# Smart Store sample application
+
+This repository is a sample implementation based on [Smart Store Reference Architecture] (https://news.microsoft.com/en-us/2019/01/29/blog-smart-store/).
+
+: warning: _This document supports in Japanese only for now, sorry._
+
+## Key Features
+
+This sample implementation includes the following features:
+
+-Integrated product master: `/ src / item-service`
+-Stock management: `/ src / stock-service`
+-Box Management Service: `/ src / box-service`
+-POS service: `/ src / pos-service`
+-Box client application: `/ src / client-app`
+
+## Getting Started
+
+For more information on deploying and provisioning Azure resources, please see [src / arm-template / README] (src / arm-template / README.md).
+
+</details>
