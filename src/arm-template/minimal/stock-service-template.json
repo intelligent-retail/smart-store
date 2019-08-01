@@ -121,6 +121,10 @@
     "stockServiceAppInsights": "stock-backend",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "stockServiceCosmosDbName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceGroupName'), parameters('suffix'))]",
+    "stockServiceCosmosDbDatabaseName": "StockLease",
+    "stockServiceCosmosDbCollectionName": "leases",
+    "stockServiceCosmosDbCollectionThroughput": 400,
+    "stockServiceCosmosDbCollectionPartitionKey": "/id",
     "stockServiceSqlServerName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceGroupName'), parameters('delimiter'), 'sql', parameters('suffix'))]",
     "stockServiceSqlDatabaseMaxSizeBytes": "[mul(parameters('stockServiceSqlDatabaseMaxDataSize'), variables('bytesConversion')[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')])]",
     "stockCommandApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockCommandApi'), parameters('suffix'))]",
@@ -135,7 +139,7 @@
     {
       "name": "[variables('stockServiceCosmosDbName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2015-04-08",
+      "apiVersion": "2016-03-31",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -148,7 +152,45 @@
             "locationName": "[variables('location')]"
           }
         ]
-      }
+      },
+      "resources": [
+        {
+          "type": "apis/databases",
+          "name": "[concat('sql/', variables('stockServiceCosmosDbDatabaseName'))]",
+          "apiVersion": "2016-03-31",
+          "properties": {
+            "resource": {
+              "id": "[variables('stockServiceCosmosDbDatabaseName')]"
+            }
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+          ],
+          "resources": [
+            {
+              "type": "containers",
+              "name": "[variables('stockServiceCosmosDbCollectionName')]",
+              "apiVersion": "2016-03-31",
+              "properties": {
+                "resource": {
+                  "id": "[variables('stockServiceCosmosDbCollectionName')]",
+                  "partitionKey": {
+                    "paths": [
+                      "[variables('stockServiceCosmosDbCollectionPartitionKey')]"
+                    ]
+                  }
+                },
+                "options": {
+                  "throughput": "[variables('stockServiceCosmosDbCollectionThroughput')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', variables('stockServiceCosmosDbName'), 'sql', variables('stockServiceCosmosDbDatabaseName'))]"
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "[variables('stockServiceSqlServerName')]",
@@ -359,7 +401,7 @@
         "[resourceId('Microsoft.Storage/storageAccounts', variables('stockProcessorStorageAccountsName'))]",
         "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
         "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+        "[resourceId('Microsoft.DocumentDb/databaseAccounts/apis/databases/containers', variables('stockServiceCosmosDbName'), 'sql', variables('stockServiceCosmosDbDatabaseName'), variables('stockServiceCosmosDbCollectionName'))]"
       ]
     },
     {

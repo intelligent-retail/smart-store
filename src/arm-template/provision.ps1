@@ -104,43 +104,6 @@ dt `
 $POS_DB_ACCOUNT_NAME="${PREFIX}-pos-service"
 $POS_DB_NAME="smartretailpos"
 
-az cosmosdb database create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${POS_DB_ACCOUNT_NAME} `
-  --db-name ${POS_DB_NAME} `
-  --throughput 500
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${POS_DB_ACCOUNT_NAME} `
-  --db-name ${POS_DB_NAME} `
-  --collection-name PosMasters `
-  --partition-key-path /mastername
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${POS_DB_ACCOUNT_NAME} `
-  --db-name ${POS_DB_NAME} `
-  --collection-name Carts `
-  --partition-key-path /cartId `
-  --default-ttl 604800
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${POS_DB_ACCOUNT_NAME} `
-  --db-name ${POS_DB_NAME} `
-  --collection-name TransactionLogs `
-  --partition-key-path /key
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${POS_DB_ACCOUNT_NAME} `
-  --db-name ${POS_DB_NAME} `
-  --collection-name Receipts `
-  --partition-key-path /key
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${POS_DB_ACCOUNT_NAME} `
-  --db-name ${POS_DB_NAME} `
-  --collection-name Counters `
-  --partition-key-path /terminalKey
-
 $POS_SERVICE_COSMOSDB_CONNSTR=az cosmosdb list-connection-strings `
   --resource-group ${RESOURCE_GROUP} `
   --name ${POS_DB_ACCOUNT_NAME} `
@@ -157,36 +120,6 @@ dt `
 # Create collections of Cosmos DB for box-service
 $BOX_DB_ACCOUNT_NAME="${PREFIX}-box-service"
 $BOX_DB_NAME="smartretailboxmanagement"
-
-az cosmosdb database create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${BOX_DB_ACCOUNT_NAME} `
-  --db-name ${BOX_DB_NAME} `
-  --throughput 400
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${BOX_DB_ACCOUNT_NAME} `
-  --db-name ${BOX_DB_NAME} `
-  --collection-name BoxManagements `
-  --partition-key-path /boxId
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${BOX_DB_ACCOUNT_NAME} `
-  --db-name ${BOX_DB_NAME} `
-  --collection-name Terminals `
-  --partition-key-path /boxId
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${BOX_DB_ACCOUNT_NAME} `
-  --db-name ${BOX_DB_NAME} `
-  --collection-name Skus `
-  --partition-key-path /companyCode
-az cosmosdb collection create `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${BOX_DB_ACCOUNT_NAME} `
-  --db-name ${BOX_DB_NAME} `
-  --collection-name Stocks `
-  --partition-key-path /boxId
 
 $BOX_SERVICE_COSMOSDB_CONNSTR=az cosmosdb list-connection-strings `
   --resource-group ${RESOURCE_GROUP} `

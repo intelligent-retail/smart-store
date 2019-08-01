@@ -67,6 +67,31 @@
     "posServiceGroupName": "pos-service",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posServiceGroupName'), parameters('suffix'))]",
+    "posCosmosDbDatabaseName": "smartretailpos",
+    "posCosmosDbDatabaseThroughput": 500,
+    "posCosmosDbCollectionCarts": {
+      "name": "Carts",
+      "partitionKeyPath": "/cartId",
+      "defaultTtl": 604800
+    },
+    "posCosmosDbCollections": [
+      {
+        "name": "PosMasters",
+        "partitionKeyPath": "/mastername"
+      },
+      {
+        "name": "TransactionLogs",
+        "partitionKeyPath": "/key"
+      },
+      {
+        "name": "Receipts",
+        "partitionKeyPath": "/key"
+      },
+      {
+        "name": "Counters",
+        "partitionKeyPath": "/terminalKey"
+      }
+    ],
     "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterUri": "[concat('https://', parameters('itemMasterUri'),'/api/v1/company/{company-code}/store/{store-code}/items')]",
     "stockCommandUri": "[concat('https://', parameters('stockCommandUri'), '/api/v1/stocks')]"
@@ -75,7 +100,7 @@
     {
       "name": "[variables('posCosmosDbAccountName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2015-04-08",
+      "apiVersion": "2016-03-31",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -88,6 +113,67 @@
             "locationName": "[variables('location')]"
           }
         ]
+      },
+      "resources": [
+        {
+          "type": "apis/databases",
+          "name": "[concat('sql/', variables('posCosmosDbDatabaseName'))]",
+          "apiVersion": "2016-03-31",
+          "properties": {
+            "resource": {
+              "id": "[variables('posCosmosDbDatabaseName')]"
+            },
+            "options": {
+              "throughput": "[variables('posCosmosDbDatabaseThroughput')]"
+            }
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))]"
+          ],
+          "resources": [
+            {
+              "type": "containers",
+              "name": "[variables('posCosmosDbCollectionCarts')['name']]",
+              "apiVersion": "2016-03-31",
+              "properties": {
+                "resource": {
+                  "id": "[variables('posCosmosDbCollectionCarts')['name']]",
+                  "partitionKey": {
+                    "paths": [
+                      "[variables('posCosmosDbCollectionCarts')['partitionKeyPath']]"
+                    ]
+                  },
+                  "defaultTtl": "[variables('posCosmosDbCollectionCarts')['defaultTtl']]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', variables('posCosmosDbAccountName'), 'sql', variables('posCosmosDbDatabaseName'))]"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/containers",
+      "name": "[concat(variables('posCosmosDbAccountName'), '/sql/', variables('posCosmosDbDatabaseName'), '/', variables('posCosmosDbCollections')[copyIndex('cosmosDbCollectionCopy')]['name'])]",
+      "apiVersion": "2016-03-31",
+      "properties": {
+        "resource": {
+          "id": "[variables('posCosmosDbCollections')[copyIndex('cosmosDbCollectionCopy')]['name']]",
+          "partitionKey": {
+            "paths": [
+              "[variables('posCosmosDbCollections')[copyIndex('cosmosDbCollectionCopy')]['partitionKeyPath']]"
+            ]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', variables('posCosmosDbAccountName'), 'sql', variables('posCosmosDbDatabaseName'))]"
+      ],
+      "copy": {
+        "name": "cosmosDbCollectionCopy",
+        "count": "[length(variables('posCosmosDbCollections'))]"
       }
     },
     {
