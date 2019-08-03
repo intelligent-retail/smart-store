@@ -154,7 +154,7 @@ az group deployment create \
 - SQLデータベースのテーブル作成
 - IoT Hub の IoT デバイスの登録
 - IoT Hub とBOX管理サービスの紐づけ
-- 各 Cosmos DB のデータベース、コレクション作成
+- 各 Cosmos DB へのデータ投入
 
 ### 実行前の確認
 
