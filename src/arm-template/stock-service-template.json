@@ -154,6 +154,7 @@
         "collections": [
           {
             "name": "leases",
+            "throughput": 400,
             "partitionKeyPath": "/id"
           }
         ]
