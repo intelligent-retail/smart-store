@@ -253,9 +253,6 @@
                       "[variables('stockServiceCosmosDbDatabases')['lease']['collections'][0]['partitionKeyPath']]"
                     ]
                   }
-                },
-                "options": {
-                  "throughput": "[variables('stockServiceCosmosDbDatabases')['lease']['collections'][0]['throughput']]"
                 }
               },
               "dependsOn": [
