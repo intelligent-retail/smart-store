@@ -6,18 +6,18 @@ For English Version [ReadMe_English](\README_en.md)
 
 ### インストールするソフトウェア
 
-* Visual Studio
-* Visual Studio Code
-* Azure CLI
-  + IoT 拡張機能のインストール
-* `sqlcmd` ユーティリティ
-* Data migration tool ( `dt` コマンド)
-* git
+- Visual Studio
+- Visual Studio Code
+- Azure CLI
+  - IoT 拡張機能のインストール
+- `sqlcmd` ユーティリティ
+- Data migration tool ( `dt` コマンド)
+- git
 
 ### チェック項目
 
-* Azure ポータルに自身のAzureアカウントでログインできていることを確認する
-* `az account show` を実行し、Azure CLIで自身のAzureアカウントでログインできていることを確認する
+- Azure ポータルに自身の Azure アカウントでログインできていることを確認する
+- `az account show` を実行し、Azure CLI で自身の Azure アカウントでログインできていることを確認する
 
 ### Visual Studio について
 
@@ -25,7 +25,7 @@ For English Version [ReadMe_English](\README_en.md)
 
 インストールする際は、下記をご参考ください。
 
-* [Downloads | IDE, Code, & Team Foundation Server | Visual Studio](https://visualstudio.microsoft.com/downloads/)
+- [Downloads | IDE, Code, & Team Foundation Server | Visual Studio](https://visualstudio.microsoft.com/downloads/)
 
 ### Visual Studio Code について
 
@@ -33,7 +33,7 @@ For English Version [ReadMe_English](\README_en.md)
 
 インストールする際は、下記をご参考ください。
 
-* [Visual Studio Code - Code Editing. Redefined](https://code.visualstudio.com/#alt-downloads)
+- [Visual Studio Code - Code Editing. Redefined](https://code.visualstudio.com/#alt-downloads)
 
 ### Azure CLI について
 
@@ -41,23 +41,23 @@ For English Version [ReadMe_English](\README_en.md)
 
 インストールする際は、下記をご参考ください。
 
-* [Azure CLI のインストール | Microsoft Doc](https://docs.microsoft.com/ja-jp/cli/azure/install-azure-cli)
+- [Azure CLI のインストール | Microsoft Doc](https://docs.microsoft.com/ja-jp/cli/azure/install-azure-cli)
 
 また、 IoT 拡張機能が必要になるので、下記を参考にインストールしてください。
 
-``` ps1
+```ps1
 # IoT エクステンションをインストールする
 az extension add --name azure-cli-iot-ext
 ```
 
 ### `sqlcmd` ユーティリティ について
 
- `sqlcmd` ユーティリティは、プロビジョニング用スクリプト ( _provision.ps1_ または _provision.sh_ ) の中で使用します。
+`sqlcmd` ユーティリティは、プロビジョニング用スクリプト ( _provision.ps1_ または _provision.sh_ ) の中で使用します。
 
 インストールする際は、下記をご参考ください。
 
-* Windows: [sqlcmd ユーティリティ](https://docs.microsoft.com/ja-jp/sql/tools/sqlcmd-utility?view=sql-server-2017)
-* Linux: [sqlcmd および bcp、SQL Server コマンド ライン ツールを Linux にインストールする](https://docs.microsoft.com/ja-jp/sql/linux/sql-server-linux-setup-tools?view=sql-server-2017)
+- Windows: [sqlcmd ユーティリティ](https://docs.microsoft.com/ja-jp/sql/tools/sqlcmd-utility?view=sql-server-2017)
+- Linux: [sqlcmd および bcp、SQL Server コマンド ライン ツールを Linux にインストールする](https://docs.microsoft.com/ja-jp/sql/linux/sql-server-linux-setup-tools?view=sql-server-2017)
 
 ### Data migration tool ( `dt` コマンド) について
 
@@ -65,31 +65,31 @@ Data migration tool ( `dt` コマンド) は、Cosmos DB に対してデータ�
 
 インストールする際は、下記を参考に実行ファイルを展開し、 `dt` に対してパスが通るようにしておきましょう。
 
-* [データ移行ツール ( `dt` コマンド) を使用して Azure Cosmos DB にデータを移行する](https://docs.microsoft.com/ja-jp/azure/cosmos-db/import-data)
+- [データ移行ツール ( `dt` コマンド) を使用して Azure Cosmos DB にデータを移行する](https://docs.microsoft.com/ja-jp/azure/cosmos-db/import-data)
 
 なお、 この Data migration tool は Windows でしか動作しないので、Linux で作業する場合は別の方法で Cosmos DB にデータをアップロードしてください。（後述）下記は参考です。
 
-* [(ポータルを用いた) サンプル データの追加](https://docs.microsoft.com/ja-jp/azure/cosmos-db/create-sql-api-dotnet#add-sample-data)
-* [Azure Cosmos DB Bulk Executor ライブラリの概要](https://docs.microsoft.com/ja-jp/azure/cosmos-db/bulk-executor-overview)
+- [(ポータルを用いた) サンプル データの追加](https://docs.microsoft.com/ja-jp/azure/cosmos-db/create-sql-api-dotnet#add-sample-data)
+- [Azure Cosmos DB Bulk Executor ライブラリの概要](https://docs.microsoft.com/ja-jp/azure/cosmos-db/bulk-executor-overview)
 
 ## デプロイ作業の流れ
 
-* ARMテンプレートでデプロイする
-* スクリプトを用いてプロビジョニングする
-* App Center を準備する
-* 各 Functions に API key を設定する
-* Azure Functions の Application Settings に設定を追加する
-  + 各 API key
-  + App Center の URL とキー
-* Visual Studio で pos-service と box-service の Functions をデプロイする
+- ARM テンプレートでデプロイする
+- スクリプトを用いてプロビジョニングする
+- App Center を準備する
+- 各 Functions に API key を設定する
+- Azure Functions の Application Settings に設定を追加する
+  - 各 API key
+  - App Center の URL とキー
+- Visual Studio で pos-service と box-service の Functions をデプロイする
 
-## ARMテンプレートでデプロイする
+## ARM テンプレートでデプロイする
 
 Azure へリソースをデプロイします。
 
 Azure CLI を利用しますので、下記を参考に環境をご準備ください。
 
-* [Azure CLI](https://docs.microsoft.com/ja-jp/cli/azure)
+- [Azure CLI](https://docs.microsoft.com/ja-jp/cli/azure)
 
 Azure CLI が準備できましたら、下記を参考にリソースをデプロイしてください。
 
@@ -122,7 +122,7 @@ az group deployment create `
 
 ### bash によるデプロイ
 
-``` bash
+```bash
 RESOURCE_GROUP=<resource group name>
 LOCATION=japaneast
 
@@ -154,21 +154,21 @@ az group deployment create \
 
 スクリプトでは下記の処理を行っています。
 
-* SQLデータベースのテーブル作成
-* IoT Hub の IoT デバイスの登録
-* IoT Hub とBOX管理サービスの紐づけ
-* 各 Cosmos DB のデータベース、コレクション作成
+- SQL データベースのテーブル作成
+- IoT Hub の IoT デバイスの登録
+- IoT Hub と BOX 管理サービスの紐づけ
+- 各 Cosmos DB のデータベース、コレクション作成
 
 ### 実行前の確認
 
-* `az extension show --name azure-cli-iot-ext` を実行し、Azure CLIにIoT拡張機能がインストールされていることを確認する
-* `sqlcmd -?` を実行し、sqlcmdユーティリティがインストールされていることを確認する
-* `dt` を実行し、dtコマンドがインストールされていることを確認する
-  + インストールされていない場合は、 PowerShell のスクリプトは利用できません
+- `az extension show --name azure-cli-iot-ext` を実行し、Azure CLI に IoT 拡張機能がインストールされていることを確認する
+- `sqlcmd -?` を実行し、sqlcmd ユーティリティがインストールされていることを確認する
+- `dt` を実行し、dt コマンドがインストールされていることを確認する
+  - インストールされていない場合は、 PowerShell のスクリプトは利用できません
 
 ### PowerShell によるプロビジョニング
 
-``` ps1
+```ps1
 # まだリポジトリをクローンしていない場合は、クローンする
 git clone https://github.com/intelligent-retail/smart-store.git
 
@@ -193,7 +193,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 _準備中_
 
-``` bash
+```bash
 # まだリポジトリをクローンしていない場合は、クローンする
 git clone https://github.com/intelligent-retail/smart-store.git
 
@@ -212,7 +212,7 @@ git pull
 
 プッシュ通知の環境を準備します。下記をご参照ください。
 
-* [App Center でのプッシュ通知の環境構築](/docs/appcenter.md)
+- [App Center でのプッシュ通知の環境構築](/docs/appcenter.md)
 
 ## 各 Functions に API key を設定する
 
@@ -220,7 +220,7 @@ Azure Functions に API key を設定します。
 
 Azure Functions の API key は、関数全体、または関数個別に設定することができます。ここでは、作業簡略化のため、同じ値のキーを関数全体に設定します。
 
-1. Azureポータルで、デプロイした Auzre Functions のひとつを開き、「Function App の設定」を開きます。
+1. Azure ポータルで、デプロイした Auzre Functions のひとつを開き、「Function App の設定」を開きます。
 2. 「Function App の設定」画面で、「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
 3. 「名前」の欄に `app` と入力し、「保存」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
 4. 保存されたら、「アクション」欄の「コピー」をクリックし、生成されたキーをコピーします。
@@ -240,38 +240,38 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 
 後述の手順のうち、下記の変数には、Azure Functions で設定した API key を指定してください。
 
-* `ITEM_MASTER_API_KEY` 
-* `STOCK_COMMAND_API_KEY` 
-* `POS_API_KEY` 
+- `ITEM_MASTER_API_KEY`
+- `STOCK_COMMAND_API_KEY`
+- `POS_API_KEY`
 
-また、下記の変数には、それぞれプッシュ通知のキーとURLを指定してください。
+また、下記の変数には、それぞれプッシュ通知のキーと URL を指定してください。
 
-* `NOTIFICATION_API_KEY` 
-* `NOTIFICATION_URI` 
+- `NOTIFICATION_API_KEY`
+- `NOTIFICATION_URI`
 
- `NOTIFICATION_API_KEY` は、下記の手順で取得した値を貼り付けてください。
+`NOTIFICATION_API_KEY` は、下記の手順で取得した値を貼り付けてください。
 
-* App Center 右上のアイコンをクリックし、「Account settings」を開く
-* 「Settings」の「API Tokens」を開く
-* 右上の「New API token」ボタンをクリックする
-* 下記を参考にトークンを発行する
-  + 「Description」に任意の説明文を入力する
-  + 「Access」で `Full Access` を選択する
-  + 「Add new API token」ボタンをクリックし、発行する
-* 「Here’s your API token.」で表示されたトークンをコピーしておく（一度しか表示されないのでご留意ください）
+- App Center 右上のアイコンをクリックし、「Account settings」を開く
+- 「Settings」の「API Tokens」を開く
+- 右上の「New API token」ボタンをクリックする
+- 下記を参考にトークンを発行する
+  - 「Description」に任意の説明文を入力する
+  - 「Access」で `Full Access` を選択する
+  - 「Add new API token」ボタンをクリックし、発行する
+- 「Here’s your API token.」で表示されたトークンをコピーしておく（一度しか表示されないのでご留意ください）
 
- `NOTIFICATION_URI` は、下記の手順で取得した値を貼り付けてください。
+`NOTIFICATION_URI` は、下記の手順で取得した値を貼り付けてください。
 
-* App Center で作成したアプリケーションを開く
-* URLが下記のような構成になっているので、 `{owner_name}` と `{app_name}` の部分を取得する
-  + `https://appcenter.ms/users/{owner_name}/apps/{app_name}` 
-* `NOTIFICATION_URI` 下記の URL の `{owner_name}` と `{app_name}` を置き換えて、 `NOTIFICATION_URI` に設定する
-  + `https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications` 
+- App Center で作成したアプリケーションを開く
+- URL が下記のような構成になっているので、 `{owner_name}` と `{app_name}` の部分を取得する
+  - `https://appcenter.ms/users/{owner_name}/apps/{app_name}`
+- `NOTIFICATION_URI` 下記の URL の `{owner_name}` と `{app_name}` を置き換えて、 `NOTIFICATION_URI` に設定する
+  - `https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications`
 
 詳細は下記をご参考下さい。
 
-* [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
-* [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
+- [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
+- [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
 
 ### PowerShell による Azure Functions の Application Settings の更新
 
@@ -304,7 +304,7 @@ az functionapp config appsettings set `
 
 ### bash による Azure Functions の Application Settings の更新
 
-``` bash
+```bash
 # item-service と stock-service の api key を pos-api に設定する
 ITEM_MASTER_API_KEY=<item service api key>
 STOCK_COMMAND_API_KEY=<stock service command api key>
@@ -330,21 +330,21 @@ az functionapp config appsettings set \
 
 ## Visual Studio で pos-service と box-service の Functions をデプロイする
 
-ここでは、POS管理サービスとBOX管理サービスの Functions について、Visual Studio を使ってコードをデプロイします。
+ここでは、POS 管理サービスと BOX 管理サービスの Functions について、Visual Studio を使ってコードをデプロイします。
 
-### POS管理サービスのコードをデプロイする
+### POS 管理サービスのコードをデプロイする
 
 1. Visual Studio を起動する
 2. `src/pos-service/PosService.sln` を開く
 3. 「Solution Explorer」（または、「ソリューション エクスプローラー」）の `PosService` ソリューションの `PosService` プロジェクトを右クリックする
-1. 「Publish」（または、「発行」）をクリックする
-1. 「Pick a publish target」（または、「発行先を選択」）ダイアログで、「Azure Function App」（または、「Azure関数アプリ」）タブを開く
-1. 「Select Existing」（または、「既存のものを選択」）を選択し、「Run from package file (recommended)」（または、「パッケージファイルから実行する（推奨）」）にチェックを付ける
-1. 右下のプルダウンから「Create profile」（または、「プロファイルの作成」）を選択する
-1. 「Subscription」「View」「Search」（または、「サブスクリプション」「表示」「検索」）を操作して、デプロイ先の Azure Functions として「<PREFIX>-pos-api」を選択し、「OK」ボタンをクリックする
-1. 「Publish」（または、「発行」）画面で、作成したプロファイルが表示されていることを確認し、「Publish」（または、「発行」）ボタンをクリックする
+4. 「Publish」（または、「発行」）をクリックする
+5. 「Pick a publish target」（または、「発行先を選択」）ダイアログで、「Azure Function App」（または、「Azure 関数アプリ」）タブを開く
+6. 「Select Existing」（または、「既存のものを選択」）を選択し、「Run from package file (recommended)」（または、「パッケージファイルから実行する（推奨）」）にチェックを付ける
+7. 右下のプルダウンから「Create profile」（または、「プロファイルの作成」）を選択する
+8. 「Subscription」「View」「Search」（または、「サブスクリプション」「表示」「検索」）を操作して、デプロイ先の Azure Functions として「<PREFIX>-pos-api」を選択し、「OK」ボタンをクリックする
+9. 「Publish」（または、「発行」）画面で、作成したプロファイルが表示されていることを確認し、「Publish」（または、「発行」）ボタンをクリックする
 
-### BOX管理サービスのコードをデプロイする
+### BOX 管理サービスのコードをデプロイする
 
 1. `src/box-service/BoxManagermentService.sln` を開く
 2. 「Solution Explorer」の `BoxManagementService` ソリューションの `BoxManagementService` プロジェクトを右クリックする
@@ -354,7 +354,7 @@ az functionapp config appsettings set \
 
 動作確認は下記ドキュメントをご参照ください。
 
-* [動作確認](/docs/operation-check.md)
+- [動作確認](/docs/operation-check.md)
 
 ## 備考
 
@@ -366,10 +366,10 @@ az functionapp config appsettings set \
 
 Cosmos DB の操作は様々な方法が提供されていますので、適宜ご利用ください。
 
-* Azure Cosmos DB へのインポート
-  + [(ポータルを用いた) サンプル データの追加](https://docs.microsoft.com/ja-jp/azure/cosmos-db/create-sql-api-dotnet#add-sample-data)
-  + [データ移行ツール ( `dt` コマンド) を使用して Azure Cosmos DB にデータを移行する](https://docs.microsoft.com/ja-jp/azure/cosmos-db/import-data)
-  + [Azure Cosmos DB Bulk Executor ライブラリの概要](https://docs.microsoft.com/ja-jp/azure/cosmos-db/bulk-executor-overview)
+- Azure Cosmos DB へのインポート
+  - [(ポータルを用いた) サンプル データの追加](https://docs.microsoft.com/ja-jp/azure/cosmos-db/create-sql-api-dotnet#add-sample-data)
+  - [データ移行ツール ( `dt` コマンド) を使用して Azure Cosmos DB にデータを移行する](https://docs.microsoft.com/ja-jp/azure/cosmos-db/import-data)
+  - [Azure Cosmos DB Bulk Executor ライブラリの概要](https://docs.microsoft.com/ja-jp/azure/cosmos-db/bulk-executor-overview)
 
 ここでは、以下の作業を Azure CLI およびデータ移行ツール ( `dt` コマンド) を用いて、コマンドラインで実施する方法をご紹介します。
 
@@ -411,10 +411,10 @@ ITEM_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
 
 画像のアップロード操作は様々な方法が提供されていますので、適宜ご利用ください。
 
-* Azure Blob Storage へのアップロード
-  + [Azure portal を使用して BLOB をアップロード、ダウンロード、および一覧表示する](https://docs.microsoft.com/ja-jp/azure/storage/blobs/storage-quickstart-blobs-portal)
-  + [Azure Storage Explorer を使用してオブジェクト ストレージ内に BLOB を作成する](https://docs.microsoft.com/ja-jp/azure/storage/blobs/storage-quickstart-blobs-storage-explorer)
-  + [Azure CLI を使用して BLOB をアップロード、ダウンロード、および一覧表示する](https://docs.microsoft.com/ja-jp/azure/storage/blobs/storage-quickstart-blobs-cli)
+- Azure Blob Storage へのアップロード
+  - [Azure portal を使用して BLOB をアップロード、ダウンロード、および一覧表示する](https://docs.microsoft.com/ja-jp/azure/storage/blobs/storage-quickstart-blobs-portal)
+  - [Azure Storage Explorer を使用してオブジェクト ストレージ内に BLOB を作成する](https://docs.microsoft.com/ja-jp/azure/storage/blobs/storage-quickstart-blobs-storage-explorer)
+  - [Azure CLI を使用して BLOB をアップロード、ダウンロード、および一覧表示する](https://docs.microsoft.com/ja-jp/azure/storage/blobs/storage-quickstart-blobs-cli)
 
 ここでは Azure CLI を用いた方法を紹介します。
 
@@ -453,16 +453,16 @@ sed -i -e "s|https://sample.blob.core.windows.net/|${ASSETS_BLOB_STORAGE_URL}|g"
 
 これで商品マスタのインポート用データに画像データを反映できたのので、 [統合商品マスタの準備](#統合商品マスタの準備) に戻り手順を実施してください。
 
-#### Box管理サービス・POSサービスのマスタの準備
+#### Box 管理サービス・POS サービスのマスタの準備
 
-Box管理サービス・POSサービスのマスタを Azure Cosmos DB に準備し、必要に応じてデータのを登録します。
+Box 管理サービス・POS サービスのマスタを Azure Cosmos DB に準備し、必要に応じてデータのを登録します。
 
 つぎに、データの登録を行います。  
 データ移行は様々な方法が提供されています。ここでは、以下の作業を Azure CLI およびデータ移行ツール ( `dt` コマンド) を用いて、コマンドラインで実施する方法をご紹介します。インポートファイルを用意しておりますが、適宜読み替えてご参考ください。
 
-* [データ移行ツール ( `dt` コマンド) を使用して Azure Cosmos DB にデータを移行する](https://docs.microsoft.com/ja-jp/azure/cosmos-db/import-data)
+- [データ移行ツール ( `dt` コマンド) を使用して Azure Cosmos DB にデータを移行する](https://docs.microsoft.com/ja-jp/azure/cosmos-db/import-data)
 
-``` bash
+```bash
 # Set variables following above, if you did not set them
 POS_DB_ACCOUNT_NAME=${PREFIX}-pos-service
 BOX_DB_ACCOUNT_NAME=${PREFIX}-box-service
@@ -501,4 +501,3 @@ BOX_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
     /t.ConnectionString:"${BOX_SERVICE_COSMOSDB_CONNSTR};Database=${BOX_DB_NAME};" \
     /t.Collection:Terminals
 ```
-
