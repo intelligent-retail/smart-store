@@ -72,6 +72,26 @@
     "needToCreateAppServiceForBoxService": "[not(equals(parameters('posApiAppServicePlanName'), parameters('boxApiAppServicePlanName')))]",
     "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
     "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
+    "boxCosmosDbDatabaseName": "smartretailboxmanagement",
+    "boxCosmosDbDatabaseThroughput": 400,
+    "boxCosmosDbCollections": [
+      {
+        "name": "BoxManagements",
+        "partitionKeyPath": "/boxId"
+      },
+      {
+        "name": "Terminals",
+        "partitionKeyPath": "/boxId"
+      },
+      {
+        "name": "Skus",
+        "partitionKeyPath": "/companyCode"
+      },
+      {
+        "name": "Stocks",
+        "partitionKeyPath": "/boxId"
+      }
+    ],
     "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiAppServicePlanName'), parameters('suffix'))]",
     "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
     "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
@@ -106,7 +126,7 @@
     {
       "name": "[variables('boxCosmosDbAccountName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2015-04-08",
+      "apiVersion": "2016-03-31",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -119,6 +139,46 @@
             "locationName": "[variables('location')]"
           }
         ]
+      },
+      "resources": [
+        {
+          "type": "apis/databases",
+          "name": "[concat('sql/', variables('boxCosmosDbDatabaseName'))]",
+          "apiVersion": "2016-03-31",
+          "properties": {
+            "resource": {
+              "id": "[variables('boxCosmosDbDatabaseName')]"
+            },
+            "options": {
+              "throughput": "[variables('boxCosmosDbDatabaseThroughput')]"
+            }
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/containers",
+      "name": "[concat(variables('boxCosmosDbAccountName'), '/sql/', variables('boxCosmosDbDatabaseName'), '/', variables('boxCosmosDbCollections')[copyIndex('cosmosDbCollectionCopy')]['name'])]",
+      "apiVersion": "2016-03-31",
+      "properties": {
+        "resource": {
+          "id": "[variables('boxCosmosDbCollections')[copyIndex('cosmosDbCollectionCopy')]['name']]",
+          "partitionKey": {
+            "paths": [
+              "[variables('boxCosmosDbCollections')[copyIndex('cosmosDbCollectionCopy')]['partitionKeyPath']]"
+            ]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', variables('boxCosmosDbAccountName'), 'sql', variables('boxCosmosDbDatabaseName'))]"
+      ],
+      "copy": {
+        "name": "cosmosDbCollectionCopy",
+        "count": "[length(variables('boxCosmosDbCollections'))]"
       }
     },
     {

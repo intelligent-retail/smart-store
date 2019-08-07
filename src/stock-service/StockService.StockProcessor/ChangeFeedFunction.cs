@@ -18,7 +18,7 @@ namespace StockService.StockProcessor
     public static class ChangeFeedFunction
     {
         [FunctionName(nameof(ChangeFeedFunction))]
-        public static async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockLease",
+        public static async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockBackend",
                                          LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true, FeedPollDelay = 500)]
                                      JArray input,
                                      IBinder binder,
@@ -29,10 +29,10 @@ namespace StockService.StockProcessor
                 return;
             }
 
-            // StockDocument ‚ÖƒfƒVƒŠƒAƒ‰ƒCƒY
+            // StockDocument ï¿½Öƒfï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Cï¿½Y
             var documents = input.ToObject<StockDocument[]>();
 
-            // İŒÉî•ñ‚ğ SQL DB ‚É‘‚«‚Ş
+            // ï¿½İŒÉï¿½ï¿½ï¿½ SQL DB ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             var entities = documents.SelectMany(x => x.Items.Select(xs => new StockEntity
             {
                 DocumentId = x.Id,
@@ -54,12 +54,12 @@ namespace StockService.StockProcessor
                 await context.SaveChangesAsync();
             }
 
-            // SignalR Service ‚Ö‚ÌÚ‘±•¶š—ñ‚ªƒZƒbƒg‚³‚ê‚Ä‚¢‚éê‡‚Ì‚İ—LŒø‰»
+            // SignalR Service ï¿½Ö‚ÌÚ‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ñ‚ªƒZï¿½bï¿½gï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡ï¿½Ì‚İ—Lï¿½ï¿½ï¿½ï¿½
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SignalRConnection", EnvironmentVariableTarget.Process)))
             {
                 var signalRMessages = binder.Bind<IAsyncCollector<SignalRMessage>>(new SignalRAttribute { ConnectionStringSetting = "SignalRConnection", HubName = "monitor" });
 
-                // •ÏX’Ê’m‚ğ SignalR ‚Å‘—M‚·‚é
+                // ï¿½ÏXï¿½Ê’mï¿½ï¿½ SignalR ï¿½Å‘ï¿½ï¿½Mï¿½ï¿½ï¿½ï¿½
                 foreach (var document in documents)
                 {
                     foreach (var item in document.Items)
@@ -73,7 +73,7 @@ namespace StockService.StockProcessor
                 }
             }
 
-            // Application Insights ‚É’Ê’m
+            // Application Insights ï¿½É’Ê’m
             foreach (var document in documents)
             {
                 _telemetryClient.TrackTrace("End Stock Processor", new Dictionary<string, string> { { "ActivityId", document.ActivityId } });
