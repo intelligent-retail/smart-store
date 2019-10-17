@@ -29,10 +29,10 @@ namespace StockService.StockProcessor
                 return;
             }
 
-            // StockDocument �փf�V���A���C�Y
+            // StockDocument へデシリアライズ
             var documents = input.ToObject<StockDocument[]>();
 
-            // �݌ɏ��� SQL DB �ɏ�������
+            // 在庫情報を SQL DB に書き込む
             var entities = documents.SelectMany(x => x.Items.Select(xs => new StockEntity
             {
                 DocumentId = x.Id,
@@ -54,12 +54,12 @@ namespace StockService.StockProcessor
                 await context.SaveChangesAsync();
             }
 
-            // SignalR Service �ւ̐ڑ������񂪃Z�b�g����Ă���ꍇ�̂ݗL����
+            // SignalR Service への接続文字列がセットされている場合のみ有効化
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SignalRConnection", EnvironmentVariableTarget.Process)))
             {
                 var signalRMessages = binder.Bind<IAsyncCollector<SignalRMessage>>(new SignalRAttribute { ConnectionStringSetting = "SignalRConnection", HubName = "monitor" });
 
-                // �ύX�ʒm�� SignalR �ő��M����
+                // 変更通知を SignalR で送信する
                 foreach (var document in documents)
                 {
                     foreach (var item in document.Items)
@@ -73,7 +73,7 @@ namespace StockService.StockProcessor
                 }
             }
 
-            // Application Insights �ɒʒm
+            // Application Insights に通知
             foreach (var document in documents)
             {
                 _telemetryClient.TrackTrace("End Stock Processor", new Dictionary<string, string> { { "ActivityId", document.ActivityId } });
