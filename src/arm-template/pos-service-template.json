@@ -188,7 +188,9 @@
       "sku": {
         "name": "[parameters('posApiAppServicePlanSku')]"
       },
-      "properties": {}
+      "properties": {
+        "numberOfWorkers": 1
+      }
     },
     {
       "name": "[variables('posApiStorageAccountsName')]",

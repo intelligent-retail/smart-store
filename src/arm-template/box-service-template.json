@@ -190,7 +190,9 @@
       "sku": {
         "name": "[parameters('boxApiAppServicePlanSku')]"
       },
-      "properties": {}
+      "properties": {
+        "numberOfWorkers": 1
+      }
     },
     {
       "name": "[variables('boxApiStorageAccountsName')]",

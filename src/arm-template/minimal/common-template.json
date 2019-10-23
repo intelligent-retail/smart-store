@@ -80,7 +80,9 @@
       "sku": {
         "name": "[parameters('appServicePlanSkuName')]"
       },
-      "properties": {}
+      "properties": {
+        "numberOfWorkers": 1
+      }
     }
   ],
   "outputs": {
