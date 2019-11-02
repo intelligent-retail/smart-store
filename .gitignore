@@ -332,3 +332,5 @@ ASALocalRun/
 src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp/Models/Constant\.cs
 src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp\.Android/google-services\.json
 
+
+.DS_Store
