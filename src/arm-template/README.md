@@ -1,5 +1,7 @@
 # Deploy resources with ARM template and Azure CLI
 
+For English Version [ReadMe_English](\README_en.md)
+
 ## デプロイ用環境について
 
 ### インストールするソフトウェア
@@ -14,8 +16,8 @@
 
 ### チェック項目
 
-- Azure ポータルに自身のAzureアカウントでログインできていることを確認する
-- `az account show` を実行し、Azure CLIで自身のAzureアカウントでログインできていることを確認する
+- Azure ポータルに自身の Azure アカウントでログインできていることを確認する
+- `az account show` を実行し、Azure CLI で自身の Azure アカウントでログインできていることを確認する
 
 ### Visual Studio について
 
@@ -61,7 +63,7 @@ az extension add --name azure-cli-iot-ext
 
 Data migration tool ( `dt` コマンド) は、Cosmos DB に対してデータをアップロードする際に使用します。プロビジョニング用スクリプト ( _provision.ps1_ ) の中で使用しています。
 
-インストールする際は、下記を参考に実行ファイルを展開し、`dt` に対してパスが通るようにしておきましょう。
+インストールする際は、下記を参考に実行ファイルを展開し、 `dt` に対してパスが通るようにしておきましょう。
 
 - [データ移行ツール ( `dt` コマンド) を使用して Azure Cosmos DB にデータを移行する](https://docs.microsoft.com/ja-jp/azure/cosmos-db/import-data)
 
@@ -72,7 +74,7 @@ Data migration tool ( `dt` コマンド) は、Cosmos DB に対してデータ�
 
 ## デプロイ作業の流れ
 
-- ARMテンプレートでデプロイする
+- ARM テンプレートでデプロイする
 - スクリプトを用いてプロビジョニングする
 - App Center を準備する
 - 各 Functions に API key を設定する
@@ -81,7 +83,7 @@ Data migration tool ( `dt` コマンド) は、Cosmos DB に対してデータ�
   - App Center の URL とキー
 - Visual Studio で pos-service と box-service の Functions をデプロイする
 
-## ARMテンプレートでデプロイする
+## ARM テンプレートでデプロイする
 
 Azure へリソースをデプロイします。
 
@@ -94,8 +96,7 @@ Azure CLI が準備できましたら、下記を参考にリソースをデプ�
 ### PowerShell によるデプロイ
 
 ```ps1
-$RESOURCE_GROUP="<resource group name>"
-$LOCATION="japaneast"
+$RESOURCE_GROUP="<resource group name>" $LOCATION="japaneast"
 
 $PREFIX="<prefix string within 2 characters>"
 $STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD="<sql server admin password>"
@@ -113,8 +114,10 @@ az group deployment create `
   --template-uri ${TEMPLATE_URL}/template.json `
   --parameters ${TEMPLATE_URL}/parameters.json `
   --parameters `
+
     prefix=${PREFIX} `
     stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}
+
 ```
 
 ### bash によるデプロイ
@@ -151,16 +154,16 @@ az group deployment create \
 
 スクリプトでは下記の処理を行っています。
 
-- SQLデータベースのテーブル作成
+- SQL データベースのテーブル作成
 - IoT Hub の IoT デバイスの登録
 - IoT Hub とBOX管理サービスの紐づけ
 - 各 Cosmos DB へのデータ投入
 
 ### 実行前の確認
 
-- `az extension show --name azure-cli-iot-ext` を実行し、Azure CLIにIoT拡張機能がインストールされていることを確認する
-- `sqlcmd -?` を実行し、sqlcmdユーティリティがインストールされていることを確認する
-- `dt` を実行し、dtコマンドがインストールされていることを確認する
+- `az extension show --name azure-cli-iot-ext` を実行し、Azure CLI に IoT 拡張機能がインストールされていることを確認する
+- `sqlcmd -?` を実行し、sqlcmd ユーティリティがインストールされていることを確認する
+- `dt` を実行し、dt コマンドがインストールされていることを確認する
   - インストールされていない場合は、 PowerShell のスクリプトは利用できません
 
 ### PowerShell によるプロビジョニング
@@ -217,7 +220,7 @@ Azure Functions に API key を設定します。
 
 Azure Functions の API key は、関数全体、または関数個別に設定することができます。ここでは、作業簡略化のため、同じ値のキーを関数全体に設定します。
 
-1. Azureポータルで、デプロイした Auzre Functions のひとつを開き、「Function App の設定」を開きます。
+1. Azure ポータルで、デプロイした Auzre Functions のひとつを開き、「Function App の設定」を開きます。
 2. 「Function App の設定」画面で、「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
 3. 「名前」の欄に `app` と入力し、「保存」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
 4. 保存されたら、「アクション」欄の「コピー」をクリックし、生成されたキーをコピーします。
@@ -241,7 +244,7 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 - `STOCK_COMMAND_API_KEY`
 - `POS_API_KEY`
 
-また、下記の変数には、それぞれプッシュ通知のキーとURLを指定してください。
+また、下記の変数には、それぞれプッシュ通知のキーと URL を指定してください。
 
 - `NOTIFICATION_API_KEY`
 - `NOTIFICATION_URI`
@@ -260,16 +263,15 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 `NOTIFICATION_URI` は、下記の手順で取得した値を貼り付けてください。
 
 - App Center で作成したアプリケーションを開く
-- URLが下記のような構成になっているので、 `{owner_name}` と `{app_name}` の部分を取得する
+- URL が下記のような構成になっているので、 `{owner_name}` と `{app_name}` の部分を取得する
   - `https://appcenter.ms/users/{owner_name}/apps/{app_name}`
-- `NOTIFICATION_URI` 下記の URL の `{owner_name}` と `{app_name}` を置き換えて、`NOTIFICATION_URI` に設定する
+- `NOTIFICATION_URI` 下記の URL の `{owner_name}` と `{app_name}` を置き換えて、 `NOTIFICATION_URI` に設定する
   - `https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications`
 
 詳細は下記をご参考下さい。
 
 - [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
 - [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
-
 
 ### PowerShell による Azure Functions の Application Settings の更新
 
@@ -281,6 +283,7 @@ az functionapp config appsettings set `
   --resource-group ${RESOURCE_GROUP} `
   --name ${PREFIX}-pos-api `
   --settings `
+
     ItemMasterApiKey=${ITEM_MASTER_API_KEY} `
     StockApiKey=${STOCK_COMMAND_API_KEY}
 
@@ -292,9 +295,11 @@ az functionapp config appsettings set `
   --resource-group ${RESOURCE_GROUP} `
   --name ${PREFIX}-box-api `
   --settings `
+
     NotificationApiKey=${NOTIFICATION_API_KEY} `
     NotificationUri=${NOTIFICATION_URI} `
     PosApiKey=${POS_API_KEY}
+
 ```
 
 ### bash による Azure Functions の Application Settings の更新
@@ -325,21 +330,21 @@ az functionapp config appsettings set \
 
 ## Visual Studio で pos-service と box-service の Functions をデプロイする
 
-ここでは、POS管理サービスとBOX管理サービスの Functions について、Visual Studio を使ってコードをデプロイします。
+ここでは、POS 管理サービスと BOX 管理サービスの Functions について、Visual Studio を使ってコードをデプロイします。
 
-### POS管理サービスのコードをデプロイする
+### POS 管理サービスのコードをデプロイする
 
 1. Visual Studio を起動する
 2. `src/pos-service/PosService.sln` を開く
 3. 「Solution Explorer」（または、「ソリューション エクスプローラー」）の `PosService` ソリューションの `PosService` プロジェクトを右クリックする
-1. 「Publish」（または、「発行」）をクリックする
-1. 「Pick a publish target」（または、「発行先を選択」）ダイアログで、「Azure Function App」（または、「Azure関数アプリ」）タブを開く
-1. 「Select Existing」（または、「既存のものを選択」）を選択し、「Run from package file (recommended)」（または、「パッケージファイルから実行する（推奨）」）にチェックを付ける
-1. 右下のプルダウンから「Create profile」（または、「プロファイルの作成」）を選択する
-1. 「Subscription」「View」「Search」（または、「サブスクリプション」「表示」「検索」）を操作して、デプロイ先の Azure Functions として「<PREFIX>-pos-api」を選択し、「OK」ボタンをクリックする
-1. 「Publish」（または、「発行」）画面で、作成したプロファイルが表示されていることを確認し、「Publish」（または、「発行」）ボタンをクリックする
+4. 「Publish」（または、「発行」）をクリックする
+5. 「Pick a publish target」（または、「発行先を選択」）ダイアログで、「Azure Function App」（または、「Azure 関数アプリ」）タブを開く
+6. 「Select Existing」（または、「既存のものを選択」）を選択し、「Run from package file (recommended)」（または、「パッケージファイルから実行する（推奨）」）にチェックを付ける
+7. 右下のプルダウンから「Create profile」（または、「プロファイルの作成」）を選択する
+8. 「Subscription」「View」「Search」（または、「サブスクリプション」「表示」「検索」）を操作して、デプロイ先の Azure Functions として「<PREFIX>-pos-api」を選択し、「OK」ボタンをクリックする
+9. 「Publish」（または、「発行」）画面で、作成したプロファイルが表示されていることを確認し、「Publish」（または、「発行」）ボタンをクリックする
 
-### BOX管理サービスのコードをデプロイする
+### BOX 管理サービスのコードをデプロイする
 
 1. `src/box-service/BoxManagermentService.sln` を開く
 2. 「Solution Explorer」の `BoxManagementService` ソリューションの `BoxManagementService` プロジェクトを右クリックする
@@ -377,7 +382,7 @@ ITEM_SERVICE_COSMOSDB_COLLECTION_PARTITIONKEY="/storeCode"
 
 ITEM_SERVICE_COSMOSDB=az cosmosdb list \
     --resource-group ${RESOURCE_GROUP} \
-    --query "[?contains(@.name, 'item')==``true``].name" \
+    --query "[?contains(@.name, 'item')== ` ` true ` ` ].name" \
     --output tsv
 ITEM_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
     --resource-group ${RESOURCE_GROUP} \
@@ -386,6 +391,7 @@ ITEM_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
     --output tsv)
 
 <your-dt-command-path>/dt.exe \
+
     /s:JsonFile \
     /s.Files:.\\src\\arm-template\\sample-data\\public\\item-service\\itemMasterSampleData.json \
     /t:DocumentDB \
@@ -393,6 +399,7 @@ ITEM_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
     /t.Collection:${ITEM_SERVICE_COSMOSDB_COLLECTION} \
     /t.PartitionKey:${ITEM_SERVICE_COSMOSDB_COLLECTION_PARTITIONKEY} \
     /t.CollectionThroughput:${ITEM_SERVICE_COSMOSDB_DATABASE_THROUGHPUT}
+
 ```
 
 ##### 商品データに画像を含める場合の事前準備
@@ -417,7 +424,7 @@ ITEM_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
 # Upload assets images
 ASSETS_BLOB_STORAGE_NAME=$(az storage account list \
     --resource-group ${RESOURCE_GROUP} \
-    --query "[?contains(@.name, 'assets')==\`true\`].name" \
+    --query "[?contains(@.name, 'assets')==\ `true\` ].name" \
     --output tsv)
 ASSETS_BLOB_STORAGE_CONTAINER=$(az storage container list \
     --account-name ${ASSETS_BLOB_STORAGE_NAME} \
@@ -446,9 +453,9 @@ sed -i -e "s|https://sample.blob.core.windows.net/|${ASSETS_BLOB_STORAGE_URL}|g"
 
 これで商品マスタのインポート用データに画像データを反映できたのので、 [統合商品マスタの準備](#統合商品マスタの準備) に戻り手順を実施してください。
 
-#### Box管理サービス・POSサービスのマスタの準備
+#### Box 管理サービス・POS サービスのマスタの準備
 
-Box管理サービス・POSサービスのマスタを Azure Cosmos DB に準備し、必要に応じてデータのを登録します。
+Box 管理サービス・POS サービスのマスタを Azure Cosmos DB に準備し、必要に応じてデータのを登録します。
 
 つぎに、データの登録を行います。  
 データ移行は様々な方法が提供されています。ここでは、以下の作業を Azure CLI およびデータ移行ツール ( `dt` コマンド) を用いて、コマンドラインで実施する方法をご紹介します。インポートファイルを用意しておりますが、適宜読み替えてご参考ください。
