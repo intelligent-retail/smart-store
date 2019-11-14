@@ -272,7 +272,9 @@
       "sku": {
         "name": "[parameters('stockServiceAppServicePlanSkuName')]"
       },
-      "properties": {}
+      "properties": {
+        "numberOfWorkers": 1
+      }
     },
     {
       "comments": "stock-command-api",

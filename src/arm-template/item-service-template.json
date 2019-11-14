@@ -109,7 +109,9 @@
       "sku": {
         "name": "[parameters('itemServiceAppServicePlanSkuName')]"
       },
-      "properties": {}
+      "properties": {
+        "numberOfWorkers": 1
+      }
     },
     {
       "comments": "item-master-api",
