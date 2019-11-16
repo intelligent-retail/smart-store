@@ -167,111 +167,7 @@
   },
   "variables": {
     "posApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
-    "commonParameters": {
-      "location": {
-        "value": "[parameters('location')]"
-      },
-      "prefix": {
-        "value": "[parameters('prefix')]"
-      },
-      "suffix": {
-        "value": "[parameters('suffix')]"
-      },
-      "delimiter": {
-        "value": "[parameters('delimiter')]"
-      }
-    },
-    "storageParameters": {
-      "storageAccountsSkuName": {
-        "value": "[parameters('storageAccountsSkuName')]"
-      },
-      "storageAccountsKind": {
-        "value": "[parameters('storageAccountsKind')]"
-      },
-      "storageAccountsSuffix": {
-        "value": "[parameters('storageAccountsSuffix')]"
-      }
-    },
-    "itemServiceParameters": {
-      "itemMasterApiZipUrl": {
-        "value": "[parameters('itemMasterApiZipUrl')]"
-      },
-      "itemServiceAppServicePlanSkuName": {
-        "value": "[parameters('itemServiceAppServicePlanSkuName')]"
-      }
-    },
-    "stockServiceParameters": {
-      "stockServiceSqlServerAdminPassword": {
-        "value": "[parameters('stockServiceSqlServerAdminPassword')]"
-      },
-      "stockServiceSqlServerAdminUserName": {
-        "value": "[parameters('stockServiceSqlServerAdminUserName')]"
-      },
-      "stockServiceSqlDatabaseSkuName": {
-        "value": "[parameters('stockServiceSqlDatabaseSkuName')]"
-      },
-      "stockServiceSqlDatabaseSkuTier": {
-        "value": "[parameters('stockServiceSqlDatabaseSkuTier')]"
-      },
-      "stockServiceSqlDatabaseMaxDataSize": {
-        "value": "[parameters('stockServiceSqlDatabaseMaxDataSize')]"
-      },
-      "stockServiceSqlDatabaseMaxDataSizeUnit": {
-        "value": "[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')]"
-      },
-      "stockServiceSqlDatabaseCollation": {
-        "value": "[parameters('stockServiceSqlDatabaseCollation')]"
-      },
-      "stockCommandApiZipUrl": {
-        "value": "[parameters('stockCommandApiZipUrl')]"
-      },
-      "stockQueryApiZipUrl": {
-        "value": "[parameters('stockQueryApiZipUrl')]"
-      },
-      "stockProcessorZipUrl": {
-        "value": "[parameters('stockProcessorZipUrl')]"
-      },
-      "stockServiceAppServicePlanSkuName": {
-        "value": "[parameters('stockServiceAppServicePlanSkuName')]"
-      }
-    },
-    "commonTemplateParameters": {
-      "posApiFunctionName": {
-        "value": "[variables('posApiFunctionName')]"
-      },
-      "boxApiFunctionName": {
-        "value": "[variables('boxApiFunctionName')]"
-      }
-    },
-    "posServiceParameters": {
-      "posApiName": {
-        "value": "[parameters('posApiName')]"
-      },
-      "posApiFunctionName": {
-        "value": "[variables('posApiFunctionName')]"
-      },
-      "posApiAppServicePlanName": {
-        "value": "[parameters('posApiAppServicePlanName')]"
-      },
-      "posApiAppServicePlanSku": {
-        "value": "[parameters('posApiAppServicePlanSku')]"
-      }
-    },
-    "boxServiceParameters": {
-      "boxIotHubSku": {
-        "value": "[parameters('boxIotHubSku')]"
-      },
-      "boxApiName": {
-        "value": "[parameters('boxApiName')]"
-      },
-      "boxApiAppServicePlanName": {
-        "value": "[parameters('boxApiAppServicePlanName')]"
-      },
-      "boxApiAppServicePlanSku": {
-        "value": "[parameters('boxApiAppServicePlanSku')]"
-      }
-    }
+    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
   },
   "resources": [
     {
@@ -284,7 +180,35 @@
           "uri": "[uri(deployment().properties.templateLink.uri, 'item-service-template.json')]",
           "contentVersion": "1.0.1.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('itemServiceParameters'))]"
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+          },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+          },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+          },
+          "itemMasterApiZipUrl": {
+            "value": "[parameters('itemMasterApiZipUrl')]"
+          },
+          "itemServiceAppServicePlanSkuName": {
+            "value": "[parameters('itemServiceAppServicePlanSkuName')]"
+          }
+        }
       }
     },
     {
@@ -297,7 +221,62 @@
           "uri": "[uri(deployment().properties.templateLink.uri, 'stock-service-template.json')]",
           "contentVersion": "1.0.1.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('stockServiceParameters'))]"
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+          },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+          },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+          },
+          "stockServiceSqlServerAdminPassword": {
+            "value": "[parameters('stockServiceSqlServerAdminPassword')]"
+          },
+          "stockServiceSqlServerAdminUserName": {
+            "value": "[parameters('stockServiceSqlServerAdminUserName')]"
+          },
+          "stockServiceSqlDatabaseSkuName": {
+            "value": "[parameters('stockServiceSqlDatabaseSkuName')]"
+          },
+          "stockServiceSqlDatabaseSkuTier": {
+            "value": "[parameters('stockServiceSqlDatabaseSkuTier')]"
+          },
+          "stockServiceSqlDatabaseMaxDataSize": {
+            "value": "[parameters('stockServiceSqlDatabaseMaxDataSize')]"
+          },
+          "stockServiceSqlDatabaseMaxDataSizeUnit": {
+            "value": "[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')]"
+          },
+          "stockServiceSqlDatabaseCollation": {
+            "value": "[parameters('stockServiceSqlDatabaseCollation')]"
+          },
+          "stockCommandApiZipUrl": {
+            "value": "[parameters('stockCommandApiZipUrl')]"
+          },
+          "stockQueryApiZipUrl": {
+            "value": "[parameters('stockQueryApiZipUrl')]"
+          },
+          "stockProcessorZipUrl": {
+            "value": "[parameters('stockProcessorZipUrl')]"
+          },
+          "stockServiceAppServicePlanSkuName": {
+            "value": "[parameters('stockServiceAppServicePlanSkuName')]"
+          }
+        }
       }
     },
     {
@@ -310,7 +289,26 @@
           "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
           "contentVersion": "1.0.1.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('commonTemplateParameters'))]"
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "posApiFunctionName": {
+            "value": "[variables('posApiFunctionName')]"
+          },
+          "boxApiFunctionName": {
+            "value": "[variables('boxApiFunctionName')]"
+          }
+        }
       }
     },
     {
@@ -323,7 +321,50 @@
           "uri": "[uri(deployment().properties.templateLink.uri, 'pos-service-template.json')]",
           "contentVersion": "1.0.1.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('posServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"itemMasterUri\": {\"value\": \"', reference('itemServiceTemplate').outputs.itemMasterUri.value, '\"}, \"stockCommandUri\": {\"value\": \"', reference('stockServiceTemplate').outputs.stockCommandUri.value, '\"}}')))]"
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+          },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+          },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+          },
+          "posApiName": {
+            "value": "[parameters('posApiName')]"
+          },
+          "posApiFunctionName": {
+            "value": "[variables('posApiFunctionName')]"
+          },
+          "posApiAppServicePlanName": {
+            "value": "[parameters('posApiAppServicePlanName')]"
+          },
+          "posApiAppServicePlanSku": {
+            "value": "[parameters('posApiAppServicePlanSku')]"
+          },
+          "appInsightsName": {
+            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+          },
+          "itemMasterUri": {
+            "value": "[reference('itemServiceTemplate').outputs.itemMasterUri.value]"
+          },
+          "stockCommandUri": {
+            "value": "[reference('stockServiceTemplate').outputs.stockCommandUri.value]"
+          }
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]",
@@ -341,7 +382,50 @@
           "uri": "[uri(deployment().properties.templateLink.uri, 'box-service-template.json')]",
           "contentVersion": "1.0.1.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('boxServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"posApiAppServicePlanName\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiAppServicePlanName.value, '\"}, \"posApiFunctionUrl\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiFunctionUrl.value, '\"}}')))]"
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+          },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+          },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+          },
+          "boxIotHubSku": {
+            "value": "[parameters('boxIotHubSku')]"
+          },
+          "boxApiName": {
+            "value": "[parameters('boxApiName')]"
+          },
+          "boxApiAppServicePlanName": {
+            "value": "[parameters('boxApiAppServicePlanName')]"
+          },
+          "boxApiAppServicePlanSku": {
+            "value": "[parameters('boxApiAppServicePlanSku')]"
+          },
+          "appInsightsName": {
+            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+          },
+          "posApiAppServicePlanName": {
+            "value": "[reference('posServiceTemplate').outputs.posApiAppServicePlanName.value]"
+          },
+          "posApiFunctionUrl": {
+            "value": "[reference('posServiceTemplate').outputs.posApiFunctionUrl.value]"
+          }
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]",

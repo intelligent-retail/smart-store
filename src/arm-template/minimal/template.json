@@ -136,8 +136,20 @@
   },
   "variables": {
     "posApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
-    "commonParameters": {
+    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "commonTemplate",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
+          "contentVersion": "1.0.2.0"
+        },
+        "parameters": {
       "location": {
         "value": "[parameters('location')]"
       },
@@ -149,9 +161,42 @@
       },
       "delimiter": {
         "value": "[parameters('delimiter')]"
+          },
+          "posApiFunctionName": {
+            "value": "[variables('posApiFunctionName')]"
+          },
+          "boxApiFunctionName": {
+            "value": "[variables('boxApiFunctionName')]"
+          },
+          "appServicePlanSkuName": {
+            "value": "[parameters('appServicePlanSkuName')]"
+      }
+        }
       }
     },
-    "storageParameters": {
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "itemServiceTemplate",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'item-service-template.json')]",
+          "contentVersion": "1.0.2.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
       "storageAccountsSkuName": {
         "value": "[parameters('storageAccountsSkuName')]"
       },
@@ -160,14 +205,51 @@
       },
       "storageAccountsSuffix": {
         "value": "[parameters('storageAccountsSuffix')]"
-      }
     },
-    "itemServiceParameters": {
       "itemMasterApiZipUrl": {
         "value": "[parameters('itemMasterApiZipUrl')]"
+          },
+          "appServicePlanId": {
+            "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
       }
+        }
     },
-    "stockServiceParameters": {
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "stockServiceTemplate",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'stock-service-template.json')]",
+          "contentVersion": "1.0.2.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+          },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+          },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+          },
       "stockServiceSqlServerAdminPassword": {
         "value": "[parameters('stockServiceSqlServerAdminPassword')]"
       },
@@ -197,82 +279,16 @@
       },
       "stockProcessorZipUrl": {
         "value": "[parameters('stockProcessorZipUrl')]"
+    },
+          "appServicePlanId": {
+            "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
+      }
       }
     },
-    "commonTemplateParameters": {
-      "posApiFunctionName": {
-        "value": "[variables('posApiFunctionName')]"
-      },
-      "boxApiFunctionName": {
-        "value": "[variables('boxApiFunctionName')]"
-      },
-      "appServicePlanSkuName": {
-        "value": "[parameters('appServicePlanSkuName')]"
-      }
-    },
-    "posServiceParameters": {
-      "posApiName": {
-        "value": "[parameters('posApiName')]"
-      },
-      "posApiFunctionName": {
-        "value": "[variables('posApiFunctionName')]"
-      }
-    },
-    "boxServiceParameters": {
-      "boxIotHubSku": {
-        "value": "[parameters('boxIotHubSku')]"
-      },
-      "boxApiName": {
-        "value": "[parameters('boxApiName')]"
-      }
-    }
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
+      ]
   },
-  "resources": [
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
-      "name": "commonTemplate",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
-          "contentVersion": "1.0.2.0"
-        },
-        "parameters": "[union(variables('commonParameters'), variables('commonTemplateParameters'))]"
-      }
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
-      "name": "itemServiceTemplate",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(deployment().properties.templateLink.uri, 'item-service-template.json')]",
-          "contentVersion": "1.0.2.0"
-        },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('itemServiceParameters'), json(concat('{\"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}}')))]"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
-      ]
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
-      "name": "stockServiceTemplate",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(deployment().properties.templateLink.uri, 'stock-service-template.json')]",
-          "contentVersion": "1.0.2.0"
-        },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('stockServiceParameters'), json(concat('{\"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}}')))]"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
-      ]
-    },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2018-05-01",
@@ -283,7 +299,47 @@
           "uri": "[uri(deployment().properties.templateLink.uri, 'pos-service-template.json')]",
           "contentVersion": "1.0.2.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('posServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}, \"itemMasterUri\": {\"value\": \"', reference('itemServiceTemplate').outputs.itemMasterUri.value, '\"}, \"stockCommandUri\": {\"value\": \"', reference('stockServiceTemplate').outputs.stockCommandUri.value, '\"}}')))]"
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+    },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+        },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+      },
+          "posApiName": {
+            "value": "[parameters('posApiName')]"
+    },
+          "posApiFunctionName": {
+            "value": "[variables('posApiFunctionName')]"
+        },
+          "appInsightsName": {
+            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+      },
+          "appServicePlanId": {
+            "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
+    },
+          "itemMasterUri": {
+            "value": "[reference('itemServiceTemplate').outputs.itemMasterUri.value]"
+        },
+          "stockCommandUri": {
+            "value": "[reference('stockServiceTemplate').outputs.stockCommandUri.value]"
+          }
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]",
@@ -301,7 +357,44 @@
           "uri": "[uri(deployment().properties.templateLink.uri, 'box-service-template.json')]",
           "contentVersion": "1.0.2.0"
         },
-        "parameters": "[union(variables('commonParameters'), variables('storageParameters'), variables('boxServiceParameters'), json(concat('{\"appInsightsName\": {\"value\": \"', reference('commonTemplate').outputs.appInsightsName.value, '\"}, \"appServicePlanId\": {\"value\": \"', reference('commonTemplate').outputs.appServicePlanId.value, '\"}, \"posApiFunctionUrl\": {\"value\": \"', reference('posServiceTemplate').outputs.posApiFunctionUrl.value, '\"}}')))]"
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+          },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+          },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+          },
+          "boxIotHubSku": {
+            "value": "[parameters('boxIotHubSku')]"
+          },
+          "boxApiName": {
+            "value": "[parameters('boxApiName')]"
+          },
+          "appInsightsName": {
+            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+          },
+          "appServicePlanId": {
+            "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
+          },
+          "posApiFunctionUrl": {
+            "value": "[reference('posServiceTemplate').outputs.posApiFunctionUrl.value]"
+          }
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]",
