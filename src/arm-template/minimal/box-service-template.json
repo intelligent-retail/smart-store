@@ -50,6 +50,9 @@
     "boxApiName": {
       "type": "string"
     },
+    "boxServiceApiZipUrl": {
+      "type": "string"
+    },
     "posApiFunctionUrl": {
       "type": "string"
     },
@@ -200,7 +203,7 @@
             },
             {
               "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "1"
+              "value": "[parameters('boxServiceApiZipUrl')]"
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",

@@ -129,10 +129,16 @@
     "posApiName": {
       "type": "string"
     },
+    "posServiceApiZipUrl": {
+      "type": "string"
+    },
     "boxApiName": {
       "type": "string"
     },
     "boxIotHubSku": {
+      "type": "string"
+    },
+    "boxServiceApiZipUrl": {
       "type": "string"
     }
   },
@@ -327,6 +333,9 @@
           "posApiName": {
             "value": "[parameters('posApiName')]"
           },
+          "posServiceApiZipUrl": {
+            "value": "[parameters('posServiceApiZipUrl')]"
+          },
           "posApiFunctionName": {
             "value": "[variables('posApiFunctionName')]"
           },
@@ -387,6 +396,9 @@
           },
           "boxApiName": {
             "value": "[parameters('boxApiName')]"
+          },
+          "boxServiceApiZipUrl": {
+            "value": "[parameters('boxServiceApiZipUrl')]"
           },
           "appInsightsName": {
             "value": "[reference('commonTemplate').outputs.appInsightsName.value]"

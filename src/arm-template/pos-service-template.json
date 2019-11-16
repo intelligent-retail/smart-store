@@ -56,6 +56,9 @@
     "posApiAppServicePlanSku": {
       "type": "string"
     },
+    "posServiceApiZipUrl": {
+      "type": "string"
+    },
     "itemMasterUri": {
       "type": "string"
     },
@@ -219,7 +222,7 @@
             },
             {
               "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "1"
+              "value": "[parameters('posServiceApiZipUrl')]"
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
