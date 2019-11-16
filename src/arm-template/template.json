@@ -13,7 +13,9 @@
       "type": "string",
       "metadata": {
         "description": "Prefix string should be within 2 characters."
-      }
+      },
+      "minLength": 2,
+      "maxLength": 2
     },
     "suffix": {
       "type": "string",
@@ -166,8 +168,9 @@
     }
   },
   "variables": {
-    "posApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
+    "prefix": "[toLower(parameters('prefix'))]",
+    "posApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
+    "boxApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
   },
   "resources": [
     {
@@ -185,7 +188,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
@@ -226,7 +229,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
@@ -294,7 +297,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
@@ -326,7 +329,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
@@ -387,7 +390,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"

@@ -13,7 +13,9 @@
       "type": "string",
       "metadata": {
         "description": "Prefix string should be within 2 characters."
-      }
+      },
+      "minLength": 2,
+      "maxLength": 2
     },
     "suffix": {
       "type": "string",
@@ -135,8 +137,9 @@
     }
   },
   "variables": {
-    "posApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
+    "prefix": "[toLower(parameters('prefix'))]",
+    "posApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
+    "boxApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
   },
   "resources": [
     {
@@ -150,17 +153,17 @@
           "contentVersion": "1.0.2.0"
         },
         "parameters": {
-      "location": {
-        "value": "[parameters('location')]"
-      },
-      "prefix": {
-        "value": "[parameters('prefix')]"
-      },
-      "suffix": {
-        "value": "[parameters('suffix')]"
-      },
-      "delimiter": {
-        "value": "[parameters('delimiter')]"
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[variables('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
           },
           "posApiFunctionName": {
             "value": "[variables('posApiFunctionName')]"
@@ -170,7 +173,7 @@
           },
           "appServicePlanSkuName": {
             "value": "[parameters('appServicePlanSkuName')]"
-      }
+          }
         }
       }
     },
@@ -189,7 +192,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
@@ -197,23 +200,23 @@
           "delimiter": {
             "value": "[parameters('delimiter')]"
           },
-      "storageAccountsSkuName": {
-        "value": "[parameters('storageAccountsSkuName')]"
-      },
-      "storageAccountsKind": {
-        "value": "[parameters('storageAccountsKind')]"
-      },
-      "storageAccountsSuffix": {
-        "value": "[parameters('storageAccountsSuffix')]"
-    },
-      "itemMasterApiZipUrl": {
-        "value": "[parameters('itemMasterApiZipUrl')]"
+          "storageAccountsSkuName": {
+            "value": "[parameters('storageAccountsSkuName')]"
+          },
+          "storageAccountsKind": {
+            "value": "[parameters('storageAccountsKind')]"
+          },
+          "storageAccountsSuffix": {
+            "value": "[parameters('storageAccountsSuffix')]"
+          },
+          "itemMasterApiZipUrl": {
+            "value": "[parameters('itemMasterApiZipUrl')]"
           },
           "appServicePlanId": {
             "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
-      }
+          }
         }
-    },
+      },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
       ]
@@ -233,7 +236,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
@@ -250,45 +253,45 @@
           "storageAccountsSuffix": {
             "value": "[parameters('storageAccountsSuffix')]"
           },
-      "stockServiceSqlServerAdminPassword": {
-        "value": "[parameters('stockServiceSqlServerAdminPassword')]"
-      },
-      "stockServiceSqlServerAdminUserName": {
-        "value": "[parameters('stockServiceSqlServerAdminUserName')]"
-      },
-      "stockServiceSqlDatabaseSkuName": {
-        "value": "[parameters('stockServiceSqlDatabaseSkuName')]"
-      },
-      "stockServiceSqlDatabaseSkuTier": {
-        "value": "[parameters('stockServiceSqlDatabaseSkuTier')]"
-      },
-      "stockServiceSqlDatabaseMaxDataSize": {
-        "value": "[parameters('stockServiceSqlDatabaseMaxDataSize')]"
-      },
-      "stockServiceSqlDatabaseMaxDataSizeUnit": {
-        "value": "[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')]"
-      },
-      "stockServiceSqlDatabaseCollation": {
-        "value": "[parameters('stockServiceSqlDatabaseCollation')]"
-      },
-      "stockCommandApiZipUrl": {
-        "value": "[parameters('stockCommandApiZipUrl')]"
-      },
-      "stockQueryApiZipUrl": {
-        "value": "[parameters('stockQueryApiZipUrl')]"
-      },
-      "stockProcessorZipUrl": {
-        "value": "[parameters('stockProcessorZipUrl')]"
-    },
+          "stockServiceSqlServerAdminPassword": {
+            "value": "[parameters('stockServiceSqlServerAdminPassword')]"
+          },
+          "stockServiceSqlServerAdminUserName": {
+            "value": "[parameters('stockServiceSqlServerAdminUserName')]"
+          },
+          "stockServiceSqlDatabaseSkuName": {
+            "value": "[parameters('stockServiceSqlDatabaseSkuName')]"
+          },
+          "stockServiceSqlDatabaseSkuTier": {
+            "value": "[parameters('stockServiceSqlDatabaseSkuTier')]"
+          },
+          "stockServiceSqlDatabaseMaxDataSize": {
+            "value": "[parameters('stockServiceSqlDatabaseMaxDataSize')]"
+          },
+          "stockServiceSqlDatabaseMaxDataSizeUnit": {
+            "value": "[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')]"
+          },
+          "stockServiceSqlDatabaseCollation": {
+            "value": "[parameters('stockServiceSqlDatabaseCollation')]"
+          },
+          "stockCommandApiZipUrl": {
+            "value": "[parameters('stockCommandApiZipUrl')]"
+          },
+          "stockQueryApiZipUrl": {
+            "value": "[parameters('stockQueryApiZipUrl')]"
+          },
+          "stockProcessorZipUrl": {
+            "value": "[parameters('stockProcessorZipUrl')]"
+          },
           "appServicePlanId": {
             "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
-      }
-      }
-    },
+          }
+        }
+      },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
       ]
-  },
+    },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2018-05-01",
@@ -304,7 +307,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
@@ -314,28 +317,28 @@
           },
           "storageAccountsSkuName": {
             "value": "[parameters('storageAccountsSkuName')]"
-    },
+          },
           "storageAccountsKind": {
             "value": "[parameters('storageAccountsKind')]"
-        },
+          },
           "storageAccountsSuffix": {
             "value": "[parameters('storageAccountsSuffix')]"
-      },
+          },
           "posApiName": {
             "value": "[parameters('posApiName')]"
-    },
+          },
           "posApiFunctionName": {
             "value": "[variables('posApiFunctionName')]"
-        },
+          },
           "appInsightsName": {
             "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
-      },
+          },
           "appServicePlanId": {
             "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
-    },
+          },
           "itemMasterUri": {
             "value": "[reference('itemServiceTemplate').outputs.itemMasterUri.value]"
-        },
+          },
           "stockCommandUri": {
             "value": "[reference('stockServiceTemplate').outputs.stockCommandUri.value]"
           }
@@ -362,7 +365,7 @@
             "value": "[parameters('location')]"
           },
           "prefix": {
-            "value": "[parameters('prefix')]"
+            "value": "[variables('prefix')]"
           },
           "suffix": {
             "value": "[parameters('suffix')]"
