@@ -25,6 +25,15 @@
 
 - [Downloads | IDE, Code, & Team Foundation Server | Visual Studio](https://visualstudio.microsoft.com/downloads/)
 
+また、Azure functions を扱うには、以下のワークロードをインストールしておく必要があります。
+
+- ASP.NET and web development
+- Azure development
+
+さらに、モバイルアプリのビルドを行う場合は、下記のワークロードもインストールしてください。
+
+- Mobile development with .NET
+
 ### Visual Studio Code について
 
 この手順では、ドキュメントやソースコードの閲覧、編集に使用します。
@@ -40,6 +49,20 @@
 インストールする際は、下記をご参考ください。
 
 - [Azure CLI のインストール | Microsoft Doc](https://docs.microsoft.com/ja-jp/cli/azure/install-azure-cli)
+
+さらに、作業で利用するサブスクリプションにログインしておいてください。
+
+```ps1
+# Azure にログインする
+az login
+
+# ログインしたサブスクリプションを確認する
+az account show
+
+# ※ もし上記で表示したサブスクリプションが異なる場合は、下記のようにリスト表示するなどして該当のサブスクリプションIDを取得し、セットしてください
+az account list
+az account set -s xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
 
 また、 IoT 拡張機能が必要になるので、下記を参考にインストールしてください。
 
@@ -79,7 +102,7 @@ Data migration tool ( `dt` コマンド) は、Cosmos DB に対してデータ�
 - Azure Functions の Application Settings に設定を追加する
   - 各 API key
   - App Center の URL とキー
-- Visual Studio で pos-service と box-service の Functions をデプロイする
+- 動作確認
 
 ## ARMテンプレートでデプロイする
 
@@ -97,7 +120,7 @@ Azure CLI が準備できましたら、下記を参考にリソースをデプ�
 $RESOURCE_GROUP="<resource group name>"
 $LOCATION="japaneast"
 
-$PREFIX="<prefix string within 2 characters>"
+$PREFIX="<prefix string within 2 characters (lower letters)>"
 $STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD="<sql server admin password>"
 
 $TEMPLATE_URL="https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template"
@@ -322,28 +345,6 @@ az functionapp config appsettings set \
     NotificationUri=${NOTIFICATION_URI} \
     PosApiKey=${POS_API_KEY}
 ```
-
-## Visual Studio で pos-service と box-service の Functions をデプロイする
-
-ここでは、POS管理サービスとBOX管理サービスの Functions について、Visual Studio を使ってコードをデプロイします。
-
-### POS管理サービスのコードをデプロイする
-
-1. Visual Studio を起動する
-2. `src/pos-service/PosService.sln` を開く
-3. 「Solution Explorer」（または、「ソリューション エクスプローラー」）の `PosService` ソリューションの `PosService` プロジェクトを右クリックする
-1. 「Publish」（または、「発行」）をクリックする
-1. 「Pick a publish target」（または、「発行先を選択」）ダイアログで、「Azure Function App」（または、「Azure関数アプリ」）タブを開く
-1. 「Select Existing」（または、「既存のものを選択」）を選択し、「Run from package file (recommended)」（または、「パッケージファイルから実行する（推奨）」）にチェックを付ける
-1. 右下のプルダウンから「Create profile」（または、「プロファイルの作成」）を選択する
-1. 「Subscription」「View」「Search」（または、「サブスクリプション」「表示」「検索」）を操作して、デプロイ先の Azure Functions として「<PREFIX>-pos-api」を選択し、「OK」ボタンをクリックする
-1. 「Publish」（または、「発行」）画面で、作成したプロファイルが表示されていることを確認し、「Publish」（または、「発行」）ボタンをクリックする
-
-### BOX管理サービスのコードをデプロイする
-
-1. `src/box-service/BoxManagermentService.sln` を開く
-2. 「Solution Explorer」の `BoxManagementService` ソリューションの `BoxManagementService` プロジェクトを右クリックする
-3. 前述の手順と同様に操作し、「<PREFIX>-box-api」に Publish する
 
 ## 動作確認
 
