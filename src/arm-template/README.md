@@ -2,24 +2,37 @@
 
 ## デプロイ用環境について
 
-### インストールするソフトウェア
+### 必要なアカウント
+
+- Azureアカウント
+
+クライアントアプリをビルドする場合は、下記のアカウントも必要になります。
+
+- GitHubアカウント
+- Googleアカウント (Androidアプリへのプッシュ通知設定のため)
+
+### 必要なソフトウェア
+
+本手順では下記のソフトウェアがインストールされている前提で進めます。
 
 - Visual Studio
 - Visual Studio Code
+- PowerShell
 - Azure CLI
-  - IoT 拡張機能のインストール
+  - IoT 拡張機能
 - `sqlcmd` ユーティリティ
 - Data migration tool ( `dt` コマンド)
 - git
 
-### チェック項目
+### 各ソフトウェアについて
 
-- Azure ポータルに自身のAzureアカウントでログインできていることを確認する
-- `az account show` を実行し、Azure CLIで自身のAzureアカウントでログインできていることを確認する
+<details>
 
-### Visual Studio について
+<summary>各ソフトウェアについて、詳細を開く</summary>
 
-この手順では主に Azure Functions のデプロイに使用します。
+#### Visual Studio について
+
+本アーキテクチャでは、 Azure Functions やクライアントアプリのビルドに使用します。
 
 インストールする際は、下記をご参考ください。
 
@@ -34,7 +47,7 @@
 
 - Mobile development with .NET
 
-### Visual Studio Code について
+#### Visual Studio Code について
 
 この手順では、ドキュメントやソースコードの閲覧、編集に使用します。
 
@@ -42,7 +55,11 @@
 
 - [Visual Studio Code - Code Editing. Redefined](https://code.visualstudio.com/#alt-downloads)
 
-### Azure CLI について
+#### PowerShell について
+
+本手順ではターミナルとして PowerShell を使用します。bash などの別のターミナルを用いる場合は、読み替えてご参照下さい。
+
+#### Azure CLI について
 
 クロスプラットフォームで利用できる Azure CLI です。デプロイやプロビジョニングで使用します。
 
@@ -71,16 +88,16 @@ az account set -s xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 az extension add --name azure-cli-iot-ext
 ```
 
-### `sqlcmd` ユーティリティ について
+#### `sqlcmd` ユーティリティ について
 
-`sqlcmd` ユーティリティは、プロビジョニング用スクリプト ( _provision.ps1_ または _provision.sh_ ) の中で使用します。
+`sqlcmd` ユーティリティは、プロビジョニング用スクリプト ( _provision.ps1_ ) の中で使用します。
 
 インストールする際は、下記をご参考ください。
 
 - Windows: [sqlcmd ユーティリティ](https://docs.microsoft.com/ja-jp/sql/tools/sqlcmd-utility?view=sql-server-2017)
 - Linux: [sqlcmd および bcp、SQL Server コマンド ライン ツールを Linux にインストールする](https://docs.microsoft.com/ja-jp/sql/linux/sql-server-linux-setup-tools?view=sql-server-2017)
 
-### Data migration tool ( `dt` コマンド) について
+#### Data migration tool ( `dt` コマンド) について
 
 Data migration tool ( `dt` コマンド) は、Cosmos DB に対してデータをアップロードする際に使用します。プロビジョニング用スクリプト ( _provision.ps1_ ) の中で使用しています。
 
@@ -93,28 +110,80 @@ Data migration tool ( `dt` コマンド) は、Cosmos DB に対してデータ�
 - [(ポータルを用いた) サンプル データの追加](https://docs.microsoft.com/ja-jp/azure/cosmos-db/create-sql-api-dotnet#add-sample-data)
 - [Azure Cosmos DB Bulk Executor ライブラリの概要](https://docs.microsoft.com/ja-jp/azure/cosmos-db/bulk-executor-overview)
 
-## デプロイ作業の流れ
+#### git について
 
+ソースコードを作業マシンに用意するために git を利用します。
+
+インストールする際は、下記をご参考下さい。
+
+- [Git](https://git-scm.com/)
+
+</details>
+
+### チェック項目
+
+下記の項目を参考に、デプロイ用環境が準備できたか確認してみましょう。
+
+- Azure ポータル
+  - [ ] [Azure ポータル](https://portal.azure.com/)で、作業で使用するAzureアカウントでログインしていること
+- 作業に使用するマシン
+  - [ ] Visual Studio がインストールされていること
+  - [ ] Visual Studio Code がインストールされていること
+  - [ ] PowerShell で `az account show` を実行し、作業で使用するAzureアカウントでログインしていること
+  - [ ] PowerShell で下記のコマンドが利用できること
+    - [ ] `az extension show --name azure-cli-iot-ext` を実行し、Azure CLIにIoT拡張機能がインストールされていること
+    - [ ] `sqlcmd -?` を実行し、sqlcmdユーティリティがインストールされていること
+    - [ ] `dt` を実行し、dtコマンドがインストールされていること
+    - [ ] `git` を実行し、gitが利用できること
+
+----
+
+## デプロイ手順
+
+デプロイ作業の流れは下記のとおりです。
+
+- ソースコードを準備する
 - ARMテンプレートでデプロイする
 - スクリプトを用いてプロビジョニングする
-- App Center を準備する
+- プッシュ通知の環境を準備する
 - 各 Functions に API key を設定する
 - Azure Functions の Application Settings に設定を追加する
   - 各 API key
   - App Center の URL とキー
-- 動作確認
+- API の動作確認
+- クライアントアプリのビルド
 
-## ARMテンプレートでデプロイする
+### ソースコードを準備する
 
-Azure へリソースをデプロイします。
+本手順の中でクライアントアプリのビルドまで実施する場合は、本リポジトリを fork した上で作業を進めてください。
 
-Azure CLI を利用しますので、下記を参考に環境をご準備ください。
+下記を参考に、リポジトリのソースコードを作業マシンに準備します。
 
-- [Azure CLI](https://docs.microsoft.com/ja-jp/cli/azure)
+```ps1
+# クライアントアプリのビルドを実施する場合
+$REPOSITORY_URL="https://github.com/<Your GitHub account>/smart-store.git"
 
-Azure CLI が準備できましたら、下記を参考にリソースをデプロイしてください。
+# クライアントアプリのビルドはしない場合
+$REPOSITORY_URL="https://github.com/intelligent-retail/smart-store.git"
 
-### PowerShell によるデプロイ
+# リポジトリをクローンする
+git clone ${REPOSITORY_URL}
+
+# リポジトリのディレクトリに移動する
+cd smart-store
+
+# 必要に応じて、pull しておく
+git checkout master
+git pull
+```
+
+### ARMテンプレートでデプロイする
+
+それではまず、Azure CLI を使って、 Azure へ各種リソースをデプロイしましょう。
+
+まず、PowerShell で下記の作業を行い、必要となる変数を設定します。
+
+`<...>` と書かれている部分は任意の文字列を設定してください。 `$PREFIX` は、 **小文字** の **2文字** を指定します。 `$STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD` は、 大文字小文字、数字、`!$#%` などの記号を含む **8文字以上** を指定します。詳しくは、 [パスワード ポリシー - SQL Server](https://docs.microsoft.com/ja-jp/sql/relational-databases/security/password-policy) に従ってください。
 
 ```ps1
 $RESOURCE_GROUP="<resource group name>"
@@ -124,7 +193,11 @@ $PREFIX="<prefix string within 2 characters (lower letters)>"
 $STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD="<sql server admin password>"
 
 $TEMPLATE_URL="https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template"
+```
 
+変数が設定できたら、リソースのデプロイを行います。引き続き PowerShell で下記を実行して下さい。
+
+```ps1
 # リソースグループを作成する
 az group create `
   --name ${RESOURCE_GROUP} `
@@ -140,37 +213,11 @@ az group deployment create `
     stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}
 ```
 
-### bash によるデプロイ
-
-```bash
-RESOURCE_GROUP=<resource group name>
-LOCATION=japaneast
-
-PREFIX=<prefix string within 2 characters>
-STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD=<sql server admin password>
-
-TEMPLATE_URL=https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template
-
-# リソースグループを作成する
-az group create \
-  --name ${RESOURCE_GROUP} \
-  --location ${LOCATION}
-
-# 作成したリソースグループの中に、リソースをデプロイする
-az group deployment create \
-  --resource-group ${RESOURCE_GROUP} \
-  --template-uri ${TEMPLATE_URL}/template.json \
-  --parameters ${TEMPLATE_URL}/parameters.json \
-  --parameters \
-    prefix=${PREFIX} \
-    stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}
-```
-
-## スクリプトを用いてプロビジョニングする
+### スクリプトを用いてプロビジョニングする
 
 ※ 変数は前項から引き継いでるものとします。
 
-スクリプトを用いてプロビジョニングを行います。
+次に、スクリプトを用いてプロビジョニングを行います。
 
 スクリプトでは下記の処理を行っています。
 
@@ -179,25 +226,11 @@ az group deployment create \
 - IoT Hub とBOX管理サービスの紐づけ
 - 各 Cosmos DB へのデータ投入
 
-### 実行前の確認
-
-- `az extension show --name azure-cli-iot-ext` を実行し、Azure CLIにIoT拡張機能がインストールされていることを確認する
-- `sqlcmd -?` を実行し、sqlcmdユーティリティがインストールされていることを確認する
-- `dt` を実行し、dtコマンドがインストールされていることを確認する
-  - インストールされていない場合は、 PowerShell のスクリプトは利用できません
-
-### PowerShell によるプロビジョニング
+それでは、引き続き PowerShell で下記を実行して下さい。
 
 ```ps1
-# まだリポジトリをクローンしていない場合は、クローンする
-git clone https://github.com/intelligent-retail/smart-store.git
-
 # リポジトリのディレクトリに移動する
 cd smart-store
-
-# 必要に応じて、pull しておく
-git checkout master
-git pull
 
 # プログラムの実行権限を確認する
 Get-ExecutionPolicy -List
@@ -209,38 +242,19 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 .\src\arm-template\provision.ps1
 ```
 
-### bash によるプロビジョニング
-
-_準備中_
-
-```bash
-# まだリポジトリをクローンしていない場合は、クローンする
-git clone https://github.com/intelligent-retail/smart-store.git
-
-# リポジトリのディレクトリに移動する
-cd smart-store
-
-# 必要に応じて、pull しておく
-git checkout master
-git pull
-
-# プロビジョニングを実行する
-./src/arm-template/provision.sh
-```
-
-## App Center を準備する
+### プッシュ通知の環境を準備する
 
 プッシュ通知の環境を準備します。下記をご参照ください。
 
 - [App Center でのプッシュ通知の環境構築](/docs/appcenter.md)
 
-## 各 Functions に API key を設定する
+### 各 Functions に API key を設定する
 
 Azure Functions に API key を設定します。
 
 Azure Functions の API key は、関数全体、または関数個別に設定することができます。ここでは、作業簡略化のため、同じ値のキーを関数全体に設定します。
 
-1. Azureポータルで、デプロイした Auzre Functions のひとつを開き、「Function App の設定」を開きます。
+1. Azureポータルで、デプロイした Azure Functions のひとつを開き、「Function App の設定」を開きます。
 2. 「Function App の設定」画面で、「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
 3. 「名前」の欄に `app` と入力し、「保存」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
 4. 保存されたら、「アクション」欄の「コピー」をクリックし、生成されたキーをコピーします。
@@ -252,7 +266,7 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 3. 「名前」に `app` 、「値」にコピーしたキーをはりつけて、「保存」ボタンをクリックし保存します。
 4. その他の Azure Functions も同様に設定します。
 
-## Azure Functions の Application Settings に設定を追加する
+### Azure Functions の Application Settings に設定を追加する
 
 ※ 変数は前項から引き継いでるものとします。
 
@@ -293,9 +307,6 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 - [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
 - [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
 
-
-### PowerShell による Azure Functions の Application Settings の更新
-
 ```ps1
 # item-service と stock-service の api key を pos-api に設定する
 $ITEM_MASTER_API_KEY="<item service api key>"
@@ -320,39 +331,25 @@ az functionapp config appsettings set `
     PosApiKey=${POS_API_KEY}
 ```
 
-### bash による Azure Functions の Application Settings の更新
+### API の動作確認
 
-```bash
-# item-service と stock-service の api key を pos-api に設定する
-ITEM_MASTER_API_KEY=<item service api key>
-STOCK_COMMAND_API_KEY=<stock service command api key>
-az functionapp config appsettings set \
-  --resource-group ${RESOURCE_GROUP} \
-  --name ${PREFIX}-pos-api \
-  --settings \
-    ItemMasterApiKey=${ITEM_MASTER_API_KEY} \
-    StockApiKey=${STOCK_COMMAND_API_KEY}
+API の動作確認については、下記ドキュメントをご参照ください。
 
-# pos-service の api key と通知の設定を box-api に設定する
-POS_API_KEY=<pos api key>
-NOTIFICATION_API_KEY=<app center push api key>
-NOTIFICATION_URI=https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications
-az functionapp config appsettings set \
-  --resource-group ${RESOURCE_GROUP} \
-  --name ${PREFIX}-box-api \
-  --settings \
-    NotificationApiKey=${NOTIFICATION_API_KEY} \
-    NotificationUri=${NOTIFICATION_URI} \
-    PosApiKey=${POS_API_KEY}
-```
+- [API の動作確認](/docs/operation-check.md)
 
-## 動作確認
+### クライアントアプリのビルド
 
-動作確認は下記ドキュメントをご参照ください。
+クライアントアプリのビルドについては、下記ドキュメントをご参照ください。
 
-- [動作確認](/docs/operation-check.md)
+- [クライアントアプリのビルド](/src/client-app/README.md)
+
+----
 
 ## 備考
+
+<details>
+
+<summary>備考を開く</summary>
 
 ### スクリプトを使わない場合の各種マスタの準備
 
@@ -495,3 +492,5 @@ BOX_SERVICE_COSMOSDB_CONNSTR=$(az cosmosdb list-connection-strings \
     /t.ConnectionString:"${BOX_SERVICE_COSMOSDB_CONNSTR};Database=${BOX_DB_NAME};" \
     /t.Collection:Terminals
 ```
+
+</details>
