@@ -78,7 +78,7 @@
       "value": "B1"
     },
     "boxServiceApiZipUrl": {
-      "value": "hhttps://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/BoxManagementService.zip"
+      "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/BoxManagementService.zip"
     }
   }
 }
