@@ -62,6 +62,9 @@
     "posApiAppServicePlanSku": {
       "value": "B1"
     },
+    "posServiceApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/PosService.zip"
+    },
     "boxIotHubSku": {
       "value": "F1"
     },
@@ -73,6 +76,9 @@
     },
     "boxApiAppServicePlanSku": {
       "value": "B1"
+    },
+    "boxServiceApiZipUrl": {
+      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/BoxManagementService.zip"
     }
   }
 }

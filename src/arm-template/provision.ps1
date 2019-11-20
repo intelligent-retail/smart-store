@@ -5,7 +5,7 @@ $SQL_SERVER_NAME=az sql server list `
     --output tsv
 
 # Set a temporary firewall rule to enable to access from your machine
-$IP_ADDRESS=Invoke-RestMethod 4.ipaddr.io
+$IP_ADDRESS=Invoke-RestMethod http://ifconfig.me/ip
 az sql server firewall-rule create `
     --resource-group ${RESOURCE_GROUP} `
     --server ${SQL_SERVER_NAME} `
@@ -85,9 +85,10 @@ az cosmosdb collection create `
     --collection-name ${ITEM_SERVICE_COSMOSDB_COLLECTION} `
     --partition-key-path ${ITEM_SERVICE_COSMOSDB_COLLECTION_PARTITIONKEY}
 
-$ITEM_SERVICE_COSMOSDB_CONNSTR=az cosmosdb list-connection-strings `
+$ITEM_SERVICE_COSMOSDB_CONNSTR=az cosmosdb keys list `
     --resource-group ${RESOURCE_GROUP} `
     --name ${ITEM_SERVICE_COSMOSDB} `
+    --type connection-strings `
     --query "connectionStrings[0].connectionString" `
     --output tsv
 
@@ -104,9 +105,10 @@ dt `
 $POS_DB_ACCOUNT_NAME="${PREFIX}-pos-service"
 $POS_DB_NAME="smartretailpos"
 
-$POS_SERVICE_COSMOSDB_CONNSTR=az cosmosdb list-connection-strings `
+$POS_SERVICE_COSMOSDB_CONNSTR=az cosmosdb keys list `
   --resource-group ${RESOURCE_GROUP} `
   --name ${POS_DB_ACCOUNT_NAME} `
+  --type connection-strings `
   --query "connectionStrings[0].connectionString" `
   --output tsv
 
@@ -121,9 +123,10 @@ dt `
 $BOX_DB_ACCOUNT_NAME="${PREFIX}-box-service"
 $BOX_DB_NAME="smartretailboxmanagement"
 
-$BOX_SERVICE_COSMOSDB_CONNSTR=az cosmosdb list-connection-strings `
+$BOX_SERVICE_COSMOSDB_CONNSTR=az cosmosdb keys list `
   --resource-group ${RESOURCE_GROUP} `
   --name ${BOX_DB_ACCOUNT_NAME} `
+  --type connection-strings `
   --query "connectionStrings[0].connectionString" `
   --output tsv
 
