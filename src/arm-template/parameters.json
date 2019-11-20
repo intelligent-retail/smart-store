@@ -18,7 +18,7 @@
       "value": "st"
     },
     "itemMasterApiZipUrl": {
-      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/ItemService.ItemMaster.zip"
+      "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/ItemService.ItemMaster.zip"
     },
     "itemServiceAppServicePlanSkuName": {
       "value": "P1V2"
@@ -42,13 +42,13 @@
       "value": "Japanese_CI_AS"
     },
     "stockCommandApiZipUrl": {
-      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.1.0/StockService.StockCommand.zip"
+      "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/StockService.StockCommand.zip"
     },
     "stockQueryApiZipUrl": {
-      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockQuery.zip"
+      "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/StockService.StockQuery.zip"
     },
     "stockProcessorZipUrl": {
-      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/StockService.StockProcessor.zip"
+      "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/StockService.StockProcessor.zip"
     },
     "stockServiceAppServicePlanSkuName": {
       "value": "P1V2"
@@ -63,7 +63,7 @@
       "value": "B1"
     },
     "posServiceApiZipUrl": {
-      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/PosService.zip"
+      "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/PosService.zip"
     },
     "boxIotHubSku": {
       "value": "F1"
@@ -78,7 +78,7 @@
       "value": "B1"
     },
     "boxServiceApiZipUrl": {
-      "value": "https://github.com/intelligent-retail/smart-store/releases/download/v0.2.0/BoxManagementService.zip"
+      "value": "hhttps://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/BoxManagementService.zip"
     }
   }
 }
