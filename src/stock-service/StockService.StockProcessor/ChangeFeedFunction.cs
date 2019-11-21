@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
@@ -17,12 +18,14 @@ namespace StockService.StockProcessor
 {
     public class ChangeFeedFunction
     {
-        public ChangeFeedFunction(StockDbContext context)
+        public ChangeFeedFunction(StockDbContext context, TelemetryConfiguration telemetryConfiguration)
         {
             _context = context;
+            _telemetryClient = new TelemetryClient(telemetryConfiguration);
         }
 
         private readonly StockDbContext _context;
+        private readonly TelemetryClient _telemetryClient;
 
         [FunctionName(nameof(ChangeFeedFunction))]
         public async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockBackend",
@@ -86,7 +89,6 @@ namespace StockService.StockProcessor
                 _telemetryClient.TrackTrace("End Stock Processor", new Dictionary<string, string> { { "ActivityId", document.ActivityId } });
             }
         }
-
-        private static readonly TelemetryClient _telemetryClient = new TelemetryClient();
     }
 }
+ 

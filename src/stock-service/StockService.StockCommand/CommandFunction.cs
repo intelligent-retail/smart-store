@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Documents;
@@ -19,13 +20,19 @@ using StockService.Documents;
 
 namespace StockService.StockCommand
 {
-    public static class CommandFunction
+    public class CommandFunction
     {
         private const string DatabaseId = "StockBackend";
         private const string CollectionId = "StockTransaction";
+        private readonly TelemetryClient _telemetryClient;
+
+        public CommandFunction(TelemetryConfiguration telemetryConfiguration)
+        {
+            _telemetryClient = new TelemetryClient(telemetryConfiguration);
+        }
 
         [FunctionName(nameof(CommandFunction))]
-        public static async Task<IActionResult> Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "v1/stocks")]
             HttpRequest req,
             [CosmosDB(ConnectionStringSetting = "CosmosDBConnection")]
@@ -99,8 +106,6 @@ namespace StockService.StockCommand
 
             return new OkObjectResult("OK");
         }
-
-        private static readonly TelemetryClient _telemetryClient = new TelemetryClient();
 
         internal class StockItemEqualityComparer : IEqualityComparer<StockItemDocument>
         {
