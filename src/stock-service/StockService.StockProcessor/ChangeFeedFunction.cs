@@ -15,10 +15,17 @@ using StockService.Entities;
 
 namespace StockService.StockProcessor
 {
-    public static class ChangeFeedFunction
+    public class ChangeFeedFunction
     {
+        public ChangeFeedFunction(StockDbContext context)
+        {
+            _context = context;
+        }
+
+        private readonly StockDbContext _context;
+
         [FunctionName(nameof(ChangeFeedFunction))]
-        public static async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockBackend",
+        public async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockBackend",
                                          LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true, FeedPollDelay = 500)]
                                      JArray input,
                                      IBinder binder,
@@ -48,7 +55,7 @@ namespace StockService.StockProcessor
                 Quantity = -xs.Quantity
             }));
 
-            using (var context = new StockDbContext())
+            using (var context = _context)
             {
                 await context.Stocks.AddRangeAsync(entities);
                 await context.SaveChangesAsync();

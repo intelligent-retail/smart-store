@@ -12,10 +12,17 @@ using Newtonsoft.Json;
 
 namespace StockService.StockQuery
 {
-    public static class QueryFunction
+    public class QueryFunction
     {
+        public QueryFunction(StockDbContext context)
+        {
+            _context = context;
+        }
+
+        private readonly StockDbContext _context;
+
         [FunctionName(nameof(QueryByItem))]
-        public static async Task<IActionResult> QueryByItem(
+        public async Task<IActionResult> QueryByItem(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "v1/company/{companyCode}/store/{storeCode}/terminal/{terminalCode}/item/{itemCode}/query")]
             HttpRequest req,
             string companyCode,
@@ -24,7 +31,7 @@ namespace StockService.StockQuery
             string itemCode,
             ILogger log)
         {
-            using (var context = new StockDbContext())
+            using (var context = _context)
             {
                 var item = await context.Stocks
                                          .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode &&
@@ -40,7 +47,7 @@ namespace StockService.StockQuery
         }
 
         [FunctionName(nameof(QueryByTerminal))]
-        public static async Task<IActionResult> QueryByTerminal(
+        public async Task<IActionResult> QueryByTerminal(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "v1/company/{companyCode}/store/{storeCode}/terminal/{terminalCode}/query")]
             HttpRequest req,
             string companyCode,
@@ -48,7 +55,7 @@ namespace StockService.StockQuery
             string terminalCode,
             ILogger log)
         {
-            using (var context = new StockDbContext())
+            using (var context = _context)
             {
                 var items = await context.Stocks
                                          .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode &&
@@ -67,14 +74,14 @@ namespace StockService.StockQuery
         }
 
         [FunctionName(nameof(QueryByStore))]
-        public static async Task<IActionResult> QueryByStore(
+        public async Task<IActionResult> QueryByStore(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "v1/company/{companyCode}/store/{storeCode}/query")]
             HttpRequest req,
             string companyCode,
             string storeCode,
             ILogger log)
         {
-            using (var context = new StockDbContext())
+            using (var context = _context)
             {
                 var items = await context.Stocks
                                          .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode && x.TransactionType != TransactionType.引当)
