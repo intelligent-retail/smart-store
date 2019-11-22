@@ -58,11 +58,8 @@ namespace StockService.StockProcessor
                 Quantity = -xs.Quantity
             }));
 
-            using (var context = _context)
-            {
-                await context.Stocks.AddRangeAsync(entities);
-                await context.SaveChangesAsync();
-            }
+            await _context.Stocks.AddRangeAsync(entities);
+            await _context.SaveChangesAsync();
 
             // SignalR Service への接続文字列がセットされている場合のみ有効化
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SignalRConnection", EnvironmentVariableTarget.Process)))

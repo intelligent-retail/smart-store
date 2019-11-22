@@ -31,19 +31,16 @@ namespace StockService.StockQuery
             string itemCode,
             ILogger log)
         {
-            using (var context = _context)
-            {
-                var item = await context.Stocks
-                                         .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode &&
-                                                     x.TerminalCode == terminalCode && x.ItemCode == itemCode && x.TransactionType != TransactionType.引当)
-                                         .GroupBy(x => x.ItemCode)
-                                         .Select(x => new QueryByItem { ItemCode = x.Key, Quantity = x.Sum(xs => xs.Quantity) })
-                                         .FirstOrDefaultAsync();
+            var item = await _context.Stocks
+                                        .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode &&
+                                                    x.TerminalCode == terminalCode && x.ItemCode == itemCode && x.TransactionType != TransactionType.引当)
+                                        .GroupBy(x => x.ItemCode)
+                                        .Select(x => new QueryByItem { ItemCode = x.Key, Quantity = x.Sum(xs => xs.Quantity) })
+                                        .FirstOrDefaultAsync();
 
-                var response = item ?? new QueryByItem { ItemCode = itemCode, Quantity = 0 };
+            var response = item ?? new QueryByItem { ItemCode = itemCode, Quantity = 0 };
 
-                return new OkObjectResult(response);
-            }
+            return new OkObjectResult(response);
         }
 
         [FunctionName(nameof(QueryByTerminal))]
@@ -55,22 +52,19 @@ namespace StockService.StockQuery
             string terminalCode,
             ILogger log)
         {
-            using (var context = _context)
+            var items = await _context.Stocks
+                                        .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode &&
+                                                    x.TerminalCode == terminalCode && x.TransactionType != TransactionType.引当)
+                                        .GroupBy(x => x.ItemCode)
+                                        .Select(x => new QueryByTerminalResult { ItemCode = x.Key, Quantity = x.Sum(xs => xs.Quantity) })
+                                        .ToArrayAsync();
+
+            var response = new QueryResponse<QueryByTerminalResult>
             {
-                var items = await context.Stocks
-                                         .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode &&
-                                                     x.TerminalCode == terminalCode && x.TransactionType != TransactionType.引当)
-                                         .GroupBy(x => x.ItemCode)
-                                         .Select(x => new QueryByTerminalResult { ItemCode = x.Key, Quantity = x.Sum(xs => xs.Quantity) })
-                                         .ToArrayAsync();
+                Items = items
+            };
 
-                var response = new QueryResponse<QueryByTerminalResult>
-                {
-                    Items = items
-                };
-
-                return new OkObjectResult(response);
-            }
+            return new OkObjectResult(response);
         }
 
         [FunctionName(nameof(QueryByStore))]
@@ -81,21 +75,18 @@ namespace StockService.StockQuery
             string storeCode,
             ILogger log)
         {
-            using (var context = _context)
+            var items = await _context.Stocks
+                                        .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode && x.TransactionType != TransactionType.引当)
+                                        .GroupBy(x => new { x.TerminalCode, x.ItemCode })
+                                        .Select(x => new QueryByStoreResult { TerminalCode = x.Key.TerminalCode, ItemCode = x.Key.ItemCode, Quantity = x.Sum(xs => xs.Quantity) })
+                                        .ToArrayAsync();
+
+            var response = new QueryResponse<QueryByStoreResult>
             {
-                var items = await context.Stocks
-                                         .Where(x => x.CompanyCode == companyCode && x.StoreCode == storeCode && x.TransactionType != TransactionType.引当)
-                                         .GroupBy(x => new { x.TerminalCode, x.ItemCode })
-                                         .Select(x => new QueryByStoreResult { TerminalCode = x.Key.TerminalCode, ItemCode = x.Key.ItemCode, Quantity = x.Sum(xs => xs.Quantity) })
-                                         .ToArrayAsync();
+                Items = items
+            };
 
-                var response = new QueryResponse<QueryByStoreResult>
-                {
-                    Items = items
-                };
-
-                return new OkObjectResult(response);
-            }
+            return new OkObjectResult(response);
         }
     }
 
