@@ -29,10 +29,10 @@ namespace StockService.StockProcessor
 
         [FunctionName(nameof(ChangeFeedFunction))]
         public async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockBackend",
-                                         LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true, FeedPollDelay = 500)]
-                                     JArray input,
-                                     IBinder binder,
-                                     ILogger log)
+                                  LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true, FeedPollDelay = 500)]
+                              JArray input,
+                              IBinder binder,
+                              ILogger log)
         {
             if (input == null || input.Count <= 0)
             {
