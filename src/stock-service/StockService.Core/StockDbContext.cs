@@ -8,11 +8,9 @@ namespace StockService
 {
     public class StockDbContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("SqlConnection", EnvironmentVariableTarget.Process))
-                          .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-        }
+        public StockDbContext(DbContextOptions<StockDbContext> options)
+          :base(options)
+        { }
 
         public DbSet<StockEntity> Stocks { get; set; }
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
@@ -15,14 +16,23 @@ using StockService.Entities;
 
 namespace StockService.StockProcessor
 {
-    public static class ChangeFeedFunction
+    public class ChangeFeedFunction
     {
+        public ChangeFeedFunction(StockDbContext context, TelemetryConfiguration telemetryConfiguration)
+        {
+            _context = context;
+            _telemetryClient = new TelemetryClient(telemetryConfiguration);
+        }
+
+        private readonly StockDbContext _context;
+        private readonly TelemetryClient _telemetryClient;
+
         [FunctionName(nameof(ChangeFeedFunction))]
-        public static async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockBackend",
-                                         LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true, FeedPollDelay = 500)]
-                                     JArray input,
-                                     IBinder binder,
-                                     ILogger log)
+        public async Task Run([CosmosDBTrigger("StockBackend", "StockTransaction", ConnectionStringSetting = "CosmosDBConnection", LeaseCollectionName = "leases", LeaseDatabaseName = "StockBackend",
+                                  LeasesCollectionThroughput = 400, CreateLeaseCollectionIfNotExists = true, FeedPollDelay = 500)]
+                              JArray input,
+                              IBinder binder,
+                              ILogger log)
         {
             if (input == null || input.Count <= 0)
             {
@@ -48,11 +58,8 @@ namespace StockService.StockProcessor
                 Quantity = -xs.Quantity
             }));
 
-            using (var context = new StockDbContext())
-            {
-                await context.Stocks.AddRangeAsync(entities);
-                await context.SaveChangesAsync();
-            }
+            await _context.Stocks.AddRangeAsync(entities);
+            await _context.SaveChangesAsync();
 
             // SignalR Service への接続文字列がセットされている場合のみ有効化
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SignalRConnection", EnvironmentVariableTarget.Process)))
@@ -79,7 +86,6 @@ namespace StockService.StockProcessor
                 _telemetryClient.TrackTrace("End Stock Processor", new Dictionary<string, string> { { "ActivityId", document.ActivityId } });
             }
         }
-
-        private static readonly TelemetryClient _telemetryClient = new TelemetryClient();
     }
 }
+ 
