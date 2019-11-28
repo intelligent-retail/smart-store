@@ -247,7 +247,7 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 
 ### Azure Functions の Application Settings に設定を追加する
 
-※ 変数は前項から引き継いでるものとします。
+まず、スクリプト（src\arm-template\add-appsettings.ps1）を編集し、変数は前項と同様の値を設定します。
 
 前項で設定した API key とプッシュ通知の情報を Azure Functions の Application Settings に追加します。
 
@@ -286,28 +286,11 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 - [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
 - [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
 
-```ps1
-# item-service と stock-service の api key を pos-api に設定する
-$ITEM_MASTER_API_KEY="<item service api key>"
-$STOCK_COMMAND_API_KEY="<stock service command api key>"
-az functionapp config appsettings set `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${PREFIX}-pos-api `
-  --settings `
-    ItemMasterApiKey=${ITEM_MASTER_API_KEY} `
-    StockApiKey=${STOCK_COMMAND_API_KEY}
+それでは、引き続き PowerShell で下記を実行して下さい。
 
-# pos-service の api key と通知の設定を box-api に設定する
-$POS_API_KEY="<pos api key>"
-$NOTIFICATION_API_KEY="<app center push api key>"
-$NOTIFICATION_URI="https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications"
-az functionapp config appsettings set `
-  --resource-group ${RESOURCE_GROUP} `
-  --name ${PREFIX}-box-api `
-  --settings `
-    NotificationApiKey=${NOTIFICATION_API_KEY} `
-    NotificationUri=${NOTIFICATION_URI} `
-    PosApiKey=${POS_API_KEY}
+```ps1
+# Application Settings に設定を追加する
+.\src\arm-template\add-appsettings.ps1
 ```
 
 ### API の動作確認
