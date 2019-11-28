@@ -181,36 +181,24 @@ git pull
 
 それではまず、Azure CLI を使って、 Azure へ各種リソースをデプロイしましょう。
 
-まず、PowerShell で下記の作業を行い、必要となる変数を設定します。
+まず、スクリプト（src\arm-template\deploy.ps1）を編集し、必要となる変数を設定します。
 
 `<...>` と書かれている部分は任意の文字列を設定してください。 `$PREFIX` は、 **小文字** の **2文字** を指定します。 `$STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD` は、 大文字小文字、数字、`!$#%` などの記号を含む **8文字以上** を指定します。詳しくは、 [パスワード ポリシー - SQL Server](https://docs.microsoft.com/ja-jp/sql/relational-databases/security/password-policy) に従ってください。
 
-```ps1
-$RESOURCE_GROUP="<resource group name>"
-$LOCATION="japaneast"
-
-$PREFIX="<prefix string within 2 characters (lower letters)>"
-$STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD="<sql server admin password>"
-
-$TEMPLATE_URL="https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template"
-```
-
-変数が設定できたら、リソースのデプロイを行います。引き続き PowerShell で下記を実行して下さい。
+それでは、引き続き PowerShell で下記を実行して下さい。
 
 ```ps1
-# リソースグループを作成する
-az group create `
-  --name ${RESOURCE_GROUP} `
-  --location ${LOCATION}
+# リポジトリのディレクトリに移動する
+cd smart-store
 
-# 作成したリソースグループの中に、リソースをデプロイする
-az group deployment create `
-  --resource-group ${RESOURCE_GROUP} `
-  --template-uri ${TEMPLATE_URL}/template.json `
-  --parameters ${TEMPLATE_URL}/parameters.json `
-  --parameters `
-    prefix=${PREFIX} `
-    stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}
+# プログラムの実行権限を確認する
+Get-ExecutionPolicy -List
+
+# 上記で CurrentUser に RemoteSigned が当たってない場合は、下記を実行する
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# ARMテンプレートでデプロイする
+.\src\arm-template\deploy.ps1
 ```
 
 ### スクリプトを用いてプロビジョニングする
@@ -229,15 +217,6 @@ az group deployment create `
 それでは、引き続き PowerShell で下記を実行して下さい。
 
 ```ps1
-# リポジトリのディレクトリに移動する
-cd smart-store
-
-# プログラムの実行権限を確認する
-Get-ExecutionPolicy -List
-
-# 上記で CurrentUser に RemoteSigned が当たってない場合は、下記を実行する
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
 # プロビジョニングを実行する
 .\src\arm-template\provision.ps1
 ```
