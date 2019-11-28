@@ -203,7 +203,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ### スクリプトを用いてプロビジョニングする
 
-※ 変数は前項から引き継いでるものとします。
+まず、スクリプト（src\arm-template\provision.ps1）を編集し、変数は前項と同様の値を設定します。
 
 次に、スクリプトを用いてプロビジョニングを行います。
 
