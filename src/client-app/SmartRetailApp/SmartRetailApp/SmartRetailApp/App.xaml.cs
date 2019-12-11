@@ -1,4 +1,5 @@
 ﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Auth;
 using Microsoft.AppCenter.Push;
 using SmartRetailApp.Models;
 using SmartRetailApp.Views;
@@ -38,7 +39,7 @@ namespace SmartRetailApp
             AppCenter.Start($"android={Constant.AppCenterKeyAndroid};" +
                             "uwp={Your UWP App secret here};" +
                             $"ios={Constant.AppCenterKeyiOS}",
-                typeof(Push));
+                typeof(Push),typeof(Auth));
         }
 
         private async void Push_PushNotificationReceived(object sender, PushNotificationReceivedEventArgs e)
