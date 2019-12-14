@@ -39,7 +39,8 @@ namespace SmartRetailApp
             AppCenter.Start($"android={Constant.AppCenterKeyAndroid};" +
                             "uwp={Your UWP App secret here};" +
                             $"ios={Constant.AppCenterKeyiOS}",
-                typeof(Push),typeof(Auth));
+                typeof(Push),
+                typeof(Auth));
         }
 
         private async void Push_PushNotificationReceived(object sender, PushNotificationReceivedEventArgs e)
