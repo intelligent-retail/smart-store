@@ -1,4 +1,6 @@
-﻿using Microsoft.AppCenter;
+﻿#define AUTH
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Auth;
 using SmartRetailApp.Models;
 using SmartRetailApp.Services;
 using System;
@@ -11,6 +13,8 @@ namespace SmartRetailApp.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class LoginPage : ContentPage
     {
+        UserInformation UserInfo { get; set; }
+
         public LoginPage()
         {
 
@@ -20,7 +24,65 @@ namespace SmartRetailApp.Views
             loadingIndicator.IsVisible = false;
 
             edtBoxName.Text = "SmartBox1";
+
+#if AUTH
+            btnStartShopping.IsEnabled = false;
+            btnLoginLogout.IsVisible = true;
+#else
+            btnStartShopping.IsEnabled = true;
+            btnLoginLogout.IsVisible = false;
+#endif
+
+
+            btnLoginLogout.Clicked += async (sender, e) =>
+            {
+                if (btnLoginLogout.Text == "ログアウト")
+                {
+                    await SignOut();
+                }
+                else
+                {
+                    await SignInAsync();
+                }
+            };
         }
+
+        async Task SignOut()
+        {
+            Auth.SignOut();
+            btnLoginLogout.Text = "ログイン";
+            btnStartShopping.IsEnabled = false;
+
+            await DisplayAlert("ログアウトしました", "", "OK");
+        }
+
+        async Task SignInAsync()
+        {
+            try
+            {
+                // Sign-in succeeded.
+                this.UserInfo = await Auth.SignInAsync();
+                string accountId = this.UserInfo.AccountId;
+                Console.WriteLine($"id_token={UserInfo.IdToken}");
+
+                btnLoginLogout.Text = "ログアウト";
+                btnStartShopping.IsEnabled = true;
+
+                await DisplayAlert("ログインしました", $"AccountId={accountId}", "OK");
+            }
+            catch (Exception e)
+            {
+                await DisplayAlert("ログインできませんでした", e.ToString(), "OK");
+            }
+        }
+
+        protected override async void OnAppearing()
+        {
+#if AUTH
+            await SignInAsync();
+#endif
+        }
+
 
         private async void LoginClicked(object sender, EventArgs e)
         {
