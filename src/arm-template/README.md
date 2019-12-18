@@ -181,29 +181,41 @@ git pull
 
 それではまず、Azure CLI を使って、 Azure へ各種リソースをデプロイしましょう。
 
-まず、スクリプト（src\arm-template\deploy.ps1）を編集し、必要となる変数を設定します。
+まず、PowerShell で下記の作業を行い、必要となる変数を設定します。
 
 `<...>` と書かれている部分は任意の文字列を設定してください。 `$PREFIX` は、 **小文字** の **2文字** を指定します。 `$STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD` は、 大文字小文字、数字、`!$#%` などの記号を含む **8文字以上** を指定します。詳しくは、 [パスワード ポリシー - SQL Server](https://docs.microsoft.com/ja-jp/sql/relational-databases/security/password-policy) に従ってください。
 
-それでは、引き続き PowerShell で下記を実行して下さい。
+```ps1
+$RESOURCE_GROUP="<resource group name>"
+$LOCATION="japaneast"
+
+$PREFIX="<prefix string within 2 characters (lower letters)>"
+$STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD="<sql server admin password>"
+
+$TEMPLATE_URL="https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template"
+```
+
+変数が設定できたら、リソースのデプロイを行います。引き続き PowerShell で下記を実行して下さい。
 
 ```ps1
-# リポジトリのディレクトリに移動する
-cd smart-store
+# リソースグループを作成する
+az group create `
+  --name ${RESOURCE_GROUP} `
+  --location ${LOCATION}
 
-# プログラムの実行権限を確認する
-Get-ExecutionPolicy -List
-
-# 上記で CurrentUser に RemoteSigned が当たってない場合は、下記を実行する
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# ARMテンプレートでデプロイする
-.\src\arm-template\deploy.ps1
+# 作成したリソースグループの中に、リソースをデプロイする
+az group deployment create `
+  --resource-group ${RESOURCE_GROUP} `
+  --template-uri ${TEMPLATE_URL}/template.json `
+  --parameters ${TEMPLATE_URL}/parameters.json `
+  --parameters `
+    prefix=${PREFIX} `
+    stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}
 ```
 
 ### スクリプトを用いてプロビジョニングする
 
-まず、スクリプト（src\arm-template\provision.ps1）を編集し、変数は前項と同様の値を設定します。
+※ 変数は前項から引き継いでるものとします。
 
 次に、スクリプトを用いてプロビジョニングを行います。
 
@@ -217,6 +229,15 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 それでは、引き続き PowerShell で下記を実行して下さい。
 
 ```ps1
+# リポジトリのディレクトリに移動する
+cd smart-store
+
+# プログラムの実行権限を確認する
+Get-ExecutionPolicy -List
+
+# 上記で CurrentUser に RemoteSigned が当たってない場合は、下記を実行する
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
 # プロビジョニングを実行する
 .\src\arm-template\provision.ps1
 ```
@@ -247,7 +268,7 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 
 ### Azure Functions の Application Settings に設定を追加する
 
-まず、スクリプト（src\arm-template\add-appsettings.ps1）を編集し、変数は前項と同様の値を設定します。
+※ 変数は前項から引き継いでるものとします。
 
 前項で設定した API key とプッシュ通知の情報を Azure Functions の Application Settings に追加します。
 
@@ -286,11 +307,28 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 - [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
 - [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
 
-それでは、引き続き PowerShell で下記を実行して下さい。
-
 ```ps1
-# Application Settings に設定を追加する
-.\src\arm-template\add-appsettings.ps1
+# item-service と stock-service の api key を pos-api に設定する
+$ITEM_MASTER_API_KEY="<item service api key>"
+$STOCK_COMMAND_API_KEY="<stock service command api key>"
+az functionapp config appsettings set `
+  --resource-group ${RESOURCE_GROUP} `
+  --name ${PREFIX}-pos-api `
+  --settings `
+    ItemMasterApiKey=${ITEM_MASTER_API_KEY} `
+    StockApiKey=${STOCK_COMMAND_API_KEY}
+
+# pos-service の api key と通知の設定を box-api に設定する
+$POS_API_KEY="<pos api key>"
+$NOTIFICATION_API_KEY="<app center push api key>"
+$NOTIFICATION_URI="https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications"
+az functionapp config appsettings set `
+  --resource-group ${RESOURCE_GROUP} `
+  --name ${PREFIX}-box-api `
+  --settings `
+    NotificationApiKey=${NOTIFICATION_API_KEY} `
+    NotificationUri=${NOTIFICATION_URI} `
+    PosApiKey=${POS_API_KEY}
 ```
 
 ### API の動作確認

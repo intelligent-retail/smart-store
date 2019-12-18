@@ -1,3 +1,7 @@
+$RESOURCE_GROUP="<resource group name>"
+$PREFIX="<prefix string within 2 characters>"
+$STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD="<sql server admin password>"
+
 # Get a server name of SQL Server
 $SQL_SERVER_NAME=az sql server list `
     --resource-group ${RESOURCE_GROUP} `
