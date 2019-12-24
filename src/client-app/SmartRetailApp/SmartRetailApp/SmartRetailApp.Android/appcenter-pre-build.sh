@@ -33,7 +33,7 @@ echo "PATH=" $ANDROID_MANIFEST_FILE
 
 if [ -e "$ANDROID_MANIFEST_FILE" ]
 then
-    sed -i '' 's#YourAppCenterKey = "[-A-Za-z0-9:_./]*"#YourAppCenterKey = "'$AppCenterKeyAndroid'"#' $ANDROID_MANIFEST_FILE
+    sed -i '' 's#msalYourAppCenterKey#msal'$AppCenterKeyAndroid'#' $ANDROID_MANIFEST_FILE
 
     echo "File content:"
     cat $ANDROID_MANIFEST_FILE
