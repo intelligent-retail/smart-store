@@ -14,7 +14,7 @@ fi
 
 INFOPLIST_FILE=$APPCENTER_SOURCE_DIRECTORY/src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp.iOS/Info.plist
 
-if [ -e "$APP_CONSTANT_FILE" ]
+if [ -e "$INFOPLIST_FILE" ]
 then
     sed -i '' 's#YourAppCenterKey = "[-A-Za-z0-9:_./]*"#YourAppCenterKey = "'$AppCenterKeyiOS'"#' $INFOPLIST_FILE
 
