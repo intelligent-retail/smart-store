@@ -16,7 +16,7 @@ INFOPLIST_FILE=$APPCENTER_SOURCE_DIRECTORY/src/client-app/SmartRetailApp/SmartRe
 
 if [ -e "$INFOPLIST_FILE" ]
 then
-    sed -i '' 's#msalYourAppCenterKey#msal$AppCenterKeyiOS#' $INFOPLIST_FILE
+    sed -i '' 's#msalYourAppCenterKey#msal'$AppCenterKeyiOS'#' $INFOPLIST_FILE
 
     echo "File content:"
     cat $INFOPLIST_FILE
