@@ -152,6 +152,9 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AppCenter">
+      <Version>2.6.2</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Push">
       <Version>2.6.2</Version>
     </PackageReference>

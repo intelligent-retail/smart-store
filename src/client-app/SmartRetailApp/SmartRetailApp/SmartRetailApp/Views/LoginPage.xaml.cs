@@ -1,5 +1,4 @@
-﻿#define AUTH
-using Microsoft.AppCenter;
+﻿using Microsoft.AppCenter;
 using Microsoft.AppCenter.Auth;
 using SmartRetailApp.Models;
 using SmartRetailApp.Services;
@@ -13,8 +12,6 @@ namespace SmartRetailApp.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class LoginPage : ContentPage
     {
-        UserInformation UserInfo { get; set; }
-
         public LoginPage()
         {
 
@@ -32,8 +29,6 @@ namespace SmartRetailApp.Views
             btnStartShopping.IsEnabled = true;
             btnLoginLogout.IsVisible = false;
 #endif
-
-
             btnLoginLogout.Clicked += async (sender, e) =>
             {
                 if (btnLoginLogout.Text == "ログアウト")
@@ -42,47 +37,31 @@ namespace SmartRetailApp.Views
                 }
                 else
                 {
-                    await SignInAsync();
+                    var app = Application.Current as App;
+                    if (await app.SignInAsync() != true)
+                    {
+                        await DisplayAlert("ログインできませんでした", app.AuthErrorMessage,"OK");
+                    }
+                    else
+                    {
+                        await DisplayAlert("ログインしました", $"", "OK");
+                        btnLoginLogout.Text = "ログアウト";
+                        btnStartShopping.IsEnabled = true;
+                    }
                 }
             };
         }
 
         async Task SignOut()
         {
-            Auth.SignOut();
+            var app = Application.Current as App;
+            app.SignOut();
+
             btnLoginLogout.Text = "ログイン";
             btnStartShopping.IsEnabled = false;
 
             await DisplayAlert("ログアウトしました", "", "OK");
         }
-
-        async Task SignInAsync()
-        {
-            try
-            {
-                // Sign-in succeeded.
-                this.UserInfo = await Auth.SignInAsync();
-                string accountId = this.UserInfo.AccountId;
-                Console.WriteLine($"id_token={UserInfo.IdToken}");
-
-                btnLoginLogout.Text = "ログアウト";
-                btnStartShopping.IsEnabled = true;
-
-                await DisplayAlert("ログインしました", $"AccountId={accountId}", "OK");
-            }
-            catch (Exception e)
-            {
-                await DisplayAlert("ログインできませんでした", e.ToString(), "OK");
-            }
-        }
-
-        protected override async void OnAppearing()
-        {
-#if AUTH
-            await SignInAsync();
-#endif
-        }
-
 
         private async void LoginClicked(object sender, EventArgs e)
         {
