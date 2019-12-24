@@ -19,7 +19,7 @@
 
         <data
           android:host="auth"
-          android:scheme="msal{YourAppSecret}" />
+          android:scheme="msal{YourAppCenterKey}" />
       </intent-filter>
     </activity>
   </application>
