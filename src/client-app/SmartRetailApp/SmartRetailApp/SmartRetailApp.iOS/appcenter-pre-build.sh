@@ -19,5 +19,5 @@ then
     sed -i '' 's#YourAppCenterKey = "[-A-Za-z0-9:_./]*"#YourAppCenterKey = "'$AppCenterKeyiOS'"#' $INFOPLIST_FILE
 
     echo "File content:"
-    cat $INFOPLISTFILE
+    cat $INFOPLIST_FILE
 fi
