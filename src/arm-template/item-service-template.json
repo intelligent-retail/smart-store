@@ -66,6 +66,9 @@
         "P2",
         "P3"
       ]
+    },
+    "keyVaultName": {
+      "type": "string"
     }
   },
   "variables": {
@@ -76,6 +79,7 @@
     "itemServiceAssetsContainerName": "item-images",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "itemServiceCosmosDbName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemServiceGroupName'), parameters('suffix'))]",
+    "itemServiceCosmosDbSecretName": "itemServiceCosmosDbConnectionString",
     "itemServiceAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemServiceAppServicePlan'), parameters('suffix'))]",
     "itemMasterApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemMasterApi'), parameters('suffix'))]",
     "itemMasterApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemMasterApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
@@ -100,6 +104,17 @@
           }
         ]
       }
+    },
+    {
+      "name": "[concat(parameters('keyVaultName'), '/', variables('itemServiceCosmosDbSecretName'))]",
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2018-02-14",
+      "properties": {
+        "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))]"
+      ]
     },
     {
       "name": "[variables('itemServiceAppServicePlanName')]",
@@ -135,34 +150,54 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]",
         "siteConfig": {
-          "appSettings": [
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('itemMasterApiStorageAccountsName'), ';AccountKey=', listKeys(variables('itemMasterApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
-            },
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
-            },
-            {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "[parameters('itemMasterApiZipUrl')]"
-            },
-            {
-              "name": "CosmosDBConnection",
-              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
-            }
-          ],
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
           }
         }
       },
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('itemMasterApiStorageAccountsName'))]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]"
+      ]
+    },
+    {
+      "name": "[concat(parameters('keyVaultName'), '/add')]",
+      "type": "Microsoft.KeyVault/vaults/accessPolicies",
+      "apiVersion": "2018-02-14",
+      "properties": {
+        "accessPolicies": [
+          {
+            "tenantId": "[reference(resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName')), '2019-08-01', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName')), '2019-08-01', 'Full').identity.principalId]",
+            "permissions": {
+              "secrets": [
+                "get",
+                "list"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('itemMasterApiFunctionName'), '/appsettings')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('itemMasterApiStorageAccountsName'), ';AccountKey=', listKeys(variables('itemMasterApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
+        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "WEBSITE_RUN_FROM_PACKAGE": "[parameters('itemMasterApiZipUrl')]",
+        "CosmosDBConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('itemServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('itemServiceCosmosDbSecretName'))]"
       ]
     },
     {

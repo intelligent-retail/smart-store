@@ -122,6 +122,9 @@
         "P2",
         "P3"
       ]
+    },
+    "keyVaultName": {
+      "type": "string"
     }
   },
   "variables": {
@@ -152,8 +155,10 @@
         }
       ]
     },
+    "stockServiceCosmosDbSecretName": "stockServiceCosmosDbConnectionString",
     "stockServiceSqlServerName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceGroupName'), parameters('delimiter'), 'sql', parameters('suffix'))]",
     "stockServiceSqlDatabaseMaxSizeBytes": "[mul(parameters('stockServiceSqlDatabaseMaxDataSize'), variables('bytesConversion')[parameters('stockServiceSqlDatabaseMaxDataSizeUnit')])]",
+    "stockServiceSqlDatabaseSecretName": "stockServiceSqlDatabaseConnectionString",
     "stockServiceAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceAppServicePlan'), parameters('suffix'))]",
     "stockCommandApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockCommandApi'), parameters('suffix'))]",
     "stockCommandApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockCommandApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
@@ -225,7 +230,18 @@
         "count": "[length(variables('stockServiceCosmosDbDatabase')['collections'])]"
       }
     },
-      {
+    {
+      "name": "[concat(parameters('keyVaultName'), '/', variables('stockServiceCosmosDbSecretName'))]",
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2018-02-14",
+      "properties": {
+        "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+      ]
+    },
+    {
       "name": "[variables('stockServiceSqlServerName')]",
       "type": "Microsoft.Sql/servers",
       "apiVersion": "2015-05-01-preview",
@@ -265,6 +281,17 @@
       ]
     },
     {
+      "name": "[concat(parameters('keyVaultName'), '/', variables('stockServiceSqlDatabaseSecretName'))]",
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2018-02-14",
+      "properties": {
+        "value": "[concat('Server=tcp:', reference(variables('stockServiceSqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('stockServiceSqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('stockServiceSqlServerName')).administratorLogin, ';Password=', parameters('stockServiceSqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]"
+      ]
+    },
+    {
       "name": "[variables('stockServiceAppServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2018-02-01",
@@ -298,39 +325,17 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]",
         "siteConfig": {
-          "appSettings": [
-            {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]"
-            },
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockCommandApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockCommandApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
-            },
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
-            },
-            {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "[parameters('stockCommandApiZipUrl')]"
-            },
-            {
-              "name": "CosmosDBConnection",
-              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
-            }
-          ],
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
           }
         }
       },
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('stockCommandApiStorageAccountsName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]"
       ]
     },
     {
@@ -355,39 +360,17 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
         "siteConfig": {
-          "appSettings": [
-            {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]"
-            },
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockQueryApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockQueryApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
-            },
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
-            },
-            {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "[parameters('stockQueryApiZipUrl')]"
-            },
-            {
-              "name": "SqlConnection",
-              "value": "[concat('Server=tcp:', reference(variables('stockServiceSqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('stockServiceSqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('stockServiceSqlServerName')).administratorLogin, ';Password=', parameters('stockServiceSqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
-            }
-          ],
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
           }
         }
       },
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('stockQueryApiStorageAccountsName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
-        "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]"
       ]
     },
     {
@@ -412,45 +395,117 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
         "siteConfig": {
-          "appSettings": [
-            {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]"
-            },
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockProcessorStorageAccountsName'), ';AccountKey=', listKeys(variables('stockProcessorStorageAccountsName'),'2018-07-01').keys[0].value)]"
-            },
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
-            },
-            {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "[parameters('stockProcessorZipUrl')]"
-            },
-            {
-              "name": "CosmosDBConnection",
-              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName')), '2015-04-08').primaryMasterKey)]"
-            },
-            {
-              "name": "SqlConnection",
-              "value": "[concat('Server=tcp:', reference(variables('stockServiceSqlServerName')).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('stockServiceSqlDatabaseName'), ';Persist Security Info=False;User ID=', reference(variables('stockServiceSqlServerName')).administratorLogin, ';Password=', parameters('stockServiceSqlServerAdminPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
-            }
-          ],
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
           }
         }
       },
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]"
+      ]
+    },
+    {
+      "name": "[concat(parameters('keyVaultName'), '/add')]",
+      "type": "Microsoft.KeyVault/vaults/accessPolicies",
+      "apiVersion": "2018-02-14",
+      "properties": {
+        "accessPolicies": [
+          {
+            "tenantId": "[reference(resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName')), '2019-08-01', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName')), '2019-08-01', 'Full').identity.principalId]",
+            "permissions": {
+              "secrets": [
+                "get",
+                "list"
+              ]
+            }
+          },
+          {
+            "tenantId": "[reference(resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName')), '2019-08-01', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName')), '2019-08-01', 'Full').identity.principalId]",
+            "permissions": {
+              "secrets": [
+                "get",
+                "list"
+              ]
+            }
+          },
+          {
+            "tenantId": "[reference(resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName')), '2019-08-01', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName')), '2019-08-01', 'Full').identity.principalId]",
+            "permissions": {
+              "secrets": [
+                "get",
+                "list"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName'))]",
+        "[resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName'))]",
+        "[resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockCommandApiFunctionName'), '/appsettings')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockCommandApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockCommandApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
+        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
+        "WEBSITE_RUN_FROM_PACKAGE": "[parameters('stockCommandApiZipUrl')]",
+        "CosmosDBConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceCosmosDbSecretName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('stockCommandApiStorageAccountsName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockQueryApiFunctionName'), '/appsettings')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockQueryApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockQueryApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
+        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
+        "WEBSITE_RUN_FROM_PACKAGE": "[parameters('stockQueryApiZipUrl')]",
+        "SqlConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceSqlDatabaseSecretName'))).secretUriWithVersion, ')')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceSqlDatabaseSecretName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('stockQueryApiStorageAccountsName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockProcessorFunctionName'), '/appsettings')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockProcessorStorageAccountsName'), ';AccountKey=', listKeys(variables('stockProcessorStorageAccountsName'),'2018-07-01').keys[0].value)]",
+        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
+        "WEBSITE_RUN_FROM_PACKAGE": "[parameters('stockProcessorZipUrl')]",
+        "CosmosDBConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
+        "SqlConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceSqlDatabaseSecretName'))).secretUriWithVersion, ')')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceCosmosDbSecretName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceSqlDatabaseSecretName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('stockProcessorStorageAccountsName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]",
-        "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]",
-        "[resourceId('Microsoft.DocumentDb/databaseAccounts/apis/databases/containers', variables('stockServiceCosmosDbName'), 'sql', variables('stockServiceCosmosDbDatabase')['name'], variables('stockServiceCosmosDbDatabase')['collections'][0]['name'])]",
-        "[resourceId('Microsoft.DocumentDb/databaseAccounts/apis/databases/containers', variables('stockServiceCosmosDbName'), 'sql', variables('stockServiceCosmosDbDatabase')['name'], variables('stockServiceCosmosDbDatabase')['collections'][1]['name'])]"
+        "[resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName'))]"
       ]
     },
     {

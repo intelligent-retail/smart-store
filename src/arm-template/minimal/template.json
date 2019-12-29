@@ -220,6 +220,9 @@
           },
           "appServicePlanId": {
             "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           }
         }
       },
@@ -291,6 +294,9 @@
           },
           "appServicePlanId": {
             "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           }
         }
       },
@@ -341,6 +347,9 @@
           },
           "appInsightsName": {
             "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           },
           "appServicePlanId": {
             "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"
@@ -402,6 +411,9 @@
           },
           "appInsightsName": {
             "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           },
           "appServicePlanId": {
             "value": "[reference('commonTemplate').outputs.appServicePlanId.value]"

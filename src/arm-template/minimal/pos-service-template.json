@@ -64,6 +64,9 @@
     },
     "appServicePlanId": {
       "type": "string"
+    },
+    "keyVaultName": {
+      "type": "string"
     }
   },
   "variables": {
@@ -95,6 +98,7 @@
         "partitionKeyPath": "/terminalKey"
       }
     ],
+    "posServiceCosmosDbSecretName": "posServiceCosmosDbConnectionString",
     "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterUri": "[concat('https://', parameters('itemMasterUri'),'/api/v1/company/{company-code}/store/{store-code}/items')]",
     "stockCommandUri": "[concat('https://', parameters('stockCommandUri'), '/api/v1/stocks')]"
@@ -180,6 +184,17 @@
       }
     },
     {
+      "name": "[concat(parameters('keyVaultName'), '/', variables('posServiceCosmosDbSecretName'))]",
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2018-02-14",
+      "properties": {
+        "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName')), '2015-04-08').primaryMasterKey)]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))]"
+      ]
+    },
+    {
       "name": "[variables('posApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2018-07-01",
@@ -199,44 +214,6 @@
       "properties": {
         "serverFarmId": "[parameters('appServicePlanId')]",
         "siteConfig": {
-          "appSettings": [
-            {
-              "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
-            },
-            {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "[parameters('posServiceApiZipUrl')]"
-            },
-            {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]"
-            },
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('posApiStorageAccountsName'), ';AccountKey=', listKeys(variables('posApiStorageAccountsName'),'2018-07-01').keys[0].value)]"
-            },
-            {
-              "name": "CosmosDbConnectionString",
-              "value": "[concat('AccountEndpoint=', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))).documentEndpoint, ';AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName')), '2015-04-08').primaryMasterKey)]"
-            },
-            {
-              "name": "ItemMasterUri",
-              "value": "[variables('itemMasterUri')]"
-            },
-            {
-              "name": "StockUri",
-              "value": "[variables('stockCommandUri')]"
-            },
-            {
-              "name": "ApplicationTimeZone",
-              "value": "Tokyo Standard Time"
-            },
-            {
-              "name": "FunctionsApiKeyHeader",
-              "value": "x-functions-key"
-            }
-          ],
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": [
@@ -245,9 +222,51 @@
           }
         }
       },
+      "identity": {
+        "type": "SystemAssigned"
+      }
+    },
+    {
+      "name": "[concat(parameters('keyVaultName'), '/add')]",
+      "type": "Microsoft.KeyVault/vaults/accessPolicies",
+      "apiVersion": "2018-02-14",
+      "properties": {
+        "accessPolicies": [
+          {
+            "tenantId": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2019-08-01', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2019-08-01', 'Full').identity.principalId]",
+            "permissions": {
+              "secrets": [
+                "get",
+                "list"
+              ]
+            }
+          }
+        ]
+      },
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('posApiStorageAccountsName'))]",
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))]"
+        "[resourceId('Microsoft.Web/sites', parameters('posApiFunctionName'))]"
+      ]
+    },
+    {
+      "name": "[concat(parameters('posApiFunctionName'), '/appsettings')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('posApiStorageAccountsName'), ';AccountKey=', listKeys(variables('posApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
+        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "WEBSITE_RUN_FROM_PACKAGE": "[parameters('posServiceApiZipUrl')]",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]",
+        "CosmosDbConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('posServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
+        "ItemMasterUri": "[variables('itemMasterUri')]",
+        "StockUri": "[variables('stockCommandUri')]",
+        "ApplicationTimeZone": "Tokyo Standard Time",
+        "FunctionsApiKeyHeader": "x-functions-key"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
+        "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('posServiceCosmosDbSecretName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('posApiStorageAccountsName'))]"
       ]
     }
   ],

@@ -26,10 +26,6 @@
       "type": "string",
       "defaultValue": "-"
     },
-    "appInsightsName": {
-      "type": "string",
-      "defaultValue": ""
-    },
     "posApiFunctionName": {
       "type": "string"
     },
@@ -39,7 +35,8 @@
   },
   "variables": {
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
-    "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]"
+    "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]",
+    "keyVaultName": "[concat(parameters('prefix'), parameters('delimiter'), 'keyvault', parameters('suffix'))]"
   },
   "resources": [
     {
@@ -55,12 +52,30 @@
       "properties": {
         "Application_Type": "web"
       }
+    },
+    {
+      "name": "[variables('keyVaultName')]",
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2018-02-14",
+      "location": "[variables('location')]",
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "name": "standard",
+          "family": "A"
+        },
+        "accessPolicies": []
+      }
     }
   ],
   "outputs": {
     "appInsightsName": {
       "type": "string",
       "value": "[variables('appInsightsName')]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[variables('keyVaultName')]"
     }
   }
 }
