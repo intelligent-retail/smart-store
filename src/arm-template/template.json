@@ -182,6 +182,38 @@
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2018-05-01",
+      "name": "commonTemplate",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
+          "contentVersion": "1.0.1.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "prefix": {
+            "value": "[variables('prefix')]"
+          },
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "delimiter": {
+            "value": "[parameters('delimiter')]"
+          },
+          "posApiFunctionName": {
+            "value": "[variables('posApiFunctionName')]"
+          },
+          "boxApiFunctionName": {
+            "value": "[variables('boxApiFunctionName')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
       "name": "itemServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -216,9 +248,15 @@
           },
           "itemServiceAppServicePlanSkuName": {
             "value": "[parameters('itemServiceAppServicePlanSkuName')]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
+      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -284,41 +322,15 @@
           },
           "stockServiceAppServicePlanSkuName": {
             "value": "[parameters('stockServiceAppServicePlanSkuName')]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           }
         }
-      }
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
-      "name": "commonTemplate",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(deployment().properties.templateLink.uri, 'common-template.json')]",
-          "contentVersion": "1.0.1.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "prefix": {
-            "value": "[variables('prefix')]"
-          },
-          "suffix": {
-            "value": "[parameters('suffix')]"
-          },
-          "delimiter": {
-            "value": "[parameters('delimiter')]"
-          },
-          "posApiFunctionName": {
-            "value": "[variables('posApiFunctionName')]"
-          },
-          "boxApiFunctionName": {
-            "value": "[variables('boxApiFunctionName')]"
-          }
-        }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'commonTemplate')]"
+      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -369,6 +381,9 @@
           },
           "appInsightsName": {
             "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           },
           "itemMasterUri": {
             "value": "[reference('itemServiceTemplate').outputs.itemMasterUri.value]"
@@ -433,6 +448,9 @@
           },
           "appInsightsName": {
             "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
+          },
+          "keyVaultName": {
+            "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           },
           "posApiAppServicePlanName": {
             "value": "[reference('posServiceTemplate').outputs.posApiAppServicePlanName.value]"
