@@ -26,7 +26,7 @@ namespace SmartRetailApp.Views
             btnStartShopping.IsEnabled = false;
             btnLoginLogout.IsVisible = true;
 #else
-            btnStartShopping.IsEnabled = true;
+            btnStartShopping.IsEnabled = true; xxx
             btnLoginLogout.IsVisible = false;
 #endif
             btnLoginLogout.Clicked += async (sender, e) =>
