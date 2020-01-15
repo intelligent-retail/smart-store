@@ -23,7 +23,7 @@ namespace SmartRetailApp.Views
             edtBoxName.Text = "SmartBox1";
 
 #if AUTH
-            btnStartShopping.IsEnabled = false; xxx
+            btnStartShopping.IsEnabled = false;
             btnLoginLogout.IsVisible = true;
 #else
             btnStartShopping.IsEnabled = true;

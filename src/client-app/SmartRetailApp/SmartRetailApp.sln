@@ -31,9 +31,9 @@ Global
 		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|iPhone
 		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|iPhone
 		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhone.Deploy.0 = Ad-Hoc|iPhone
-		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Ad-Hoc|iPhoneSimulator
-		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhoneSimulator.Build.0 = Ad-Hoc|iPhoneSimulator
-		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhoneSimulator.Deploy.0 = Ad-Hoc|iPhoneSimulator
+		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.Ad-Hoc|iPhoneSimulator.Deploy.0 = Debug|iPhoneSimulator
 		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.AppStore|Any CPU.ActiveCfg = AppStore|iPhone
 		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.AppStore|Any CPU.Build.0 = AppStore|iPhone
 		{89F27FA6-F74A-4FA7-8C7F-8AF816C4405B}.AppStore|Any CPU.Deploy.0 = AppStore|iPhone
@@ -64,9 +64,9 @@ Global
 		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|Any CPU.ActiveCfg = Ad-Hoc|Any CPU
 		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|Any CPU.Build.0 = Ad-Hoc|Any CPU
 		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|Any CPU.Deploy.0 = Ad-Hoc|Any CPU
-		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
-		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
-		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhone.Deploy.0 = Debug|Any CPU
+		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|Any CPU
+		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|Any CPU
+		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhone.Deploy.0 = Ad-Hoc|Any CPU
 		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{FA4CCAE0-F260-49B9-ACBE-ACBE3EB67D3C}.Ad-Hoc|iPhoneSimulator.Deploy.0 = Debug|Any CPU
