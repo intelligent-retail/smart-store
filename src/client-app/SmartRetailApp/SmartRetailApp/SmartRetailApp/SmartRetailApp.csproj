@@ -12,7 +12,13 @@
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType></DebugType>
+    <DefineConstants>TRACE;RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Ad-Hoc|AnyCPU' ">
+    <DebugType></DebugType>
+    <Optimize>true</Optimize>
     <DefineConstants>TRACE;AUTH;RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
+    <IntermediateOutputPath>obj\Release\netstandard2.0</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AppCenter" Version="2.6.2" />
