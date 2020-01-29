@@ -22,13 +22,6 @@ namespace SmartRetailApp.Views
 
             edtBoxName.Text = "SmartBox1";
 
-#if AUTH
-            btnStartShopping.IsEnabled = false;
-            btnLoginLogout.IsVisible = true;
-#else
-            btnStartShopping.IsEnabled = true; xxx
-            btnLoginLogout.IsVisible = false;
-#endif
             btnLoginLogout.Clicked += async (sender, e) =>
             {
                 if (btnLoginLogout.Text == "ログアウト")

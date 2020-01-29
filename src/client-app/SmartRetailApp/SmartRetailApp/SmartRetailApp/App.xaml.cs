@@ -44,9 +44,7 @@ namespace SmartRetailApp
                 typeof(Push),
                 typeof(Auth));
 
-#if AUTH
             //await SignInAsync();
-#endif
         }
 
         public bool IsLogin => (this.UserInfo!=null && !string.IsNullOrEmpty(this.UserInfo?.AccessToken));
