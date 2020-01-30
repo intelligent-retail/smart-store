@@ -2,9 +2,36 @@
 ここでは Azure AD B2C と App Center Auth の仕組みを利用して、クライアントアプリへの認証によるログインの実装方法を説明します。
 
 ## Azure ポータルでの Azure AD B2C の設定
-- Azure AD B2C テナントの作成
+### Azure AD B2C テナントの作成
+1. Azure Portal の右上にある [Directory + Subscription] をクリックしてご利用のサブスクリプションを選択します。このディレクトリはこれから作成する Azure AD B2C テナントとは**異なります**。
+2. Azure Portal から [リソースの作成] をクリックします。
+3. [Create a new Azure AD B2C Tenant] をクリックして、Azure AD B2c テナントを作成します。
+4. [Organization name] と [Initial domain name] を入力します。 [Country or region] を選択し [作成] をクリックします。
+5. テナント作成ページの上部にある [Create new B2C Tenant or Link to existing Tenant] リンクをクリックします。
+6. [Link an existing Azure AD B2C Tenant to my Azure subscription] を選択します。
+7. 作成した Azure AD B2C テナントを選択し、ご利用のサブスクリプションを選択します。
+[リソース グループ] には [新規作成] を選択します。 テナントを含むリソース グループの名前を入力し、リソース グループの場所を選択してから、 [作成] を選択します。
+### 作成した Azure AD B2C テナントを選択
+1. Azure Portal の右上にある [Directory + Subscription] をクリックして、作成した Azure AD B2C テナントのディレクトリを選択します。
+### アプリケーションの登録
+1. [アプリケーション] を選択して、[追加] をクリックします。
+2. アプリケーションの名前を入力します。 たとえば、webapp1 とします。
+3. [ネイティブ クライアントを含める] には、 [はい] を選択します。
+4. [応答 URL] にはテナント ID を概要からコピーして下記の形式で入力します。
+  `msal{Your Tenant ID}://auth`
+### クライアントシークレットの作成
+1. [Azure AD B2C - アプリケーション] ページで、作成したアプリケーション ( webapp1) を選択します。
+2. [キー] をクリックして、 [キーの生成] を選択します。
+3. [保存] をクリックして、キーを参照します。アプリキーの値をメモしておきます
+### ユーザーフローの作成
+1. Azure Potal で [Azure AD B2C] を検索して選択します。
+2. [ポリシー] で、 [ユーザーフロー(ポリシー)] を選択し、[新しいユーザーフロー] をクリックします。
+3. [推奨] タブで [サインアップとサインイン] ユーザーフローを選択します。
+4. ユーザー フローの [名前] を入力します。 たとえば、`signupsignin1` と入力します。
+5. [ユーザー属性と要求] で、サインアップ中にユーザーから収集して送信する要求と属性を選択します。 たとえば、 [Show more] を選択し、 [国/リージョン] 、 [表示名] 、 [郵便番号] の属性と要求を選択します。 [OK] をクリックします。
 
-*TBD*
+参考: https://docs.microsoft.com/ja-jp/azure/active-directory-b2c/tutorial-create-tenant
+
 ## App Center Auth の設定
 上記で作成した Azure AD B2C のテナントを App Center に紐付ける作業をおこないます。
 
