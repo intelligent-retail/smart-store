@@ -3,7 +3,7 @@
 
 ## Azure ポータルでの Azure AD B2C の設定
 ### Azure AD B2C テナントの作成
-1. Azure Portal の右上にある [Directory + Subscription] をクリックしてご利用のサブスクリプションを選択します。このディレクトリはこれから作成する Azure AD B2C テナントとは**異なります**。
+1. Azure Portal の右上にある 「ディレクトリ + サブスクリプション」をクリックして、利用するサブスクリプションとディレクトリを選択します。（なお、このディレクトリはこれから作成する Azure AD B2C テナントとは**異なります**。）
 2. Azure Portal から [リソースの作成] をクリックします。
 3. [Create a new Azure AD B2C Tenant] をクリックして、Azure AD B2c テナントを作成します。
 4. [Organization name] と [Initial domain name] を入力します。 [Country or region] を選択し [作成] をクリックします。
