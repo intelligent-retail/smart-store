@@ -39,7 +39,6 @@ namespace SmartRetailApp.Views
                     {
                         await DisplayAlert("ログインしました", $"", "OK");
                         btnLoginLogout.Text = "ログアウト";
-                        btnStartShopping.IsEnabled = true;
                     }
                 }
             };
@@ -51,7 +50,6 @@ namespace SmartRetailApp.Views
             app.SignOut();
 
             btnLoginLogout.Text = "ログイン";
-            btnStartShopping.IsEnabled = false;
 
             await DisplayAlert("ログアウトしました", "", "OK");
         }
