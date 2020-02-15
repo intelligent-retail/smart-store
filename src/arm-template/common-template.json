@@ -31,12 +31,53 @@
     },
     "boxApiFunctionName": {
       "type": "string"
+    },
+    "vnetNetworkAddress": {
+      "type": "string",
+      "defaultValue": "10.0"
+    },
+    "vnetMask": {
+      "type": "int",
+      "defaultValue": 16
+    },
+    "vnetSubnetMask": {
+      "type": "int",
+      "defaultValue": 24
+    },
+    "services": {
+      "type": "array"
     }
   },
   "variables": {
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]",
-    "keyVaultName": "[concat(parameters('prefix'), parameters('delimiter'), 'keyvault', parameters('suffix'))]"
+    "keyVaultName": "[concat(parameters('prefix'), parameters('delimiter'), 'keyvault', parameters('suffix'))]",
+    "bastionName": "[concat(parameters('prefix'), parameters('delimiter'), 'bastion', parameters('suffix'))]",
+    "bastionPublicIpName": "[concat(parameters('prefix'), parameters('delimiter'), 'bastion-ip', parameters('suffix'))]",
+    "vnetName": "[concat(parameters('prefix'), parameters('delimiter'), 'vnet', parameters('suffix'))]",
+    "vnetAddressPrefix": "[concat(parameters('vnetNetworkAddress'), '.0.0/', string(parameters('vnetMask')))]",
+    "subnetNameBastion": "AzureBastionSubnet",
+    "serviceBastion": {
+      "identifier": "[variables('subnetNameBastion')]",
+      "serviceEndpoints": [],
+      "delegations": []
+    },
+    "services": "[concat(createArray(variables('serviceBastion')), parameters('services'))]",
+    "copy": [
+      {
+        "name": "subnets",
+        "count": "[length(variables('services'))]",
+        "input": {
+          "name": "[variables('services')[copyIndex('subnets')].identifier]",
+          "properties": {
+            "addressPrefix": "[concat(parameters('vnetNetworkAddress'), '.', string(copyIndex('subnets')), '.0/', parameters('vnetSubnetMask'))]",
+            "privateEndpointNetworkPolicies": "[if(greater(length(variables('services')[copyIndex('subnets')].serviceEndpoints), 0), 'Enabled', 'Disabled')]",
+            "serviceEndpoints": "[variables('services')[copyIndex('subnets')].serviceEndpoints]",
+            "delegations": "[variables('services')[copyIndex('subnets')].delegations]"
+          }
+        }
+      }
+    ]
   },
   "resources": [
     {
@@ -66,6 +107,57 @@
         },
         "accessPolicies": []
       }
+    },
+    {
+      "name": "[variables('vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2019-11-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": "[variables('subnets')]"
+      }
+    },
+    {
+      "name": "[variables('bastionPublicIpName')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2019-11-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "name": "[variables('bastionName')]",
+      "type": "Microsoft.Network/bastionHosts",
+      "apiVersion": "2019-11-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipConfigBastion",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetNameBastion'))]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpName'))]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpName'))]"
+      ]
     }
   ],
   "outputs": {
@@ -76,6 +168,10 @@
     "keyVaultName": {
       "type": "string",
       "value": "[variables('keyVaultName')]"
+    },
+    "vnet": {
+     "type": "object",
+     "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')), '2019-11-01', 'Full')]" 
     }
   }
 }

@@ -176,7 +176,8 @@
   "variables": {
     "prefix": "[toLower(parameters('prefix'))]",
     "posApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
+    "boxApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
+    "services": []
   },
   "resources": [
     {
@@ -207,6 +208,9 @@
           },
           "boxApiFunctionName": {
             "value": "[variables('boxApiFunctionName')]"
+          },
+          "services": {
+            "value": "[variables('services')]"
           }
         }
       }
