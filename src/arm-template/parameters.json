@@ -12,7 +12,7 @@
       "value": "Standard_LRS"
     },
     "storageAccountsKind": {
-      "value": "Storage"
+      "value": "StorageV2"
     },
     "storageAccountsSuffix": {
       "value": "st"

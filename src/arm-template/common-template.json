@@ -169,9 +169,9 @@
       "type": "string",
       "value": "[variables('keyVaultName')]"
     },
-    "vnet": {
-     "type": "object",
-     "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')), '2019-11-01', 'Full')]" 
+    "vnetName": {
+     "type": "string",
+     "value": "[variables('vnetName')]"
     }
   }
 }

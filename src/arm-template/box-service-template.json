@@ -70,6 +70,12 @@
     },
     "keyVaultName": {
       "type": "string"
+    },
+    "service": {
+      "type": "object"
+    },
+    "vnetName": {
+      "type": "string"
     }
   },
   "variables": {
@@ -104,7 +110,8 @@
     "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiAppServicePlanName'), parameters('suffix'))]",
     "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
     "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
-    "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]"
+    "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]",
+    "delegatedSubnetName": "[parameters('service').identifier]"
   },
   "resources": [
     {
@@ -157,7 +164,7 @@
     {
       "name": "[variables('boxCosmosDbAccountName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2016-03-31",
+      "apiVersion": "2019-12-12",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -168,6 +175,13 @@
         "locations": [
           {
             "locationName": "[variables('location')]"
+          }
+        ],
+        "isVirtualNetworkFilterEnabled": true,
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "ignoreMissingVNetServiceEndpoint": false
           }
         ]
       },
@@ -245,12 +259,22 @@
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+        "networkAcls": {
+          "virtualNetworkRules": [
+            {
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        }
+      }
     },
     {
       "name": "[variables('boxApiFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
@@ -267,6 +291,20 @@
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('boxApiFunctionName'))]"
+          ]
+        }
+      ],
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]"
       ]

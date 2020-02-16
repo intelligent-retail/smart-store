@@ -177,7 +177,31 @@
     "prefix": "[toLower(parameters('prefix'))]",
     "posApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
     "boxApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
-    "services": []
+    "delegationToServerFarms": {
+      "name": "Delegate to app plan",
+      "properties": {
+        "serviceName": "Microsoft.Web/serverFarms"
+      }
+    },
+    "boxService": {
+      "identifier": "boxService",
+      "serviceEndpoints": [
+        {
+          "service": "Microsoft.Storage",
+          "locations": [
+            "[parameters('location')]"
+          ]
+        },
+        {
+          "service": "Microsoft.AzureCosmosDB",
+          "locations": [
+            "[parameters('location')]"
+          ]
+        }
+      ],
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
+    "services": "[concat(createArray(variables('boxService')))]"
   },
   "resources": [
     {
@@ -461,6 +485,12 @@
           },
           "posApiFunctionUrl": {
             "value": "[reference('posServiceTemplate').outputs.posApiFunctionUrl.value]"
+          },
+          "service": {
+            "value": "[variables('boxService')]"
+          },
+          "vnetName": {
+            "value": "[reference('commonTemplate').outputs.vnetName.value]"
           }
         }
       },
