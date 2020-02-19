@@ -1,10 +1,9 @@
 {
   "IsEncrypted": false,
   "Values": {
+    "FUNCTIONS_EXTENSION_VERSION": "~3",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true"
-  },
-  "KeyVault": {
-    "Endpoint": "https://***.vault.azure.net"
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "KeyVaultEndpoint": "https://****.vault.azure.net"
   }
 }

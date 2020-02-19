@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,7 @@ namespace StockService.StockQuery
 
             var builtConfig = config.Build();
 
-            config.AddAzureKeyVault(builtConfig["KeyVault:Endpoint"]);
+            config.AddAzureKeyVault(builtConfig["KeyVaultEndpoint"]);
 
             Configuration = config.Build();
         }
@@ -26,7 +27,7 @@ namespace StockService.StockQuery
         {
             builder.Services.AddDbContext<StockDbContext>((provider, options) =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("SqlConnection"))
+                options.UseSqlServer(Configuration["stockServiceSqlDatabaseConnectionString"])
                        .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
         }
