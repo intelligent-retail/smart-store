@@ -4,9 +4,7 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "CosmosDBConnection": "AccountEndpoint=https://***-stock-dev.documents.azure.com:443/;AccountKey=***;",
-    "SignalRConnection": "Endpoint=https://***.service.signalr.net;AccessKey=***;Version=1.0;"
-  },
-  "KeyVault": {
-    "Endpoint": "https://***.vault.azure.net"
+    "SignalRConnection": "Endpoint=https://***.service.signalr.net;AccessKey=***;Version=1.0;",
+    "KeyVaultEndpoint": "https://****.vault.azure.net"
   }
 }
