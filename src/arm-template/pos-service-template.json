@@ -67,6 +67,16 @@
     },
     "keyVaultName": {
       "type": "string"
+    },
+    "service": {
+      "type": "object"
+    },
+    "vnetName": {
+      "type": "string"
+    },
+    "allowableSubnetNames": {
+      "type": "array",
+      "defaultValue": []
     }
   },
   "variables": {
@@ -100,10 +110,36 @@
       }
     ],
     "posServiceCosmosDbSecretName": "posServiceCosmosDbConnectionString",
-    "posApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('posApiAppServicePlanName'), parameters('suffix'))]",
     "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterUri": "[concat('https://', parameters('itemMasterUri'),'/api/v1/company/{company-code}/store/{store-code}/items')]",
-    "stockCommandUri": "[concat('https://', parameters('stockCommandUri'), '/api/v1/stocks')]"
+    "stockCommandUri": "[concat('https://', parameters('stockCommandUri'), '/api/v1/stocks')]",
+    "delegatedSubnetName": "[parameters('service').identifier]",
+    "ipSecurityRestrictionsBasePriority": 300,
+    "allowableSubnetNames": "[createArray(variables('delegatedSubnetName'))]",
+    "allAllowableSubnetNames": "[concat(variables('allowableSubnetNames'), parameters('allowableSubnetNames'))]",
+    "copy": [
+      {
+        "name": "allAllowableSubnets",
+        "count": "[length(variables('allAllowableSubnetNames'))]",
+        "input": "[
+          alloableSubnet.create(
+            variables('allAllowableSubnetNames')[copyIndex('allAllowableSubnets')],
+            resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('allAllowableSubnetNames')[copyIndex('allAllowableSubnets')])
+          )
+        ]"
+      },
+      {
+        "name": "ipSecurityRestrictions",
+        "count": "[length(variables('allAllowableSubnets'))]",
+        "input": "[
+          ipSecurityRestriction.create(
+            variables('allAllowableSubnets')[copyIndex('ipSecurityRestrictions')].name,
+            variables('allAllowableSubnets')[copyIndex('ipSecurityRestrictions')].vnetSubnetResourceId,
+            add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictions'))
+          )
+        ]"
+      }
+    ]
   },
   "resources": [
     {
@@ -231,7 +267,8 @@
             "allowedOrigins": [
               "*"
             ]
-          }
+          },
+          "ipSecurityRestrictions": "[variables('ipSecurityRestrictions')]"
         }
       },
       "identity": {
@@ -294,5 +331,61 @@
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2018-02-01').defaultHostName]"
     }
-  }
+  },
+  "functions": [
+    {
+      "namespace": "alloableSubnet",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "subnetName",
+              "type": "string"
+            },
+            {
+              "name": "subnetResourceId",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('subnetResourceId')]",
+              "name": "[parameters('subnetName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "ipSecurityRestriction",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "vnetSubnetResourceId",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('vnetSubnetResourceId')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        }
+      }
+    }
+  ]
 }

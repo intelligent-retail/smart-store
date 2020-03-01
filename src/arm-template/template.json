@@ -179,23 +179,15 @@
     },
     "boxService": {
       "identifier": "boxService",
-      "serviceEndpoints": [
-        {
-          "service": "Microsoft.Storage",
-          "locations": [
-            "[parameters('location')]"
-          ]
-        },
-        {
-          "service": "Microsoft.AzureCosmosDB",
-          "locations": [
-            "[parameters('location')]"
-          ]
-        }
-      ],
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
-    "services": "[concat(createArray(variables('boxService')))]"
+    "posService": {
+      "identifier": "posService",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))))]",
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
+    "services": "[concat(createArray(variables('boxService'), variables('posService')))]"
   },
   "resources": [
     {
@@ -409,6 +401,15 @@
           },
           "stockCommandUri": {
             "value": "[reference('stockServiceTemplate').outputs.stockCommandUri.value]"
+          },
+          "service": {
+            "value": "[variables('posService')]"
+          },
+          "vnetName": {
+            "value": "[reference('commonTemplate').outputs.vnetName.value]"
+          },
+          "allowableSubnetNames": {
+            "value": "[createArray(variables('boxService').identifier)]"
           }
         }
       },
@@ -486,5 +487,31 @@
     }
   ],
   "outputs": {
-  }
+  },
+  "functions": [
+    {
+      "namespace": "serviceEndpoint",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "serviceName",
+              "type": "string"
+            },
+            {
+              "name": "locations",
+              "type": "array"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "service": "[parameters('serviceName')]",
+              "locations": "[parameters('locations')]"
+            }
+          }
+        }
+      }
+    }
+  ]
 }
