@@ -50,9 +50,6 @@
     "posApiFunctionName": {
       "type": "string"
     },
-    "posApiAppServicePlanName": {
-      "type": "string"
-    },
     "posApiAppServicePlanSku": {
       "type": "string"
     },
@@ -74,6 +71,7 @@
   },
   "variables": {
     "posServiceGroupName": "pos-service",
+    "posApiAppServicePlanName": "aspPos",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posServiceGroupName'), parameters('suffix'))]",
     "posCosmosDbDatabaseName": "smartretailpos",
@@ -201,14 +199,12 @@
     {
       "name": "[variables('posApiAppServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "location": "[variables('location')]",
       "sku": {
         "name": "[parameters('posApiAppServicePlanSku')]"
       },
-      "properties": {
-        "numberOfWorkers": 1
-      }
+      "properties": {}
     },
     {
       "name": "[variables('posApiStorageAccountsName')]",

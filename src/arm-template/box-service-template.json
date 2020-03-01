@@ -50,16 +50,10 @@
     "boxApiName": {
       "type": "string"
     },
-    "boxApiAppServicePlanName": {
-      "type": "string"
-    },
     "boxApiAppServicePlanSku": {
       "type": "string"
     },
     "boxServiceApiZipUrl": {
-      "type": "string"
-    },
-    "posApiAppServicePlanName": {
       "type": "string"
     },
     "posApiFunctionUrl": {
@@ -80,8 +74,8 @@
   },
   "variables": {
     "boxServiceGroupName": "box-service",
+    "boxApiAppServicePlanName": "aspBox",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
-    "needToCreateAppServiceForBoxService": "[not(equals(parameters('posApiAppServicePlanName'), parameters('boxApiAppServicePlanName')))]",
     "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
     "boxServiceIoTHubSecretName": "boxServiceIoTHubConnectionString",
     "boxServiceIoTHubEventSecretName": "boxServiceIoTHubEventConnectionString",
@@ -107,7 +101,6 @@
       }
     ],
     "boxServiceCosmosDbSecretName": "boxServiceCosmosDbConnectionString",
-    "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiAppServicePlanName'), parameters('suffix'))]",
     "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
     "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]",
@@ -238,17 +231,14 @@
       ]
     },
     {
-      "condition": "[variables('needToCreateAppServiceForBoxService')]",
       "name": "[variables('boxApiAppServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "location": "[variables('location')]",
       "sku": {
         "name": "[parameters('boxApiAppServicePlanSku')]"
       },
-      "properties": {
-        "numberOfWorkers": 1
-      }
+      "properties": {}
     },
     {
       "name": "[variables('boxApiStorageAccountsName')]",

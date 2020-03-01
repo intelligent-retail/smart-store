@@ -148,9 +148,6 @@
     "posApiName": {
       "type": "string"
     },
-    "posApiAppServicePlanName": {
-      "type": "string"
-    },
     "posApiAppServicePlanSku": {
       "type": "string"
     },
@@ -161,9 +158,6 @@
       "type": "string"
     },
     "boxIotHubSku": {
-      "type": "string"
-    },
-    "boxApiAppServicePlanName": {
       "type": "string"
     },
     "boxApiAppServicePlanSku": {
@@ -401,9 +395,6 @@
           "posApiFunctionName": {
             "value": "[variables('posApiFunctionName')]"
           },
-          "posApiAppServicePlanName": {
-            "value": "[parameters('posApiAppServicePlanName')]"
-          },
           "posApiAppServicePlanSku": {
             "value": "[parameters('posApiAppServicePlanSku')]"
           },
@@ -468,9 +459,6 @@
           "boxServiceApiZipUrl": {
             "value": "[parameters('boxServiceApiZipUrl')]"
           },
-          "boxApiAppServicePlanName": {
-            "value": "[parameters('boxApiAppServicePlanName')]"
-          },
           "boxApiAppServicePlanSku": {
             "value": "[parameters('boxApiAppServicePlanSku')]"
           },
@@ -479,9 +467,6 @@
           },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
-          },
-          "posApiAppServicePlanName": {
-            "value": "[reference('posServiceTemplate').outputs.posApiAppServicePlanName.value]"
           },
           "posApiFunctionUrl": {
             "value": "[reference('posServiceTemplate').outputs.posApiFunctionUrl.value]"

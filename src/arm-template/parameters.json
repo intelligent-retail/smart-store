@@ -56,11 +56,8 @@
     "posApiName": {
       "value": "pos-api"
     },
-    "posApiAppServicePlanName": {
-      "value": "aspPosBox"
-    },
     "posApiAppServicePlanSku": {
-      "value": "B1"
+      "value": "P1V2"
     },
     "posServiceApiZipUrl": {
       "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/PosService.zip"
@@ -71,11 +68,8 @@
     "boxApiName": {
       "value": "box-api"
     },
-    "boxApiAppServicePlanName": {
-      "value": "aspPosBox"
-    },
     "boxApiAppServicePlanSku": {
-      "value": "B1"
+      "value": "P1V2"
     },
     "boxServiceApiZipUrl": {
       "value": "https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template/functions-packages/BoxManagementService.zip"
