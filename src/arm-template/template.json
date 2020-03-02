@@ -177,6 +177,11 @@
         "serviceName": "Microsoft.Web/serverFarms"
       }
     },
+    "stockService": {
+      "identifier": "stockService",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
     "posService": {
       "identifier": "posService",
       "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
@@ -187,7 +192,7 @@
       "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
-    "services": "[concat(createArray(variables('posService'), variables('boxService')))]"
+    "services": "[concat(createArray(variables('stockService'), variables('posService'), variables('boxService')))]"
   },
   "resources": [
     {
@@ -339,6 +344,15 @@
           },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
+          },
+          "service": {
+            "value": "[variables('stockService')]"
+          },
+          "vnetName": {
+            "value": "[reference('commonTemplate').outputs.vnetName.value]"
+          },
+          "allowableSubnetNames": {
+            "value": "[createArray(variables('posService').identifier)]"
           }
         }
       },
