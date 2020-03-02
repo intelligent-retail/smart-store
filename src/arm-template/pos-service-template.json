@@ -145,7 +145,7 @@
     {
       "name": "[variables('posCosmosDbAccountName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2016-03-31",
+      "apiVersion": "2019-12-12",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -156,6 +156,13 @@
         "locations": [
           {
             "locationName": "[variables('location')]"
+          }
+        ],
+        "isVirtualNetworkFilterEnabled": true,
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "ignoreMissingVNetServiceEndpoint": false
           }
         ]
       },
@@ -245,13 +252,23 @@
     {
       "name": "[variables('posApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2019-04-01",
       "sku": {
         "name": "[parameters('storageAccountsSkuName')]"
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+                "networkAcls": {
+          "virtualNetworkRules": [
+            {
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        }
+      }
     },
     {
       "name": "[parameters('posApiFunctionName')]",
@@ -274,6 +291,21 @@
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('posApiFunctionName'))]"
+          ]
+        }
+      ],
+
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]"
       ]

@@ -177,22 +177,22 @@
         "serviceName": "Microsoft.Web/serverFarms"
       }
     },
+    "posService": {
+      "identifier": "posService",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
     "boxService": {
       "identifier": "boxService",
       "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
-    "posService": {
-      "identifier": "posService",
-      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))))]",
-      "delegations": "[createArray(variables('delegationToServerFarms'))]"
-    },
-    "services": "[concat(createArray(variables('boxService'), variables('posService')))]"
+    "services": "[concat(createArray(variables('posService'), variables('boxService')))]"
   },
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "commonTemplate",
       "properties": {
         "mode": "Incremental",
@@ -227,7 +227,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "itemServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -274,7 +274,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "stockServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -348,7 +348,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "posServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -421,7 +421,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "boxServiceTemplate",
       "properties": {
         "mode": "Incremental",
