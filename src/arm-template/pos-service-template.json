@@ -273,7 +273,7 @@
     {
       "name": "[parameters('posApiFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
