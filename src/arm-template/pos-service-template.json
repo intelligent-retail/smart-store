@@ -259,7 +259,7 @@
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
       "properties": {
-                "networkAcls": {
+        "networkAcls": {
           "virtualNetworkRules": [
             {
               "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
