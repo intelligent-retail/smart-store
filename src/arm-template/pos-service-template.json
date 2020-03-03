@@ -305,7 +305,6 @@
           ]
         }
       ],
-
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('posApiAppServicePlanName'))]"
       ]
