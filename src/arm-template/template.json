@@ -179,7 +179,7 @@
     },
     "stockService": {
       "identifier": "stockService",
-      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Sql', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
     "posService": {
