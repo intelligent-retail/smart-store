@@ -1,8 +1,9 @@
 {
   "IsEncrypted": false,
   "Values": {
+    "FUNCTIONS_EXTENSION_VERSION": "~3",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "SqlConnection": "Server=(localdb)\\mssqllocaldb;Database=StockBackend;Trusted_Connection=True;MultipleActiveResultSets=true"
+    "KeyVaultEndpoint": "https://****.vault.azure.net"
   }
 }
