@@ -69,6 +69,16 @@
     },
     "keyVaultName": {
       "type": "string"
+    },
+    "service": {
+      "type": "object"
+    },
+    "vnetName": {
+      "type": "string"
+    },
+    "allowableSubnetNames": {
+      "type": "array",
+      "defaultValue": []
     }
   },
   "variables": {
@@ -84,7 +94,34 @@
     "itemMasterApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemMasterApi'), parameters('suffix'))]",
     "itemMasterApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemMasterApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterApiAppService": "itemServiceAppServicePlanName",
-    "itemServiceAssetsStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemServiceGroupName'), variables('itemServiceAssetsName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]"
+    "itemServiceAssetsStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemServiceGroupName'), variables('itemServiceAssetsName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "delegatedSubnetName": "[parameters('service').identifier]",
+    "ipSecurityRestrictionsBasePriority": 300,
+    "allowableSubnetNames": "[createArray(variables('delegatedSubnetName'))]",
+    "allAllowableSubnetNames": "[concat(variables('allowableSubnetNames'), parameters('allowableSubnetNames'))]",
+    "copy": [
+      {
+        "name": "allAllowableSubnets",
+        "count": "[length(variables('allAllowableSubnetNames'))]",
+        "input": "[
+          alloableSubnet.create(
+            variables('allAllowableSubnetNames')[copyIndex('allAllowableSubnets')],
+            resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('allAllowableSubnetNames')[copyIndex('allAllowableSubnets')])
+          )
+        ]"
+      },
+      {
+        "name": "ipSecurityRestrictions",
+        "count": "[length(variables('allAllowableSubnets'))]",
+        "input": "[
+          ipSecurityRestriction.create(
+            variables('allAllowableSubnets')[copyIndex('ipSecurityRestrictions')].name,
+            variables('allAllowableSubnets')[copyIndex('ipSecurityRestrictions')].vnetSubnetResourceId,
+            add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictions'))
+          )
+        ]"
+      }
+    ]
   },
   "resources": [
     {
@@ -144,7 +181,7 @@
       "comments": "item-master-api",
       "name": "[variables('itemMasterApiFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
@@ -153,7 +190,8 @@
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
-          }
+          },
+          "ipSecurityRestrictions": "[variables('ipSecurityRestrictions')]"
         }
       },
       "identity": {
@@ -230,5 +268,61 @@
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName')), '2018-02-01').defaultHostName]"
     }
-  }
+  },
+  "functions": [
+    {
+      "namespace": "alloableSubnet",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "subnetName",
+              "type": "string"
+            },
+            {
+              "name": "subnetResourceId",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('subnetResourceId')]",
+              "name": "[parameters('subnetName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "ipSecurityRestriction",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "vnetSubnetResourceId",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('vnetSubnetResourceId')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        }
+      }
+    }
+  ]
 }
