@@ -503,7 +503,8 @@
             "swiftSupported": true
           },
           "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName'))]"
+            "[resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName'))]",
+            "[resourceId('Microsoft.Web/sites/config', variables('stockCommandApiFunctionName'), 'virtualNetwork')]"
           ]
         }
       ],
@@ -563,7 +564,9 @@
             "swiftSupported": true
           },
           "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName'))]"
+            "[resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName'))]",
+            "[resourceId('Microsoft.Web/sites/config', variables('stockCommandApiFunctionName'), 'virtualNetwork')]",
+            "[resourceId('Microsoft.Web/sites/config', variables('stockQueryApiFunctionName'), 'virtualNetwork')]"
           ]
         }
       ],
