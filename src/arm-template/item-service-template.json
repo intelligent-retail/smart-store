@@ -127,7 +127,7 @@
     {
       "name": "[variables('itemServiceCosmosDbName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2015-04-08",
+      "apiVersion": "2019-12-12",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -138,6 +138,13 @@
         "locations": [
           {
             "locationName": "[variables('location')]"
+          }
+        ],
+        "isVirtualNetworkFilterEnabled": true,
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "ignoreMissingVNetServiceEndpoint": false
           }
         ]
       }
@@ -169,13 +176,23 @@
       "comments": "item-master-api",
       "name": "[variables('itemMasterApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2019-04-01",
       "sku": {
         "name": "[parameters('storageAccountsSkuName')]"
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+        "networkAcls": {
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "action": "Allow"
+          }
+        ],
+        "defaultAction": "Deny"
+        }
+      }
     },
     {
       "comments": "item-master-api",
@@ -197,6 +214,20 @@
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName'))]"
+          ]
+        }
+      ],
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]"
       ]
