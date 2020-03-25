@@ -1,4 +1,5 @@
 ﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Auth;
 using Microsoft.AppCenter.Push;
 using SmartRetailApp.Models;
 using SmartRetailApp.Views;
@@ -14,6 +15,8 @@ namespace SmartRetailApp
     {
         public string CartId { get; set; }
         public string BoxId { get; set; }
+        public UserInformation UserInfo { get; set;}
+        public string AuthErrorMessage { get; set; }
 
         // 入店時間
         public DateTime EnterDate { get; set; }
@@ -25,7 +28,7 @@ namespace SmartRetailApp
             MainPage = new NavigationPage(new LoginPage());
         }
 
-        protected override void OnStart()
+        protected override async void OnStart()
         {
 #if DEBUG
             AppCenter.LogLevel = LogLevel.Verbose; // Before AppCenter.Start
@@ -38,7 +41,35 @@ namespace SmartRetailApp
             AppCenter.Start($"android={Constant.AppCenterKeyAndroid};" +
                             "uwp={Your UWP App secret here};" +
                             $"ios={Constant.AppCenterKeyiOS}",
-                typeof(Push));
+                typeof(Push),
+                typeof(Auth));
+
+            //await SignInAsync();
+        }
+
+        public bool IsLogin => (this.UserInfo!=null && !string.IsNullOrEmpty(this.UserInfo?.AccessToken));
+
+        public async Task<bool> SignInAsync()
+        {
+            try
+            {
+                this.UserInfo = await Auth.SignInAsync();
+                string accountId = this.UserInfo.AccountId;
+                Console.WriteLine($"id_token={this.UserInfo.IdToken}");
+            }
+            catch (Exception e)
+            {
+                this.AuthErrorMessage = e.ToString();
+                return false;
+            }
+
+            return true;
+        }
+
+        public void SignOut()
+        {
+            Auth.SignOut();
+            this.UserInfo = null;
         }
 
         private async void Push_PushNotificationReceived(object sender, PushNotificationReceivedEventArgs e)

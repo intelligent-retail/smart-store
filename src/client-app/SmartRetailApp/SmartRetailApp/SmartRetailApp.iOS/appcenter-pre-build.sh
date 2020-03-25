@@ -11,3 +11,13 @@ then
     echo "File content:"
     cat $APP_CONSTANT_FILE
 fi
+
+INFOPLIST_FILE=$APPCENTER_SOURCE_DIRECTORY/src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp.iOS/Info.plist
+
+if [ -e "$INFOPLIST_FILE" ]
+then
+    sed -i '' 's#msalYourAppCenterKey#msal'$AppCenterKeyiOS'#' $INFOPLIST_FILE
+
+    echo "File content:"
+    cat $INFOPLIST_FILE
+fi

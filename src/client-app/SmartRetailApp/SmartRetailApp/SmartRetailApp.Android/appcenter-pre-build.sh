@@ -26,3 +26,15 @@ then
     echo "File content:"
     cat $APP_CONSTANT_FILE
 fi
+
+ANDROID_MANIFEST_FILE=$APPCENTER_SOURCE_DIRECTORY/src/client-app/SmartRetailApp/SmartRetailApp/SmartRetailApp.Android/Properties/AndroidManifest.xml
+
+echo "PATH=" $ANDROID_MANIFEST_FILE
+
+if [ -e "$ANDROID_MANIFEST_FILE" ]
+then
+    sed -i '' 's#msalYourAppCenterKey#msal'$AppCenterKeyAndroid'#' $ANDROID_MANIFEST_FILE
+
+    echo "File content:"
+    cat $ANDROID_MANIFEST_FILE
+fi

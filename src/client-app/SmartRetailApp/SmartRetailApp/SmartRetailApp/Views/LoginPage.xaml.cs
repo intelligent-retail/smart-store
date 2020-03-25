@@ -1,4 +1,5 @@
 ﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Auth;
 using SmartRetailApp.Models;
 using SmartRetailApp.Services;
 using System;
@@ -20,6 +21,37 @@ namespace SmartRetailApp.Views
             loadingIndicator.IsVisible = false;
 
             edtBoxName.Text = "SmartBox1";
+
+            btnLoginLogout.Clicked += async (sender, e) =>
+            {
+                if (btnLoginLogout.Text == "ログアウト")
+                {
+                    await SignOut();
+                }
+                else
+                {
+                    var app = Application.Current as App;
+                    if (await app.SignInAsync() != true)
+                    {
+                        await DisplayAlert("ログインできませんでした", app.AuthErrorMessage,"OK");
+                    }
+                    else
+                    {
+                        await DisplayAlert("ログインしました", $"", "OK");
+                        btnLoginLogout.Text = "ログアウト";
+                    }
+                }
+            };
+        }
+
+        async Task SignOut()
+        {
+            var app = Application.Current as App;
+            app.SignOut();
+
+            btnLoginLogout.Text = "ログイン";
+
+            await DisplayAlert("ログアウトしました", "", "OK");
         }
 
         private async void LoginClicked(object sender, EventArgs e)
