@@ -81,8 +81,9 @@
   },
   "variables": {
     "posServiceGroupName": "pos-service",
-    "posApiAppServicePlanName": "aspPos",
+    "posApiAppServicePlan": "aspPos",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
+    "posApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posApiAppServicePlan'), parameters('suffix'))]",
     "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posServiceGroupName'), parameters('suffix'))]",
     "posCosmosDbDatabaseName": "smartretailpos",
     "posCosmosDbDatabaseThroughput": 500,

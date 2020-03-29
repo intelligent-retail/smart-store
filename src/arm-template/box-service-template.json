@@ -74,8 +74,9 @@
   },
   "variables": {
     "boxServiceGroupName": "box-service",
-    "boxApiAppServicePlanName": "aspBox",
+    "boxApiAppServicePlan": "aspBox",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
+    "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxApiAppServicePlan'), parameters('suffix'))]",
     "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
     "boxServiceIoTHubSecretName": "boxServiceIoTHubConnectionString",
     "boxServiceIoTHubEventSecretName": "boxServiceIoTHubEventConnectionString",
