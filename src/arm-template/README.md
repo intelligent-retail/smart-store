@@ -195,6 +195,12 @@ $STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD="<sql server admin password>"
 $TEMPLATE_URL="https://raw.githubusercontent.com/intelligent-retail/smart-store/master/src/arm-template"
 ```
 
+なお、各リソースは VNET 統合により外部からのアクセスを遮断しています。本来は、踏み台サーバーなどを用いて内部のリソースにアクセスしますが、ハンズオン等で簡略化する場合は下記のように IP アドレスを指定してアクセス許可を行います。
+
+```ps1
+$CURRENT_CLIENT_IP_ADDRESS=$(Invoke-RestMethod http://ifconfig.me/ip)
+```
+
 変数が設定できたら、リソースのデプロイを行います。引き続き PowerShell で下記を実行して下さい。
 
 ```ps1
@@ -210,7 +216,8 @@ az group deployment create `
   --parameters ${TEMPLATE_URL}/parameters.json `
   --parameters `
     prefix=${PREFIX} `
-    stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD}
+    stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD} `
+    cosmosDbIpRangeFilter=$CURRENT_CLIENT_IP_ADDRESS
 ```
 
 ### スクリプトを用いてプロビジョニングする

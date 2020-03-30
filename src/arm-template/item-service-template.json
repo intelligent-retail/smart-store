@@ -79,6 +79,9 @@
     "allowableSubnetNames": {
       "type": "array",
       "defaultValue": []
+    },
+    "cosmosDbIpRangeFilter": {
+      "type": "string"
     }
   },
   "variables": {
@@ -146,7 +149,8 @@
             "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
             "ignoreMissingVNetServiceEndpoint": false
           }
-        ]
+        ],
+        "ipRangeFilter": "[parameters('cosmosDbIpRangeFilter')]"
       }
     },
     {
