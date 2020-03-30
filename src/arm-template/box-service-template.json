@@ -71,8 +71,9 @@
     "vnetName": {
       "type": "string"
     },
-    "cosmosDbIpRangeFilter": {
-      "type": "string"
+    "allowedWorkspaceIpAddress": {
+      "type": "string",
+      "defaultValue": ""
     }
   },
   "variables": {
@@ -108,6 +109,7 @@
     "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
     "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]",
+    "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
     "delegatedSubnetName": "[parameters('service').identifier]"
   },
   "resources": [
@@ -181,7 +183,7 @@
             "ignoreMissingVNetServiceEndpoint": false
           }
         ],
-        "ipRangeFilter": "[parameters('cosmosDbIpRangeFilter')]"
+        "ipRangeFilter": "[variables('cosmosDbIpRangeFilter')]"
       },
       "resources": [
         {
@@ -353,6 +355,26 @@
         "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceIoTHubEventSecretName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('boxApiStorageAccountsName'))]"
       ]
+    }
+  ],
+  "functions": [
+    {
+      "namespace": "cosmosDbIpRangeFilter",
+      "members": {
+        // Allow to access to Cosmos DB via Azure Portal
+        "allowAccessFromPortal": {
+          "parameters": [
+            {
+              "name": "ipRangeFilter",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat(parameters('ipRangeFilter'), if(equals(parameters('ipRangeFilter'),''),'',','), '104.42.195.92,40.76.54.131,52.176.6.30,52.169.50.45,52.187.184.26')]"
+          }
+        }
+      }
     }
   ]
 }

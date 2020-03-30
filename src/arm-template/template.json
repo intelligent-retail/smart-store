@@ -166,8 +166,9 @@
     "boxServiceApiZipUrl": {
       "type": "string"
     },
-    "cosmosDbIpRangeFilter": {
-      "type": "string"
+    "allowedWorkspaceIpAddress": {
+      "type": "string",
+      "defaultValue": ""
     }
   },
   "variables": {
@@ -288,8 +289,8 @@
           "allowableSubnetNames": {
             "value": "[createArray(variables('posService').identifier)]"
           },
-          "cosmosDbIpRangeFilter": {
-            "value": "[parameters('cosmosDbIpRangeFilter')]"
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
           }
         }
       },
@@ -374,8 +375,8 @@
           "allowableSubnetNames": {
             "value": "[createArray(variables('posService').identifier)]"
           },
-          "cosmosDbIpRangeFilter": {
-            "value": "[parameters('cosmosDbIpRangeFilter')]"
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
           }
         }
       },
@@ -448,8 +449,8 @@
           "allowableSubnetNames": {
             "value": "[createArray(variables('boxService').identifier)]"
           },
-          "cosmosDbIpRangeFilter": {
-            "value": "[parameters('cosmosDbIpRangeFilter')]"
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
           }
         }
       },
@@ -518,8 +519,8 @@
           "vnetName": {
             "value": "[reference('commonTemplate').outputs.vnetName.value]"
           },
-          "cosmosDbIpRangeFilter": {
-            "value": "[parameters('cosmosDbIpRangeFilter')]"
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
           }
         }
       },

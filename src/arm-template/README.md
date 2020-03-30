@@ -217,7 +217,7 @@ az group deployment create `
   --parameters `
     prefix=${PREFIX} `
     stockServiceSqlServerAdminPassword=${STOCK_SERVICE_SQL_SERVER_ADMIN_PASSWORD} `
-    cosmosDbIpRangeFilter=$CURRENT_CLIENT_IP_ADDRESS
+    allowedWorkspaceIpAddress=$CURRENT_CLIENT_IP_ADDRESS
 ```
 
 ### スクリプトを用いてプロビジョニングする

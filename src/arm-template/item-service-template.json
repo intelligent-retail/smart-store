@@ -80,8 +80,9 @@
       "type": "array",
       "defaultValue": []
     },
-    "cosmosDbIpRangeFilter": {
-      "type": "string"
+    "allowedWorkspaceIpAddress": {
+      "type": "string",
+      "defaultValue": ""
     }
   },
   "variables": {
@@ -98,6 +99,7 @@
     "itemMasterApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemMasterApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterApiAppService": "itemServiceAppServicePlanName",
     "itemServiceAssetsStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemServiceGroupName'), variables('itemServiceAssetsName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
     "delegatedSubnetName": "[parameters('service').identifier]",
     "ipSecurityRestrictionsBasePriority": 300,
     "allowableSubnetNames": "[createArray(variables('delegatedSubnetName'))]",
@@ -150,7 +152,7 @@
             "ignoreMissingVNetServiceEndpoint": false
           }
         ],
-        "ipRangeFilter": "[parameters('cosmosDbIpRangeFilter')]"
+        "ipRangeFilter": "[variables('cosmosDbIpRangeFilter')]"
       }
     },
     {
@@ -355,6 +357,24 @@
               "priority": "[parameters('priority')]",
               "name": "[parameters('name')]"
             }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "cosmosDbIpRangeFilter",
+      "members": {
+        // Allow to access to Cosmos DB via Azure Portal
+        "allowAccessFromPortal": {
+          "parameters": [
+            {
+              "name": "ipRangeFilter",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat(parameters('ipRangeFilter'), if(equals(parameters('ipRangeFilter'),''),'',','), '104.42.195.92,40.76.54.131,52.176.6.30,52.169.50.45,52.187.184.26')]"
           }
         }
       }
