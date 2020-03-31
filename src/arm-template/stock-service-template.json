@@ -188,6 +188,17 @@
     "delegatedSubnetName": "[parameters('service').identifier]",
     "ipSecurityRestrictionsBasePriority": 300,
     "allowableSubnetNames": "[createArray(variables('delegatedSubnetName'))]",
+    "allowableIpAddresses": "[if(
+      equals(parameters('allowedWorkspaceIpAddress'), ''),
+      json('[]'),
+      createArray(
+        allowableIpAddress.create(
+          'workspace',
+          parameters('allowedWorkspaceIpAddress')
+        )
+      )
+    )]",
+    "alloableSubnetsAndIpAddressesExternal": "[concat(variables('allowableSubnetsExternal'), variables('allowableIpAddresses'))]",
     "copy": [
       {
         "name": "allowableSubnetsInternal",
@@ -213,7 +224,7 @@
         "name": "ipSecurityRestrictionsInternal",
         "count": "[length(variables('allowableSubnetsInternal'))]",
         "input": "[
-          ipSecurityRestriction.create(
+          ipSecurityRestriction.createBySubnet(
             variables('allowableSubnetsInternal')[copyIndex('ipSecurityRestrictionsInternal')].name,
             variables('allowableSubnetsInternal')[copyIndex('ipSecurityRestrictionsInternal')].vnetSubnetResourceId,
             add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictionsInternal'))
@@ -222,12 +233,20 @@
       },
       {
         "name": "ipSecurityRestrictionsExternal",
-        "count": "[length(variables('allowableSubnetsExternal'))]",
+        "count": "[length(variables('alloableSubnetsAndIpAddressesExternal'))]",
         "input": "[
-          ipSecurityRestriction.create(
-            variables('allowableSubnetsExternal')[copyIndex('ipSecurityRestrictionsExternal')].name,
-            variables('allowableSubnetsExternal')[copyIndex('ipSecurityRestrictionsExternal')].vnetSubnetResourceId,
-            add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictionsExternal'))
+          if(
+            contains(variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')], 'ipAddress'),
+            ipSecurityRestriction.createByIpAddress(
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].name,
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].ipAddress,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictionsExternal'))
+            ),
+            ipSecurityRestriction.createBySubnet(
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].name,
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].vnetSubnetResourceId,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictionsExternal'))
+            )
           )
         ]"
       }
@@ -729,9 +748,33 @@
       }
     },
     {
-      "namespace": "ipSecurityRestriction",
+      "namespace": "allowableIpAddress",
       "members": {
         "create": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "name": "workspace",
+              "ipAddress": "[parameters('ipAddress')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "ipSecurityRestriction",
+      "members": {
+        "createBySubnet": {
           "parameters": [
             {
               "name": "name",
@@ -750,6 +793,31 @@
             "type": "object",
             "value": {
               "vnetSubnetResourceId": "[parameters('vnetSubnetResourceId')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        },
+        "createByIpAddress": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "ipAddress": "[concat(parameters('ipAddress'), '/32')]",
               "action": "Allow",
               "priority": "[parameters('priority')]",
               "name": "[parameters('name')]"

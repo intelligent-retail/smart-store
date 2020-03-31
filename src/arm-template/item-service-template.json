@@ -104,6 +104,17 @@
     "ipSecurityRestrictionsBasePriority": 300,
     "allowableSubnetNames": "[createArray(variables('delegatedSubnetName'))]",
     "allAllowableSubnetNames": "[concat(variables('allowableSubnetNames'), parameters('allowableSubnetNames'))]",
+    "allowableIpAddresses": "[if(
+      equals(parameters('allowedWorkspaceIpAddress'), ''),
+      json('[]'),
+      createArray(
+        allowableIpAddress.create(
+          'workspace',
+          parameters('allowedWorkspaceIpAddress')
+        )
+      )
+    )]",
+    "alloableSubnetsAndIpAddresses": "[concat(variables('allAllowableSubnets'), variables('allowableIpAddresses'))]",
     "copy": [
       {
         "name": "allAllowableSubnets",
@@ -117,12 +128,20 @@
       },
       {
         "name": "ipSecurityRestrictions",
-        "count": "[length(variables('allAllowableSubnets'))]",
+        "count": "[length(variables('alloableSubnetsAndIpAddresses'))]",
         "input": "[
-          ipSecurityRestriction.create(
-            variables('allAllowableSubnets')[copyIndex('ipSecurityRestrictions')].name,
-            variables('allAllowableSubnets')[copyIndex('ipSecurityRestrictions')].vnetSubnetResourceId,
-            add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictions'))
+          if(
+            contains(variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')], 'ipAddress'),
+            ipSecurityRestriction.createByIpAddress(
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].name,
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].ipAddress,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictions'))
+            ),
+            ipSecurityRestriction.createBySubnet(
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].name,
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].vnetSubnetResourceId,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictions'))
+            )
           )
         ]"
       }
@@ -332,9 +351,33 @@
       }
     },
     {
-      "namespace": "ipSecurityRestriction",
+      "namespace": "allowableIpAddress",
       "members": {
         "create": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "name": "workspace",
+              "ipAddress": "[parameters('ipAddress')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "ipSecurityRestriction",
+      "members": {
+        "createBySubnet": {
           "parameters": [
             {
               "name": "name",
@@ -353,6 +396,31 @@
             "type": "object",
             "value": {
               "vnetSubnetResourceId": "[parameters('vnetSubnetResourceId')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        },
+        "createByIpAddress": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "ipAddress": "[concat(parameters('ipAddress'), '/32')]",
               "action": "Allow",
               "priority": "[parameters('priority')]",
               "name": "[parameters('name')]"
