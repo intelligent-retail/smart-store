@@ -10,14 +10,14 @@
 				<category android:name="${applicationId}" />
 			</intent-filter>
 		</receiver>
-	<activity android:name="com.microsoft.identity.client.BrowserTabActivity">
-		<intent-filter>
-			<action android:name="android.intent.action.VIEW" />
-			<category android:name="android.intent.category.DEFAULT" />
-			<category android:name="android.intent.category.BROWSABLE" />
-			<data android:host="auth" android:scheme="msalYourAppCenterKey" />
-		</intent-filter>
-	</activity>
+		<activity android:name="com.microsoft.identity.client.BrowserTabActivity">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:host="auth" android:scheme="msalYourAppCenterKey" />
+			</intent-filter>
+		</activity>
 	</application>
 	<uses-permission android:name="android.permission.CAMERA" />
 	<uses-permission android:name="android.permission.FLASHLIGHT" />
