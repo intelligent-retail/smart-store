@@ -1,8 +1,11 @@
 ﻿using Microsoft.AppCenter;
 using Microsoft.AppCenter.Push;
+using Microsoft.Identity.Client;
 using SmartRetailApp.Models;
 using SmartRetailApp.Views;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -12,6 +15,9 @@ namespace SmartRetailApp
 {
     public partial class App : Application
     {
+        public static IPublicClientApplication AuthenticationClient { get; private set; }
+        public static object UIParent { get; set; } = null;
+
         public string CartId { get; set; }
         public string BoxId { get; set; }
         public string AuthErrorMessage { get; set; }
@@ -23,14 +29,17 @@ namespace SmartRetailApp
         {
             InitializeComponent();
 
+            AuthenticationClient = PublicClientApplicationBuilder.Create(Constant.ClientId)
+                .WithIosKeychainSecurityGroup(Constant.IosKeychainSecurityGroups)
+                .WithB2CAuthority(Constant.AuthoritySignin)
+                .WithRedirectUri($"msal{Constant.ClientId}://auth")
+                .Build();
+
             MainPage = new NavigationPage(new LoginPage());
         }
 
         protected override async void OnStart()
         {
-#if DEBUG
-            AppCenter.LogLevel = LogLevel.Verbose; // Before AppCenter.Start
-#endif
             if (!AppCenter.Configured)
             {
                 Push.PushNotificationReceived += this.Push_PushNotificationReceived;
@@ -40,33 +49,44 @@ namespace SmartRetailApp
                             "uwp={Your UWP App secret here};" +
                             $"ios={Constant.AppCenterKeyiOS}",
                 typeof(Push));
-
-            //await SignInAsync();
         }
 
-        //public bool IsLogin => (this.UserInfo!=null && !string.IsNullOrEmpty(this.UserInfo?.AccessToken));
-
-        public async Task<bool> SignInAsync()
+        public async Task<AuthenticationResult> SignInAsync()
         {
+            AuthenticationResult result=null;
             try
             {
-                //this.UserInfo = await Auth.SignInAsync();
-                //string accountId = this.UserInfo.AccountId;
-                //Console.WriteLine($"id_token={this.UserInfo.IdToken}");
+                result = await App.AuthenticationClient
+                    .AcquireTokenInteractive(Constant.Scopes)
+                    .WithPrompt(Prompt.SelectAccount)
+                    .WithParentActivityOrWindow(App.UIParent)
+                    .ExecuteAsync();
+
             }
-            catch (Exception e)
+            catch (MsalException ex)
             {
-                this.AuthErrorMessage = e.ToString();
-                return false;
+                if (ex.Message != null && ex.Message.Contains("AADB2C90118"))
+                {
+                    SignOut();
+                }
+                else if (ex.ErrorCode != "authentication_canceled")
+                {
+                    this.AuthErrorMessage = ex.Message;
+                }
             }
 
-            return true;
+            return result;
         }
 
-        public void SignOut()
+        public async void SignOut()
         {
-            //Auth.SignOut();
-            //this.UserInfo = null;
+            IEnumerable<IAccount> accounts = await App.AuthenticationClient.GetAccountsAsync();
+
+            while (accounts.Any())
+            {
+                await App.AuthenticationClient.RemoveAsync(accounts.First());
+                accounts = await App.AuthenticationClient.GetAccountsAsync();
+            }
         }
 
         private async void Push_PushNotificationReceived(object sender, PushNotificationReceivedEventArgs e)

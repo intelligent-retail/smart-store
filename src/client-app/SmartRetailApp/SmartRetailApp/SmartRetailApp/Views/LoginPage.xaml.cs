@@ -1,7 +1,10 @@
 ﻿using Microsoft.AppCenter;
+using Newtonsoft.Json.Linq;
 using SmartRetailApp.Models;
 using SmartRetailApp.Services;
 using System;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -30,17 +33,53 @@ namespace SmartRetailApp.Views
                 else
                 {
                     var app = Application.Current as App;
-                    if (await app.SignInAsync() != true)
+                    var authResult = await app.SignInAsync();
+
+                    if (authResult == null)
                     {
                         await DisplayAlert("ログインできませんでした", app.AuthErrorMessage,"OK");
                     }
                     else
                     {
-                        await DisplayAlert("ログインしました", $"", "OK");
+                        JObject user = ParseIdToken(authResult.IdToken);
+
+                        var msg = new StringBuilder();
+                        msg.AppendLine($"Name: {user["name"]?.ToString()}");
+                        msg.AppendLine($"User Identifier: {user["oid"]?.ToString()}");
+                        msg.AppendLine($"Street Address: {user["streetAddress"]?.ToString()}");
+                        msg.AppendLine($"City: {user["city"]?.ToString()}");
+                        msg.AppendLine($"State: {user["state"]?.ToString()}");
+                        msg.AppendLine($"Country: {user["country"]?.ToString()}");
+                        msg.AppendLine($"Job Title: {user["jobTitle"]?.ToString()}");
+
+                        if (user["emails"] is JArray emails)
+                        {
+                            msg.AppendLine($"Emails: {emails[0].ToString()}");
+                        }
+                        msg.AppendLine($"Identity Provider: {user["iss"]?.ToString()}");
+
+                        await DisplayAlert("ログインしました", msg.ToString(), "OK");
                         btnLoginLogout.Text = "ログアウト";
                     }
                 }
             };
+        }
+
+        JObject ParseIdToken(string idToken)
+        {
+            // Parse the idToken to get user info
+            idToken = idToken.Split('.')[1];
+            idToken = Base64UrlDecode(idToken);
+            return JObject.Parse(idToken);
+        }
+
+        private string Base64UrlDecode(string s)
+        {
+            s = s.Replace('-', '+').Replace('_', '/');
+            s = s.PadRight(s.Length + (4 - s.Length % 4) % 4, '=');
+            var byteArray = Convert.FromBase64String(s);
+            var decoded = Encoding.UTF8.GetString(byteArray, 0, byteArray.Count());
+            return decoded;
         }
 
         async Task SignOut()
