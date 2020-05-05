@@ -27,7 +27,6 @@
     <PackageReference Include="Xamarin.Forms" Version="4.5.0.657" />
     <PackageReference Include="ZXing.Net.Mobile" Version="2.4.1" />
     <PackageReference Include="ZXing.Net.Mobile.Forms" Version="2.4.1" />
-    <PackageReference Include="Microsoft.AppCenter.Auth" Version="2.6.2" />
   </ItemGroup>
 
   <ItemGroup>

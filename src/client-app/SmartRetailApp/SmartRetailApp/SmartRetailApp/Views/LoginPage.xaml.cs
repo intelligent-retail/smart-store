@@ -1,5 +1,4 @@
 ﻿using Microsoft.AppCenter;
-using Microsoft.AppCenter.Auth;
 using SmartRetailApp.Models;
 using SmartRetailApp.Services;
 using System;
