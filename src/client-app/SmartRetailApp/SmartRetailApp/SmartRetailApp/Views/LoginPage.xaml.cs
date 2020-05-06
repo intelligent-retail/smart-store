@@ -1,8 +1,10 @@
 ﻿using Microsoft.AppCenter;
+using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using SmartRetailApp.Models;
 using SmartRetailApp.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,6 +65,25 @@ namespace SmartRetailApp.Views
                     }
                 }
             };
+        }
+
+        protected override async void OnAppearing()
+        {
+            try
+            {
+                // Look for existing account
+                IEnumerable<IAccount> accounts = await App.AuthenticationClient.GetAccountsAsync();
+
+                AuthenticationResult result = await App.AuthenticationClient
+                    .AcquireTokenSilent(Constant.Scopes, accounts.FirstOrDefault())
+                    .ExecuteAsync();
+
+            }
+            catch
+            {
+                // Do nothing - the user isn't logged in
+            }
+            base.OnAppearing();
         }
 
         JObject ParseIdToken(string idToken)

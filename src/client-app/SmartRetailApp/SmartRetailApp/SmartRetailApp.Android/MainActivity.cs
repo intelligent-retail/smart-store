@@ -9,6 +9,7 @@ using Android.Widget;
 using Android.OS;
 using Microsoft.AppCenter.Push;
 using ZXing.Mobile;
+using Microsoft.Identity.Client;
 
 namespace SmartRetailApp.Droid
 {
@@ -26,12 +27,20 @@ namespace SmartRetailApp.Droid
             base.OnCreate(savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             LoadApplication(new App());
+
+            App.UIParent = this;
         }
 
         protected override void OnNewIntent(Intent intent)
         {
             base.OnNewIntent(intent);
             Push.CheckLaunchedFromNotification(this, intent);
+        }
+
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
         }
     }
 }
