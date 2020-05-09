@@ -8,30 +8,30 @@
         // APIのキー
         public const string ApiKey = "your_ApiKey";
 
-
         // AppCenter Android用のキー
         public const string AppCenterKeyAndroid = "your_AppCenterKeyAndroid";
 
         // AppCenter iOS用のキー
         public const string AppCenterKeyiOS = "your_AppCenterKeyiOS";
 
-
-        // set your tenant name, for example "contoso123tenant"
+        // Azure AD B2C のテナント名 例）"contoso123tenant"
+        // ポータル → Azure AD B2C → 概要 → ドメイン名の .onmicrosoft.com を除いた部分
         static readonly string tenantName = "Your_Tenant_Name";
 
-        // set your tenant id, for example: "contoso123tenant.onmicrosoft.com"
-        static readonly string tenantId = "Your_Tenant_Name.onmicrosoft.com";
-
-        // set your client/application id, for example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        // Azure AD B2C のクライアントID（アプリケーションID）例）"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        // ポータル → Azure AD B2C → アプリケーション → アプリケーション ID
         static readonly string clientId = "Your_Client_Id";
 
-        // set your sign up/in policy name, for example: "B2C_1_signupsignin"
+        // Azure AD B2C のユーザーフロー 例）"B2C_1_signupsignin"
+        // ポータル → Azure AD B2C → ユーザーフロー
         static readonly string policySignin = "Your_Policy_Name";
 
-        // set to a unique value for your app, such as your bundle identifier. Used on iOS to share keychain access.
+        // バンドル識別子（iOSのみ） 例）com.sample.contoso
+        // iOS プロジェクト→プロパティ→バンドル識別子
         static readonly string iosKeychainSecurityGroup = "Your_Bundle_Identifier";
 
         static readonly string[] scopes = { "" };
+        static readonly string tenantId = $"{tenantName}.onmicrosoft.com";
         static readonly string authorityBase = $"https://{tenantName}.b2clogin.com/tfp/{tenantId}/";
         public static string ClientId => clientId;
         public static string AuthoritySignin => $"{authorityBase}{policySignin}";
