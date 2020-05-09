@@ -83,7 +83,7 @@ namespace BoxManagementService
             inputs.Add(null);
             var beginIndex = -1;
             var prevActivity = DeviceActivity.None;
-            for (var i = 0; i < inputs.Count(); i++)
+            for (var i = 0; i < inputs.Count; i++)
             {
                 var input = inputs[i];
                 var activity = input == null ? DeviceActivity.Eol : data.State.Update(input);
