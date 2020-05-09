@@ -17,19 +17,19 @@
 
 
         // set your tenant name, for example "contoso123tenant"
-        static readonly string tenantName = "{Your Tenant Name}";
+        static readonly string tenantName = "Your_Tenant_Name";
 
         // set your tenant id, for example: "contoso123tenant.onmicrosoft.com"
-        static readonly string tenantId = "{Your Tenant Name}.onmicrosoft.com";
+        static readonly string tenantId = "Your_Tenant_Name.onmicrosoft.com";
 
         // set your client/application id, for example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
-        static readonly string clientId = "{Your Client Id}";
+        static readonly string clientId = "Your_Client_Id";
 
         // set your sign up/in policy name, for example: "B2C_1_signupsignin"
-        static readonly string policySignin = "{Your Policy Name}";
+        static readonly string policySignin = "Your_Policy_Name";
 
         // set to a unique value for your app, such as your bundle identifier. Used on iOS to share keychain access.
-        static readonly string iosKeychainSecurityGroup = "{Your Bundle Identifier}";
+        static readonly string iosKeychainSecurityGroup = "Your_Bundle_Identifier";
 
         static readonly string[] scopes = { "" };
         static readonly string authorityBase = $"https://{tenantName}.b2clogin.com/tfp/{tenantId}/";
