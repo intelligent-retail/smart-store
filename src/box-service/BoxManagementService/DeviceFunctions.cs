@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Newtonsoft.Json.Linq;
 
 namespace BoxManagementService
@@ -59,7 +60,7 @@ namespace BoxManagementService
         /// <returns>非同期タスク</returns>
         [FunctionName("UpdateDeviceStatus")]
         public static async Task RunOrchestrator(
-            [OrchestrationTrigger] DurableOrchestrationContext context,
+            [OrchestrationTrigger] IDurableOrchestrationContext context,
             ILogger log)
         {
             var data = context.GetInput<InputData>() ?? new InputData();
@@ -82,7 +83,7 @@ namespace BoxManagementService
             inputs.Add(null);
             var beginIndex = -1;
             var prevActivity = DeviceActivity.None;
-            for (var i = 0; i < inputs.Count; i++)
+            for (var i = 0; i < inputs.Count(); i++)
             {
                 var input = inputs[i];
                 var activity = input == null ? DeviceActivity.Eol : data.State.Update(input);
@@ -151,7 +152,7 @@ namespace BoxManagementService
         [Singleton]
         public static async Task ReceiveDeviceMessageFromIotHub(
             [EventHubTrigger("retail-test-iot-hub-dev", Connection = "IotHubEventConnectionString")]EventData[] messages,
-            [OrchestrationClient]DurableOrchestrationClient client,
+            [DurableClient]IDurableOrchestrationClient client,
             ILogger log)
         {
             var jsonMessages = messages
@@ -174,7 +175,7 @@ namespace BoxManagementService
         /// <param name="log">ロガー</param>
         /// <returns>レスポンス</returns>
         private static async Task ReceiveDeviceMessages(
-            DurableOrchestrationClient client,
+            IDurableOrchestrationClient client,
             IEnumerable<dynamic> messages,
             ILogger log)
         {
@@ -224,7 +225,7 @@ namespace BoxManagementService
         /// <param name="instanceId">オーケストレータインスタンスID</param>
         /// <param name="data">入力データ</param>
         /// <returns>非同期タスク</returns>
-        private static async Task StartUpdateDeviceStatusAsync(DurableOrchestrationClient client, string instanceId, IEnumerable<dynamic> data)
+        private static async Task StartUpdateDeviceStatusAsync(IDurableOrchestrationClient client, string instanceId, IEnumerable<dynamic> data)
         {
             var existingInstance = await client.GetStatusAsync(instanceId);
             if (existingInstance != null)
@@ -268,7 +269,7 @@ namespace BoxManagementService
         public static async Task<HttpResponseMessage> ResetDeviceStatus(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "v1/devices/{deviceId}/status/reset")]HttpRequestMessage req,
             string deviceId,
-            [OrchestrationClient]DurableOrchestrationClient starter,
+            [DurableClient]IDurableOrchestrationClient starter,
             ILogger log)
         {
             var instanceId = deviceId;
