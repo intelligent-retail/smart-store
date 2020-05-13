@@ -90,7 +90,7 @@ public class Constant
 
 |  変数名  |  値  |
 | ---- | ---- |
-|  GOOGLE_JSON  |  google-services.json の内容  |
+|  GoogleJson  |  google-services.json の内容  |
 |  CartsApiName  |  API の URL  |
 |  ApiKey  |  API の Key  |
 |  AppCenterKeyAndroid  |  Android 用 App Center 用のキー  |
