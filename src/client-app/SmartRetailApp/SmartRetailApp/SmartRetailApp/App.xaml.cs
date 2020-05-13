@@ -30,7 +30,7 @@ namespace SmartRetailApp
             InitializeComponent();
 
             AuthenticationClient = PublicClientApplicationBuilder.Create(Constant.ClientId)
-                .WithIosKeychainSecurityGroup(Constant.IosKeychainSecurityGroups)
+                .WithIosKeychainSecurityGroup(Constant.IosKeyChain)
                 .WithB2CAuthority(Constant.AuthoritySignin)
                 .WithRedirectUri($"msal{Constant.ClientId}://auth")
                 .Build();
