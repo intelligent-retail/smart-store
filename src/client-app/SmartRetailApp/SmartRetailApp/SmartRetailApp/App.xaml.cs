@@ -65,6 +65,8 @@ namespace SmartRetailApp
             }
             catch (MsalException ex)
             {
+                // The user has forgotten their password.
+                // https://docs.microsoft.com/en-us/azure/active-directory-b2c/error-codes
                 if (ex.Message != null && ex.Message.Contains("AADB2C90118"))
                 {
                     SignOut();
