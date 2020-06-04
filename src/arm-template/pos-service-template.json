@@ -273,7 +273,7 @@
       "apiVersion": "2019-08-01",
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('posApiStorageAccountsName'), ';AccountKey=', listKeys(variables('posApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
-        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "FUNCTIONS_EXTENSION_VERSION": "~3",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('posServiceApiZipUrl')]",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]",
         "CosmosDbConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('posServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
