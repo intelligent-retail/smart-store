@@ -458,7 +458,7 @@
       "apiVersion": "2019-08-01",
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockCommandApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockCommandApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
-        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "FUNCTIONS_EXTENSION_VERSION": "~3",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('stockCommandApiZipUrl')]",
         "CosmosDBConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]"
@@ -476,7 +476,7 @@
       "apiVersion": "2019-08-01",
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockQueryApiStorageAccountsName'), ';AccountKey=', listKeys(variables('stockQueryApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
-        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "FUNCTIONS_EXTENSION_VERSION": "~3",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('stockQueryApiZipUrl')]",
         "SqlConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceSqlDatabaseSecretName'))).secretUriWithVersion, ')')]"
@@ -494,7 +494,7 @@
       "apiVersion": "2019-08-01",
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('stockProcessorStorageAccountsName'), ';AccountKey=', listKeys(variables('stockProcessorStorageAccountsName'),'2018-07-01').keys[0].value)]",
-        "FUNCTIONS_EXTENSION_VERSION": "~2",
+        "FUNCTIONS_EXTENSION_VERSION": "~3",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('stockServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('stockProcessorZipUrl')]",
         "CosmosDBConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('stockServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
