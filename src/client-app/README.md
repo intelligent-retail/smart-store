@@ -26,19 +26,44 @@
 - `CartsApiName`: `https://<PREFIX>-box-api.azurewebsites.net/api/v1/carts`
 - `ApiKey`: _<PREFIX>-box-api_ に設定したAPIキー
 - `AppCenterKeyAndroid`: App Center -> Overview の手順 2. Start the SDK の `AppCenter.Start("<この部分>", ...)`
-- `AppCenterKeyiOS`: 
+- `TenantName`: Azure AD B2C のテナント名
+- `ClientId`: Azure AD B2C のクライアントID（アプリケーションID）
+- `PolicySignin`: Azure AD B2C のユーザーフロー
+- `AppCenterKeyiOS`: iOS 用 App Center 用のキー
+- `IosKeyChain`: キーチェーン（iOSのみ）
 
-```c#
+```cs
 public class Constant
 {
   // Cart API の名前
-  public const string CartsApiName = "your_CartsApiName";
+  public const string CartsApiName = "CartsApiName";
+
   // APIのキー
-  public const string ApiKey = "your_ApiKey";
+  public const string ApiKey = "ApiKey";
+
   // AppCenter Android用のキー
-  public const string AppCenterKeyAndroid = "your_AppCenterKeyAndroid";
+  public const string AppCenterKeyAndroid = "AppCenterKeyAndroid";
+
+  // Azure AD B2C のテナント名 例）"contoso123tenant"
+  // ポータル → Azure AD B2C → 概要 → ドメイン名の .onmicrosoft.com を除いた部分
+  public const string TenantName = "TenantName";
+
+  // Azure AD B2C のクライアントID（アプリケーションID）例）"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+  // ポータル → Azure AD B2C → アプリケーション → アプリケーション ID
+  public const string ClientId = "ClientId";
+
+  // Azure AD B2C のユーザーフロー 例）"B2C_1_signupsignin"
+  // ポータル → Azure AD B2C → ユーザーフロー
+  public const string PolicySignin = "PolicySignin";
+
   // AppCenter iOS用のキー
-  public const string AppCenterKeyiOS = "your_AppCenterKeyiOS";
+  public const string AppCenterKeyiOS = "AppCenterKeyiOS";
+
+  // キーチェーン（iOSのみ） 例）com.sample.contoso
+  // iOS プロジェクト→Entitlement.plist→Keychain
+  // （iOS プロジェクト→info.plist→バンドル識別子と同じ）
+  public const string IosKeyChain = "IosKeyChain";
+...
 }
 ```
 
@@ -65,11 +90,15 @@ public class Constant
 
 |  変数名  |  値  |
 | ---- | ---- |
-|  GOOGLE_JSON  |  google-services.json の内容  |
+|  GoogleJson  |  google-services.json の内容  |
 |  CartsApiName  |  API の URL  |
 |  ApiKey  |  API の Key  |
 |  AppCenterKeyAndroid  |  Android 用 App Center 用のキー  |
+|  TenantName  |  Azure AD B2C のテナント名  |
+|  ClientId  |  Azure AD B2C のクライアントID（アプリケーションID）  |
+|  PolicySignin  |  Azure AD B2C のユーザーフロー  |
 |  AppCenterKeyiOS  |  iOS 用 App Center 用のキー  |
+|  IosKeyChain  |  キーチェーン（iOSのみ）  |
 
 ![](images/client-app-01.png)
 
