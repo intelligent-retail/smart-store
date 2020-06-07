@@ -145,16 +145,10 @@
         "P3"
       ]
     },
-    "posApiName": {
-      "type": "string"
-    },
     "posApiAppServicePlanSku": {
       "type": "string"
     },
     "posServiceApiZipUrl": {
-      "type": "string"
-    },
-    "boxApiName": {
       "type": "string"
     },
     "boxIotHubSku": {
@@ -173,8 +167,6 @@
   },
   "variables": {
     "prefix": "[toLower(parameters('prefix'))]",
-    "posApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
     "delegationToServerFarms": {
       "name": "Delegate to app plan",
       "properties": {
@@ -182,22 +174,22 @@
       }
     },
     "itemService": {
-      "identifier": "itemService",
+      "identifier": "item-service",
       "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
     "stockService": {
-      "identifier": "stockService",
+      "identifier": "stock-service",
       "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Sql', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
     "posService": {
-      "identifier": "posService",
+      "identifier": "pos-service",
       "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
     "boxService": {
-      "identifier": "boxService",
+      "identifier": "box-service",
       "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
       "delegations": "[createArray(variables('delegationToServerFarms'))]"
     },
@@ -226,12 +218,6 @@
           },
           "delimiter": {
             "value": "[parameters('delimiter')]"
-          },
-          "posApiFunctionName": {
-            "value": "[variables('posApiFunctionName')]"
-          },
-          "boxApiFunctionName": {
-            "value": "[variables('boxApiFunctionName')]"
           },
           "services": {
             "value": "[variables('services')]"
@@ -416,20 +402,11 @@
           "storageAccountsSuffix": {
             "value": "[parameters('storageAccountsSuffix')]"
           },
-          "posApiName": {
-            "value": "[parameters('posApiName')]"
-          },
           "posServiceApiZipUrl": {
             "value": "[parameters('posServiceApiZipUrl')]"
           },
-          "posApiFunctionName": {
-            "value": "[variables('posApiFunctionName')]"
-          },
           "posApiAppServicePlanSku": {
             "value": "[parameters('posApiAppServicePlanSku')]"
-          },
-          "appInsightsName": {
-            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
           },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
@@ -495,17 +472,11 @@
           "boxIotHubSku": {
             "value": "[parameters('boxIotHubSku')]"
           },
-          "boxApiName": {
-            "value": "[parameters('boxApiName')]"
-          },
           "boxServiceApiZipUrl": {
             "value": "[parameters('boxServiceApiZipUrl')]"
           },
           "boxApiAppServicePlanSku": {
             "value": "[parameters('boxApiAppServicePlanSku')]"
-          },
-          "appInsightsName": {
-            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
           },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"

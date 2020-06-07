@@ -47,9 +47,6 @@
     "boxIotHubSku": {
       "type": "string"
     },
-    "boxApiName": {
-      "type": "string"
-    },
     "boxApiAppServicePlanSku": {
       "type": "string"
     },
@@ -57,9 +54,6 @@
       "type": "string"
     },
     "posApiFunctionUrl": {
-      "type": "string"
-    },
-    "appInsightsName": {
       "type": "string"
     },
     "keyVaultName": {
@@ -77,14 +71,14 @@
     }
   },
   "variables": {
-    "boxServiceGroupName": "box-service",
     "boxApiAppServicePlan": "aspBox",
+    "boxApiName": "box-api",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxApiAppServicePlan'), parameters('suffix'))]",
-    "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
+    "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "boxServiceIoTHubSecretName": "boxServiceIoTHubConnectionString",
     "boxServiceIoTHubEventSecretName": "boxServiceIoTHubEventConnectionString",
-    "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
+    "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "boxCosmosDbDatabaseName": "smartretailboxmanagement",
     "boxCosmosDbDatabaseThroughput": 400,
     "boxCosmosDbCollections": [
@@ -106,8 +100,9 @@
       }
     ],
     "boxServiceCosmosDbSecretName": "boxServiceCosmosDbConnectionString",
-    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
-    "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxApiName'), parameters('suffix'))]",
+    "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "boxServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]",
     "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
     "delegatedSubnetName": "[parameters('service').identifier]"
@@ -335,7 +330,7 @@
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('boxApiStorageAccountsName'), ';AccountKey=', listKeys(variables('boxApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('boxServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('boxServiceApiZipUrl')]",
         "CosmosDbConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
         "PosCartsUri": "[variables('posCartsUri')]",
@@ -355,6 +350,19 @@
         "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceIoTHubEventSecretName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('boxApiStorageAccountsName'))]"
       ]
+    },
+    {
+      "name": "[variables('boxServiceAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[variables('location')]",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('boxApiFunctionName'))]": "Resource"
+      },
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
     }
   ],
   "functions": [

@@ -44,12 +44,6 @@
     "storageAccountsSuffix": {
       "type": "string"
     },
-    "posApiName": {
-      "type": "string"
-    },
-    "posApiFunctionName": {
-      "type": "string"
-    },
     "posApiAppServicePlanSku": {
       "type": "string"
     },
@@ -60,9 +54,6 @@
       "type": "string"
     },
     "stockCommandUri": {
-      "type": "string"
-    },
-    "appInsightsName": {
       "type": "string"
     },
     "keyVaultName": {
@@ -84,11 +75,12 @@
     }
   },
   "variables": {
-    "posServiceGroupName": "pos-service",
     "posApiAppServicePlan": "aspPos",
+    "posApiName": "pos-api",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "posApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posApiAppServicePlan'), parameters('suffix'))]",
-    "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posServiceGroupName'), parameters('suffix'))]",
+    "posApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('posApiName'), parameters('suffix'))]",
+    "posCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "posCosmosDbDatabaseName": "smartretailpos",
     "posCosmosDbDatabaseThroughput": 500,
     "posCosmosDbCollectionCarts": {
@@ -115,7 +107,8 @@
       }
     ],
     "posServiceCosmosDbSecretName": "posServiceCosmosDbConnectionString",
-    "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "posApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('posApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "posServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "itemMasterUri": "[concat('https://', parameters('itemMasterUri'),'/api/v1/company/{company-code}/store/{store-code}/items')]",
     "stockCommandUri": "[concat('https://', parameters('stockCommandUri'), '/api/v1/stocks')]",
     "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
@@ -297,7 +290,7 @@
       }
     },
     {
-      "name": "[parameters('posApiFunctionName')]",
+      "name": "[variables('posApiFunctionName')]",
       "type": "Microsoft.Web/sites",
       "apiVersion": "2019-08-01",
       "kind": "functionapp",
@@ -327,7 +320,7 @@
             "swiftSupported": true
           },
           "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', parameters('posApiFunctionName'))]"
+            "[resourceId('Microsoft.Web/sites', variables('posApiFunctionName'))]"
           ]
         }
       ],
@@ -342,8 +335,8 @@
       "properties": {
         "accessPolicies": [
           {
-            "tenantId": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2019-08-01', 'Full').identity.tenantId]",
-            "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2019-08-01', 'Full').identity.principalId]",
+            "tenantId": "[reference(resourceId('Microsoft.Web/sites', variables('posApiFunctionName')), '2019-08-01', 'Full').identity.tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('posApiFunctionName')), '2019-08-01', 'Full').identity.principalId]",
             "permissions": {
               "secrets": [
                 "get",
@@ -354,18 +347,18 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('posApiFunctionName'))]"
+        "[resourceId('Microsoft.Web/sites', variables('posApiFunctionName'))]"
       ]
     },
     {
-      "name": "[concat(parameters('posApiFunctionName'), '/appsettings')]",
+      "name": "[concat(variables('posApiFunctionName'), '/appsettings')]",
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2019-08-01",
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('posApiStorageAccountsName'), ';AccountKey=', listKeys(variables('posApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('posServiceApiZipUrl')]",
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('posServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "CosmosDbConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('posServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
         "ItemMasterUri": "[variables('itemMasterUri')]",
         "StockUri": "[variables('stockCommandUri')]",
@@ -377,6 +370,19 @@
         "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('posServiceCosmosDbSecretName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('posApiStorageAccountsName'))]"
       ]
+    },
+    {
+      "name": "[variables('posServiceAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[variables('location')]",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('posApiFunctionName'))]": "Resource"
+      },
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
     }
   ],
   "outputs": {
@@ -386,7 +392,7 @@
     },
     "posApiFunctionUrl": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('posApiFunctionName')), '2018-02-01').defaultHostName]"
+      "value": "[reference(resourceId('Microsoft.Web/sites', variables('posApiFunctionName')), '2018-02-01').defaultHostName]"
     }
   },
   "functions": [

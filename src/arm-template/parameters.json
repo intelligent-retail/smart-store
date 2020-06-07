@@ -53,9 +53,6 @@
     "stockServiceAppServicePlanSkuName": {
       "value": "P1V2"
     },
-    "posApiName": {
-      "value": "pos-api"
-    },
     "posApiAppServicePlanSku": {
       "value": "P1V2"
     },
@@ -64,9 +61,6 @@
     },
     "boxIotHubSku": {
       "value": "F1"
-    },
-    "boxApiName": {
-      "value": "box-api"
     },
     "boxApiAppServicePlanSku": {
       "value": "P1V2"

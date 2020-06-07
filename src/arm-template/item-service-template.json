@@ -99,6 +99,7 @@
     "itemMasterApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemMasterApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterApiAppService": "itemServiceAppServicePlanName",
     "itemServiceAssetsStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemServiceGroupName'), variables('itemServiceAssetsName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "itemServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
     "delegatedSubnetName": "[parameters('service').identifier]",
     "ipSecurityRestrictionsBasePriority": 300,
@@ -286,6 +287,7 @@
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('itemMasterApiStorageAccountsName'), ';AccountKey=', listKeys(variables('itemMasterApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('itemServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('itemMasterApiZipUrl')]",
         "CosmosDBConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('itemServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]"
       },
@@ -293,6 +295,20 @@
         "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
         "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('itemServiceCosmosDbSecretName'))]"
       ]
+    },
+    {
+      "comments": "stock-service",
+      "name": "[variables('itemServiceAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[parameters('location')]",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('itemMasterApiFunctionName'))]": "Resource"
+      },
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
     },
     {
       "comments": "item-service",

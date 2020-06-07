@@ -26,12 +26,6 @@
       "type": "string",
       "defaultValue": "-"
     },
-    "posApiFunctionName": {
-      "type": "string"
-    },
-    "boxApiFunctionName": {
-      "type": "string"
-    },
     "vnetNetworkAddress": {
       "type": "string",
       "defaultValue": "10.0"
@@ -50,7 +44,6 @@
   },
   "variables": {
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
-    "appInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), 'api-frontend', parameters('suffix'))]",
     "keyVaultName": "[concat(parameters('prefix'), parameters('delimiter'), 'keyvault', parameters('suffix'))]",
     "bastionName": "[concat(parameters('prefix'), parameters('delimiter'), 'bastion', parameters('suffix'))]",
     "bastionPublicIpName": "[concat(parameters('prefix'), parameters('delimiter'), 'bastion-ip', parameters('suffix'))]",
@@ -80,20 +73,6 @@
     ]
   },
   "resources": [
-    {
-      "name": "[variables('appInsightsName')]",
-      "type": "Microsoft.Insights/components",
-      "apiVersion": "2015-05-01",
-      "location": "[variables('location')]",
-      "tags": {
-        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('posApiFunctionName'))]": "Resource",
-        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('boxApiFunctionName'))]": "Resource"
-      },
-      "kind": "web",
-      "properties": {
-        "Application_Type": "web"
-      }
-    },
     {
       "name": "[variables('keyVaultName')]",
       "type": "Microsoft.KeyVault/vaults",
@@ -161,10 +140,6 @@
     }
   ],
   "outputs": {
-    "appInsightsName": {
-      "type": "string",
-      "value": "[variables('appInsightsName')]"
-    },
     "keyVaultName": {
       "type": "string",
       "value": "[variables('keyVaultName')]"
