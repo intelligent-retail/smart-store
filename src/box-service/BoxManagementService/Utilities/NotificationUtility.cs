@@ -18,14 +18,14 @@ namespace BoxManagementService.Utilities
         /// </summary>
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <returns>非同期タスク</returns>
-        public static Task PushClosedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "receipt");
+        public static async Task PushClosedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "receipt");
 
         /// <summary>
         /// アプリケーションにカート取引の更新を通知します。
         /// </summary>
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <returns>非同期タスク</returns>
-        public static Task PushUpdatedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "update_cart");
+        public static async Task PushUpdatedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "update_cart");
 
         /// <summary>
         /// アプリケーションにactionを通知します。
