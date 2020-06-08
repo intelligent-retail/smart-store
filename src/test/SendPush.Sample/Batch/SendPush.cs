@@ -28,7 +28,7 @@ namespace SendPush.Sample.Batch
             var hubName = Settings.Instance.HubName;
 
             var actionList = new[] {"update_cart", "receipt"};
-            var action = Prompt.Select("Select Action", actionList, actionList.Length);
+            var action = Prompt.Select("Select Action", actionList);
 
             var nhClient = NotificationHubClient.CreateClientFromConnectionString(connectionString, hubName);
 
