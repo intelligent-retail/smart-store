@@ -34,7 +34,14 @@ namespace SendPush.Sample.Batch
 
             foreach (var deviceToken in deviceIdList.Split(','))
             {
-                await NotificationUtility.PushClosedCartNotificationAsync(deviceToken);
+                if (action == "update_cart")
+                {
+                    await NotificationUtility.PushClosedCartNotificationAsync(deviceToken);
+                }
+                if (action == "receipt")
+                {
+                    await NotificationUtility.PushClosedCartNotificationAsync(deviceToken);
+                }
             }
 
         }
