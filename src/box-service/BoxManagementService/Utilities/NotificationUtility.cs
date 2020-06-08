@@ -1,7 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Azure.NotificationHubs;
 
 namespace BoxManagementService.Utilities
 {
@@ -30,38 +33,69 @@ namespace BoxManagementService.Utilities
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <param name="action">通知するアクション(カスタムデータ)</param>
         /// <returns>非同期タスク</returns>
-        private static Task PushNotificationAsync(string deviceId, string action)
+        private static async Task PushNotificationAsync(string deviceId, string action)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, Settings.Instance.NotificationUri)
+            var connectionString = Settings.Instance.NotificaitonHubConnectionStrings;
+            var hubName = Settings.Instance.HubName;
+            var nhClient = NotificationHubClient.CreateClientFromConnectionString(connectionString, hubName);
+
+            if (IsTokenAndroid(deviceId))
             {
-                Headers =
+                // AndroidのデバイスIDを使ってNotificationHubにインストールする
+                var fcmInstallation = new Installation
                 {
-                    { "Accept", "application/json" },
-                    { Settings.Instance.NotificationApiKeyHeader, Settings.Instance.NotificationApiKey }
-                },
-                Content = CreateJsonContent(new
+                    InstallationId = Guid.NewGuid().ToString(),
+                    Platform = NotificationPlatform.Fcm,
+                    PushChannel = deviceId,
+                    PushChannelExpired = false,
+                    Tags = new[] { "fcm" }
+                };
+                await nhClient.CreateOrUpdateInstallationAsync(fcmInstallation);
+
+                // デバイスにプッシュ通知を送信する
+                var fcmContent = $"{{\"data\":{{\"action\":\"{action}\"}}}}";
+                var outcomeFcmByDeviceId = await nhClient.SendDirectNotificationAsync(new FcmNotification(fcmContent), deviceId);
+
+            }
+
+            if (IsTokeniOS(deviceId))
+            {
+                Console.WriteLine($"iOS device token={deviceId}");
+
+                // iOSのデバイスIDを使ってNotificationHubにインストールする
+                var apnsInstallation = new Installation
                 {
-                    notification_target = new
-                    {
-                        type = "devices_target",
-                        devices = new[] { $"{deviceId}" }
-                    },
-                    notification_content = new
-                    {
-                        name = "UpdateCart",
-                        title = "UpdateCart",
-                        body = "UpdateCart",
-                        custom_data = new
-                        {
-                            action
-                        }
-                    }
-                }),
-            };
+                    InstallationId = Guid.NewGuid().ToString(),
+                    Platform = NotificationPlatform.Apns,
+                    PushChannel = deviceId,
+                    PushChannelExpired = false,
+                    Tags = new[] { "apns" }
+                };
+                await nhClient.CreateOrUpdateInstallationAsync(apnsInstallation);
 
-            return StaticHttpClient.Instance.SendAsync(request);
-
-            HttpContent CreateJsonContent<T>(T value) => new ObjectContent<T>(value, new JsonMediaTypeFormatter());
+                // デバイスにプッシュ通知を送信する
+                var apnsContent = $"{{\"aps\":{{\"alert\":\"Notification Hub test notification from SDK sample\"}},\"action\":\"{action}\"}}";
+                var outcomeApnsByDeviceId = await nhClient.SendDirectNotificationAsync(new AppleNotification(apnsContent), deviceId);
+            }
+        }
+        /// <summary>
+        /// デバイストークンがAndoirdかどうか
+        /// ※ iOSでなければtrue
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        static bool IsTokenAndroid(string token)
+        {
+            return !IsTokeniOS(token);
+        }
+        /// <summary>
+        /// デバイストークンがiOSかどうか
+        /// </summary>
+        /// <param name="token">8888AAAABBBBCCCC99998888DDDDEEEE4444333300001111FFFF555566667777</param>
+        /// <returns></returns>
+        static bool IsTokeniOS(string token)
+        {
+            return token.Length == 64 && Regex.IsMatch(token, @"[A-Z0-9]{64}");
         }
     }
 }

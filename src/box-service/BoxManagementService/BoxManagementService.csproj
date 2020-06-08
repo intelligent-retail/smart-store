@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="4.1.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Host.Storage" Version="3.0.14" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
+    <PackageReference Include="Microsoft.Azure.NotificationHubs" Version="3.3.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

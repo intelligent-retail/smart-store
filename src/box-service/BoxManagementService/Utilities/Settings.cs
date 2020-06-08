@@ -71,5 +71,15 @@ namespace BoxManagementService.Utilities
         /// POSのカート精算パス
         /// </summary>
         public string PosCartBillPath => _instance[nameof(PosCartBillPath)];
+
+        /// <summary>
+        /// Notification Hubsの接続文字列
+        /// </summary>
+        public string NotificaitonHubConnectionStrings => _instance.GetConnectionString(nameof(NotificaitonHubConnectionStrings));
+        
+        /// <summary>
+        /// Notification Hubsのハブ名
+        /// </summary>
+        public string HubName => _instance[nameof(HubName)];
     }
 }
