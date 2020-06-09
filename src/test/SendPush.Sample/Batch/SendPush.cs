@@ -40,7 +40,7 @@ namespace SendPush.Sample.Batch
             {
                 if (action == update_cart)
                 {
-                    await utiility.PushClosedCartNotificationAsync(deviceToken);
+                    await utiility.PushUpdatedCartNotificationAsync(deviceToken);
                 }
                 if (action == receipt)
                 {
