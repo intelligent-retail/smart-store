@@ -11,9 +11,11 @@ using Sharprompt;
 
 namespace SendPush.Sample.Batch
 {
-    public class SendPush
+    public class SendPush : ConsoleAppBase
     {
         private const string Description = "デバイスIDにプッシュ通知を送信する";
+        private const string update_cart = nameof(update_cart);
+        private const string receipt = nameof(receipt);
         private readonly ILogger<SendPush> _logger;
 
         public SendPush(ILogger<SendPush> logger)
@@ -24,23 +26,25 @@ namespace SendPush.Sample.Batch
         [Command("sendpush", Description)]
         public async Task Run(string deviceIdList)
         {
-            var connectionString = Settings.Instance.NotificaitonHubConnectionStrings;
-            var hubName = Settings.Instance.HubName;
+            var connectionString = Models.Settings.Instance.NotificaitonHubConnectionStrings;
+            var hubName = Models.Settings.Instance.HubName;
 
-            var actionList = new[] {"update_cart", "receipt"};
+            var actionList = new[] { update_cart, receipt };
             var action = Prompt.Select("Select Action", actionList);
 
-            var nhClient = NotificationHubClient.CreateClientFromConnectionString(connectionString, hubName);
+            var utiility = new NotificationUtility();
+            utiility.ConnectionString = connectionString;
+            utiility.HubName = hubName;
 
             foreach (var deviceToken in deviceIdList.Split(','))
             {
-                if (action == "update_cart")
+                if (action == update_cart)
                 {
-                    await NotificationUtility.PushClosedCartNotificationAsync(deviceToken);
+                    await utiility.PushClosedCartNotificationAsync(deviceToken);
                 }
-                if (action == "receipt")
+                if (action == receipt)
                 {
-                    await NotificationUtility.PushClosedCartNotificationAsync(deviceToken);
+                    await utiility.PushClosedCartNotificationAsync(deviceToken);
                 }
             }
 

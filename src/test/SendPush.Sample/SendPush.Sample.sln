@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendPush.Sample", "SendPush.Sample.csproj", "{3897C8EE-4204-4068-8432-B2D2AB7D0BC3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoxManagementService", "..\..\box-service\BoxManagementService\BoxManagementService.csproj", "{D0320575-C112-458A-B981-184421402041}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SendPush.Sample", "SendPush.Sample.csproj", "{3897C8EE-4204-4068-8432-B2D2AB7D0BC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{3897C8EE-4204-4068-8432-B2D2AB7D0BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3897C8EE-4204-4068-8432-B2D2AB7D0BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3897C8EE-4204-4068-8432-B2D2AB7D0BC3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0320575-C112-458A-B981-184421402041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0320575-C112-458A-B981-184421402041}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0320575-C112-458A-B981-184421402041}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0320575-C112-458A-B981-184421402041}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
