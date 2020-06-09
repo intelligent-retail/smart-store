@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Dynamitey;
+using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.NotificationHubs;
 
 namespace BoxManagementService.Utilities
@@ -19,7 +22,7 @@ namespace BoxManagementService.Utilities
 
         public NotificationUtility()
         {
-            this.ConnectionString= Settings.Instance.NotificaitonHubConnectionStrings;
+            this.ConnectionString = Settings.Instance.NotificaitonHubConnectionStrings;
             this.HubName = Settings.Instance.HubName;
         }
 
@@ -28,14 +31,14 @@ namespace BoxManagementService.Utilities
         /// </summary>
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <returns>非同期タスク</returns>
-        public async Task PushClosedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "receipt");
+        public async Task PushClosedCartNotificationAsync(string deviceId) => await PushNotificationAsync(deviceId, "receipt");
 
         /// <summary>
         /// アプリケーションにカート取引の更新を通知します。
         /// </summary>
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <returns>非同期タスク</returns>
-        public async Task PushUpdatedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "update_cart");
+        public async Task PushUpdatedCartNotificationAsync(string deviceId) => await PushNotificationAsync(deviceId, "update_cart");
 
         /// <summary>
         /// アプリケーションにactionを通知します。
@@ -49,6 +52,8 @@ namespace BoxManagementService.Utilities
 
             if (IsTokenAndroid(deviceId))
             {
+                Console.WriteLine($"Android device token={deviceId}");
+
                 // AndroidのデバイスIDを使ってNotificationHubにインストールする
                 var fcmInstallation = new Installation
                 {
@@ -64,6 +69,8 @@ namespace BoxManagementService.Utilities
                 var fcmContent = $"{{\"data\":{{\"action\":\"{action}\"}}}}";
                 var outcomeFcmByDeviceId = await nhClient.SendDirectNotificationAsync(new FcmNotification(fcmContent), deviceId);
 
+                // 戻り値を使ってログを出力する
+                await GetPushDetailsAndPrintOutcome("FCM Direct", nhClient, outcomeFcmByDeviceId);
             }
 
             if (IsTokeniOS(deviceId))
@@ -84,6 +91,9 @@ namespace BoxManagementService.Utilities
                 // デバイスにプッシュ通知を送信する
                 var apnsContent = $"{{\"aps\":{{\"alert\":\"Notification Hub test notification from SDK sample\"}},\"action\":\"{action}\"}}";
                 var outcomeApnsByDeviceId = await nhClient.SendDirectNotificationAsync(new AppleNotification(apnsContent), deviceId);
+
+                // 戻り値を使ってログを出力する
+                await GetPushDetailsAndPrintOutcome("APNS Direct", nhClient, outcomeApnsByDeviceId);
             }
         }
         /// <summary>
@@ -104,6 +114,88 @@ namespace BoxManagementService.Utilities
         static bool IsTokeniOS(string token)
         {
             return token.Length == 64 && Regex.IsMatch(token, @"[A-Z0-9]{64}");
+        }
+
+        private static async Task GetPushDetailsAndPrintOutcome(
+            string pnsType,
+            NotificationHubClient nhClient,
+            NotificationOutcome notificationOutcome)
+        {
+            // The Notification ID is only available for Standard SKUs. For Basic and Free SKUs the API to get notification outcome details can not be called.
+            if (string.IsNullOrEmpty(notificationOutcome.NotificationId))
+            {
+                PrintPushNoOutcome(pnsType);
+                return;
+            }
+
+            var details = await WaitForThePushStatusAsync(pnsType, nhClient, notificationOutcome);
+            NotificationOutcomeCollection collection = null;
+            switch (pnsType)
+            {
+                case "FCM":
+                case "FCM Silent":
+                case "FCM Tags":
+                case "FCM Direct":
+                    collection = details.FcmOutcomeCounts;
+                    break;
+
+                case "APNS":
+                case "APNS Silent":
+                case "APNS Tags":
+                case "APNS Direct":
+                    collection = details.ApnsOutcomeCounts;
+                    break;
+
+                case "WNS":
+                    collection = details.WnsOutcomeCounts;
+                    break;
+                default:
+                    Console.WriteLine("Invalid Sendtype");
+                    break;
+            }
+
+            PrintPushOutcome(pnsType, details, collection);
+        }
+
+        private static void PrintPushOutcome(string pnsType, NotificationDetails details, NotificationOutcomeCollection collection)
+        {
+            if (collection != null)
+            {
+                Console.WriteLine($"{pnsType} outcome: " + string.Join(",", collection.Select(kv => $"{kv.Key}:{kv.Value}")));
+            }
+            else
+            {
+                Console.WriteLine($"{pnsType} no outcomes.");
+            }
+            Console.WriteLine($"{pnsType} error details URL: {details.PnsErrorDetailsUri}");
+        }
+
+        private static void PrintPushNoOutcome(string pnsType)
+        {
+            Console.WriteLine($"{pnsType} has no outcome due to it is only available for Standard SKU pricing tier.");
+        }
+        private static async Task<NotificationDetails> WaitForThePushStatusAsync(string pnsType, NotificationHubClient nhClient, NotificationOutcome notificationOutcome)
+        {
+            var notificationId = notificationOutcome.NotificationId;
+            var state = NotificationOutcomeState.Enqueued;
+            var count = 0;
+            NotificationDetails outcomeDetails = null;
+            while ((state == NotificationOutcomeState.Enqueued || state == NotificationOutcomeState.Processing) && ++count < 10)
+            {
+                try
+                {
+                    Console.WriteLine($"{pnsType} status: {state}");
+                    outcomeDetails = await nhClient.GetNotificationOutcomeDetailsAsync(notificationId);
+                    state = outcomeDetails.State;
+                }
+                catch (MessagingEntityNotFoundException)
+                {
+                    // It's possible for the notification to not yet be enqueued, so we may have to swallow an exception
+                    // until it's ready to give us a new state.
+                }
+                Thread.Sleep(1000);
+            }
+            return outcomeDetails;
         }
     }
 }
