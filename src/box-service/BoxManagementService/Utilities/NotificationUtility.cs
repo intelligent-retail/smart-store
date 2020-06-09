@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Dynamitey;
 using Microsoft.Azure.NotificationHubs;
 
 namespace BoxManagementService.Utilities
@@ -11,21 +12,30 @@ namespace BoxManagementService.Utilities
     /// <summary>
     /// アプリケーション（スマートフォン）への通知ユーティリティ
     /// </summary>
-    public static class NotificationUtility
+    public class NotificationUtility
     {
+        public string ConnectionString { get; set; }
+        public string HubName { get; set; }
+
+        public NotificationUtility()
+        {
+            this.ConnectionString= Settings.Instance.NotificaitonHubConnectionStrings;
+            this.HubName = Settings.Instance.HubName;
+        }
+
         /// <summary>
         /// アプリケーションにカート取引の終了を通知します。
         /// </summary>
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <returns>非同期タスク</returns>
-        public static async Task PushClosedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "receipt");
+        public async Task PushClosedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "receipt");
 
         /// <summary>
         /// アプリケーションにカート取引の更新を通知します。
         /// </summary>
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <returns>非同期タスク</returns>
-        public static async Task PushUpdatedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "update_cart");
+        public async Task PushUpdatedCartNotificationAsync(string deviceId) => PushNotificationAsync(deviceId, "update_cart");
 
         /// <summary>
         /// アプリケーションにactionを通知します。
@@ -33,11 +43,9 @@ namespace BoxManagementService.Utilities
         /// <param name="deviceId">通知先のデバイスID</param>
         /// <param name="action">通知するアクション(カスタムデータ)</param>
         /// <returns>非同期タスク</returns>
-        private static async Task PushNotificationAsync(string deviceId, string action)
+        private async Task PushNotificationAsync(string deviceId, string action)
         {
-            var connectionString = Settings.Instance.NotificaitonHubConnectionStrings;
-            var hubName = Settings.Instance.HubName;
-            var nhClient = NotificationHubClient.CreateClientFromConnectionString(connectionString, hubName);
+            var nhClient = NotificationHubClient.CreateClientFromConnectionString(this.ConnectionString, this.HubName);
 
             if (IsTokenAndroid(deviceId))
             {
