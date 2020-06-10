@@ -1,5 +1,4 @@
 ﻿using Microsoft.AppCenter;
-using Microsoft.AppCenter.Push;
 using Microsoft.Identity.Client;
 using SmartRetailApp.Models;
 using SmartRetailApp.Views;
@@ -40,15 +39,9 @@ namespace SmartRetailApp
 
         protected override async void OnStart()
         {
-            if (!AppCenter.Configured)
-            {
-                Push.PushNotificationReceived += this.Push_PushNotificationReceived;
-            }
-
             AppCenter.Start($"android={Constant.AppCenterKeyAndroid};" +
                             "uwp={Your UWP App secret here};" +
-                            $"ios={Constant.AppCenterKeyiOS}",
-                typeof(Push));
+                            $"ios={Constant.AppCenterKeyiOS}");
         }
 
         public async Task<AuthenticationResult> SignInAsync()
@@ -88,30 +81,6 @@ namespace SmartRetailApp
             {
                 await App.AuthenticationClient.RemoveAsync(accounts.First());
                 accounts = await App.AuthenticationClient.GetAccountsAsync();
-            }
-        }
-
-        private async void Push_PushNotificationReceived(object sender, PushNotificationReceivedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(e.Message))
-            {
-                return;
-            }
-
-            if (e.CustomData != null && e.CustomData.ContainsKey("action"))
-            {
-                var action = e.CustomData["action"];
-                switch (action)
-                {
-                    // カート情報を更新する
-                    case "update_cart":
-                        await PushCartPageAsync();
-                        break;
-                    // カート情報を更新する
-                    case "receipt":
-                        await PushReceiptPageAsync();
-                        break;
-                }
             }
         }
 

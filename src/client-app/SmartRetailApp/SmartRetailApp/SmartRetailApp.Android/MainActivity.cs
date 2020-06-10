@@ -7,7 +7,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.OS;
-using Microsoft.AppCenter.Push;
 using ZXing.Mobile;
 using Microsoft.Identity.Client;
 
@@ -34,7 +33,6 @@ namespace SmartRetailApp.Droid
         protected override void OnNewIntent(Intent intent)
         {
             base.OnNewIntent(intent);
-            Push.CheckLaunchedFromNotification(this, intent);
         }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
