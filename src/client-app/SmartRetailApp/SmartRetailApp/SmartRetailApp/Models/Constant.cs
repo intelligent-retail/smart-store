@@ -1,4 +1,4 @@
-﻿namespace SmartRetailApp.Models
+namespace SmartRetailApp.Models
 {
     public class Constant
     {
@@ -36,5 +36,41 @@
         static readonly string authorityBase = $"https://{TenantName}.b2clogin.com/tfp/{tenantId}/";
         public static string AuthoritySignin => $"{authorityBase}{PolicySignin}";
         public static string[] Scopes => scopes;
+
+        // 接続文字列
+        // Azure Portal → Notification Hub → Access Policies → DefaultListenShared AccessSignature
+        // ※ Listen のみの接続文字列でないと動作しないので注意
+        public static string ListenConnectionString { get; set; } = "Endpoint=sb://smart-store-notification-hub-ns.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=ln2JYVgwSUMyE5pvIUA7cz9r/hneXERmFTyTZok8iN4=";
+
+        /// <summary>
+        /// Notification Hub のハブ名
+        /// </summary>
+        public static string NotificationHubName { get; set; } = "smart-store-notification-hub";
+
+        /// <summary>
+        /// 登録するタグ
+        /// </summary>
+        public static string[] SubscriptionTags { get; set; } = { "default" };
+
+        /// <summary>
+        /// Android のテンプレート
+        /// </summary>
+        public static string FCMTemplateBody { get; set; } = "{\"data\":{\"message\":\"$(messageParam)\"}}";
+
+        /// <summary>
+        /// iOS のテンプレート
+        /// </summary>
+        public static string APNTemplateBody { get; set; } = "{\"aps\":{\"alert\":\"$(messageParam)\"}}";
+
+        /// <summary>
+        /// Notification channels are used on Android devices starting with "Oreo"
+        /// </summary>
+        public static string NotificationChannelName { get; set; } = "SmartStoreChannel";
+
+        /// <summary>
+        /// Tag used in log messages to easily filter the device log
+        /// during development.
+        /// </summary>
+        public static string DebugTag { get; set; } = "SmartStore";
     }
 }
