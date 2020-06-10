@@ -17,6 +17,7 @@ namespace SmartRetailApp
         public static IPublicClientApplication AuthenticationClient { get; private set; }
         public static object UIParent { get; set; } = null;
 
+        public string DeviceId { get; set; }
         public string CartId { get; set; }
         public string BoxId { get; set; }
         public string AuthErrorMessage { get; set; }
@@ -73,6 +74,20 @@ namespace SmartRetailApp
             return result;
         }
 
+        public void DoActionAsync(string action)
+        {
+            if (action == "receipt")
+            {
+                PushReceiptPageAsync();
+            }
+            if (action == "update_cart")
+            {
+                PushReceiptPageAsync();
+            }
+
+            // do nothing!!
+        }
+
         public async void SignOut()
         {
             IEnumerable<IAccount> accounts = await App.AuthenticationClient.GetAccountsAsync();
@@ -87,49 +102,56 @@ namespace SmartRetailApp
         /// <summary>
         /// カートを更新する
         /// </summary>
-        async Task PushCartPageAsync()
+        void PushCartPageAsync()
         {
+            Xamarin.Forms.Device.BeginInvokeOnMainThread(async () =>
+            {
+
 #if DEBUG
-            await this.MainPage.DisplayAlert("SmartRetail", "カート情報を更新します", "OK");
+                await this.MainPage.DisplayAlert("SmartRetail", "カート情報を更新します", "OK");
 #endif
 
-            var nav = this.MainPage as NavigationPage;
-            var deviceId = await AppCenter.GetInstallIdAsync();
+                var nav = this.MainPage as NavigationPage;
+                var deviceId = await AppCenter.GetInstallIdAsync();
 
-            // すでにRegisterPageを開いている
-            if (nav.CurrentPage is RegisterPage)
-            {
-                var cartPage = nav.CurrentPage as RegisterPage;
-                await cartPage.UpdateCart();
-            }
-            else
-            {
-                await nav.Navigation.PushAsync(new RegisterPage(deviceId.ToString(), true));
-            }
+                // すでにRegisterPageを開いている
+                if (nav.CurrentPage is RegisterPage)
+                {
+                    var cartPage = nav.CurrentPage as RegisterPage;
+                    await cartPage.UpdateCart();
+                }
+                else
+                {
+                    await nav.Navigation.PushAsync(new RegisterPage(deviceId.ToString(), true));
+                }
+            });
         }
 
         /// <summary>
         /// レシートを表示する
         /// </summary>
-        async Task PushReceiptPageAsync()
+        void PushReceiptPageAsync()
         {
+            Xamarin.Forms.Device.BeginInvokeOnMainThread(async () =>
+            {
 
 #if DEBUG
-            await this.MainPage.DisplayAlert("SmartRetail", "レシートを表示します", "OK");
+                await this.MainPage.DisplayAlert("SmartRetail", "レシートを表示します", "OK");
 #endif
 
-            var nav = this.MainPage as NavigationPage;
+                var nav = this.MainPage as NavigationPage;
 
-            // すでにRegisterPageを開いている
-            if (nav.CurrentPage is ThankPage)
-            {
-                var thankPage = nav.CurrentPage as ThankPage;
-                await thankPage.UpdateReceipt();
-            }
-            else
-            {
-                await nav.Navigation.PushAsync(new ThankPage());
-            }
+                // すでにRegisterPageを開いている
+                if (nav.CurrentPage is ThankPage)
+                {
+                    var thankPage = nav.CurrentPage as ThankPage;
+                    await thankPage.UpdateReceipt();
+                }
+                else
+                {
+                    await nav.Navigation.PushAsync(new ThankPage());
+                }
+            });
         }
 
         protected override void OnSleep()
