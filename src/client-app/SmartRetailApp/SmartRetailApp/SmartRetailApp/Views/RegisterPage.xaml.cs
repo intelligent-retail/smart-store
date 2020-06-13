@@ -1,4 +1,7 @@
+#define MOCK
+using SmartRetailApp.Models;
 using SmartRetailApp.Services;
+using SmartRetailApp.Utilities;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,11 +55,16 @@ namespace SmartRetailApp.Views
         /// <summary>
         /// APIを呼んでカートを更新する
         /// </summary>
-        public async Task UpdateCart()
+        public void UpdateCart()
         {
             var service = new CartApiService();
             var cartId = this.CartId;
+
+#if MOCK
+            var cartStatus = Mock.CreateMockCart(1);
+#else
             var cartStatus = await service.CartStatusAsync(cartId, CartApiService.CartAction.items);
+#endif
 
 
             // 最終更新日
@@ -110,7 +118,7 @@ namespace SmartRetailApp.Views
         /// <param name="e"></param>
         private async void ClickUpdateCart(object sender, EventArgs e)
         {
-            await UpdateCart();
+            UpdateCart();
         }
 
         /// <summary>

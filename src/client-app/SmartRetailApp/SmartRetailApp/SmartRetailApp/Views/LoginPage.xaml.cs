@@ -25,6 +25,7 @@ namespace SmartRetailApp.Views
             loadingIndicator.IsVisible = false;
 
             edtBoxName.Text = "SmartBox1";
+            btnStartShopping.IsVisible = false;
 
             btnLoginLogout.Clicked += async (sender, e) =>
             {
@@ -62,6 +63,8 @@ namespace SmartRetailApp.Views
 
                         await DisplayAlert("ログインしました", msg.ToString(), "OK");
                         btnLoginLogout.Text = "ログアウト";
+                        btnStartShopping.IsVisible = true;
+
                     }
                 }
             };
@@ -109,6 +112,7 @@ namespace SmartRetailApp.Views
             app.SignOut();
 
             btnLoginLogout.Text = "ログイン";
+            btnStartShopping.IsVisible = false;
 
             await DisplayAlert("ログアウトしました", "", "OK");
         }
@@ -177,18 +181,18 @@ namespace SmartRetailApp.Views
                 });
 
                 // 取引開始で商品カートへ遷移
-                if (cartResult != null && /*cartResult.IsSuccess*/ !string.IsNullOrEmpty(cartResult.CartId))
-                {
+                //if (cartResult != null && /*cartResult.IsSuccess*/ !string.IsNullOrEmpty(cartResult.CartId))
+                //{
                     (Application.Current as App).CartId = cartResult.CartId;
                     await this.Navigation.PushAsync(new RegisterPage(deviceId.Value.ToString(), false));
-                }
-                else
-                {
-                    await this.DisplayAlert("SmartRetail", $"買い物を開始できません\n{cartResult.ErrorMessage}", "OK");
+                //}
+                //else
+                //{
+                //    await this.DisplayAlert("SmartRetail", $"買い物を開始できません\n{cartResult.ErrorMessage}", "OK");
 
-                    // 取引開始できない場合はログインへ戻る
-                    await this.Navigation.PopAsync();
-                }
+                //    // 取引開始できない場合はログインへ戻る
+                //    await this.Navigation.PopAsync();
+                //}
 
                 //インジケータを隠す
                 SetIndicator(false);

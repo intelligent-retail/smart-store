@@ -82,7 +82,7 @@ namespace SmartRetailApp
             }
             if (action == "update_cart")
             {
-                PushReceiptPageAsync();
+                PushCartPageAsync();
             }
 
             // do nothing!!
@@ -118,7 +118,7 @@ namespace SmartRetailApp
                 if (nav.CurrentPage is RegisterPage)
                 {
                     var cartPage = nav.CurrentPage as RegisterPage;
-                    await cartPage.UpdateCart();
+                    cartPage.UpdateCart();
                 }
                 else
                 {
