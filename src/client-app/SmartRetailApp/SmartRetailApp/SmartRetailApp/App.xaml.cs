@@ -1,4 +1,6 @@
 ﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 using Microsoft.Identity.Client;
 using SmartRetailApp.Models;
 using SmartRetailApp.Views;
@@ -42,7 +44,9 @@ namespace SmartRetailApp
         {
             AppCenter.Start($"android={Constant.AppCenterKeyAndroid};" +
                             "uwp={Your UWP App secret here};" +
-                            $"ios={Constant.AppCenterKeyiOS}");
+                            $"ios={Constant.AppCenterKeyiOS}"
+                            ,typeof(Analytics),typeof(Crashes))
+                ;
         }
 
         public async Task<AuthenticationResult> SignInAsync()
@@ -76,6 +80,11 @@ namespace SmartRetailApp
 
         public void DoActionAsync(string action)
         {
+            Analytics.TrackEvent("DoAction",
+                new Dictionary<string, string>{
+                    { nameof(action),action}
+                });
+
             if (action == "receipt")
             {
                 PushReceiptPageAsync();

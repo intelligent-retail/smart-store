@@ -1,4 +1,5 @@
 ﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Crashes;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using SmartRetailApp.Models;
@@ -40,7 +41,7 @@ namespace SmartRetailApp.Views
 
                     if (authResult == null)
                     {
-                        await DisplayAlert("ログインできませんでした", app.AuthErrorMessage,"OK");
+                        await DisplayAlert("ログインできませんでした", app.AuthErrorMessage, "OK");
                     }
                     else
                     {
@@ -183,8 +184,8 @@ namespace SmartRetailApp.Views
                 // 取引開始で商品カートへ遷移
                 //if (cartResult != null && /*cartResult.IsSuccess*/ !string.IsNullOrEmpty(cartResult.CartId))
                 //{
-                    (Application.Current as App).CartId = cartResult.CartId;
-                    await this.Navigation.PushAsync(new RegisterPage(deviceId.Value.ToString(), false));
+                (Application.Current as App).CartId = cartResult.CartId;
+                await this.Navigation.PushAsync(new RegisterPage(deviceId.Value.ToString(), false));
                 //}
                 //else
                 //{
@@ -204,5 +205,18 @@ namespace SmartRetailApp.Views
             }
         }
 
+        void btnCrash_Clicked(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                Crashes.GenerateTestCrash();
+            }catch(Exception ex)
+            {
+                Crashes.TrackError(ex, new Dictionary<string, string>
+                {
+                    { "CrashLog",$"DeviceId={(App.Current as App).DeviceId}"}
+                });
+            }
+        }
     }
 }
