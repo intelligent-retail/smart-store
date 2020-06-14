@@ -139,6 +139,9 @@
     "allowedWorkspaceIpAddress": {
       "type": "string",
       "defaultValue": ""
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string"
     }
   },
   "variables": {
@@ -320,6 +323,53 @@
       }
     },
     {
+      "name": "[concat(variables('stockServiceCosmosDbName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "DataPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "MongoRequests",
+            "enabled": true
+          },
+          {
+            "category": "QueryRuntimeStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyRUConsumption",
+            "enabled": true
+          },
+          {
+            "category": "ControlPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "CassandraRequests",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "Requests",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+      ] 
+    },
+    {
       "name": "[concat(parameters('keyVaultName'), '/', variables('stockServiceCosmosDbSecretName'))]",
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2018-02-14",
@@ -382,6 +432,69 @@
           ]
         }
       ]
+    },
+    {
+      "name": "[concat(variables('stockServiceSqlServerName'), '/', variables('stockServiceSqlDatabaseName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "SQLInsights",
+            "enabled": true
+          },
+          {
+            "category": "AutomaticTuning",
+            "enabled": true
+          },
+          {
+            "category": "QueryStoreRuntimeStatistics",
+            "enabled": true
+          },
+          {
+            "category": "QueryStoreWaitStatistics",
+            "enabled": true
+          },
+          {
+            "category": "Errors",
+            "enabled": true
+          },
+          {
+            "category": "DatabaseWaitStatistics",
+            "enabled": true
+          },
+          {
+            "category": "Timeouts",
+            "enabled": true
+          },
+          {
+            "category": "Blocks",
+            "enabled": true
+          },
+          {
+            "category": "Deadlocks",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "Basic",
+            "enabled": true
+          },
+          {
+            "category": "InstanceAndAppAdvanced",
+            "enabled": true
+          },
+          {
+            "category": "WorkloadManagement",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]"
+      ] 
     },
     {
       "name": "[concat(parameters('keyVaultName'), '/', variables('stockServiceSqlDatabaseSecretName'))]",
@@ -714,6 +827,57 @@
       "properties": {
         "Application_Type": "web"
       }
+    },
+    {
+      "name": "[concat(variables('stockProcessorFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockCommandApiFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockQueryApiFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName'))]"
+      ]
     }
   ],
   "outputs": {

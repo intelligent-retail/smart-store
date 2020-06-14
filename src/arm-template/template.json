@@ -163,6 +163,10 @@
     "allowedWorkspaceIpAddress": {
       "type": "string",
       "defaultValue": ""
+    },
+    "vnetExists": {
+      "type": "bool",
+      "defaultValue": false
     }
   },
   "variables": {
@@ -221,6 +225,9 @@
           },
           "services": {
             "value": "[variables('services')]"
+          },
+          "vnetExists": {
+            "value": "[parameters('vnetExists')]"
           }
         }
       }
@@ -277,6 +284,9 @@
           },
           "allowedWorkspaceIpAddress": {
             "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },
@@ -363,6 +373,9 @@
           },
           "allowedWorkspaceIpAddress": {
             "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },
@@ -428,6 +441,9 @@
           },
           "allowedWorkspaceIpAddress": {
             "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },
@@ -492,6 +508,9 @@
           },
           "allowedWorkspaceIpAddress": {
             "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },

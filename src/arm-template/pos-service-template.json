@@ -72,6 +72,9 @@
     "allowedWorkspaceIpAddress": {
       "type": "string",
       "defaultValue": ""
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string"
     }
   },
   "variables": {
@@ -248,6 +251,53 @@
       }
     },
     {
+      "name": "[concat(variables('posCosmosDbAccountName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "DataPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "MongoRequests",
+            "enabled": true
+          },
+          {
+            "category": "QueryRuntimeStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyRUConsumption",
+            "enabled": true
+          },
+          {
+            "category": "ControlPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "CassandraRequests",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "Requests",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('posCosmosDbAccountName'))]"
+      ] 
+    },
+    {
       "name": "[concat(parameters('keyVaultName'), '/', variables('posServiceCosmosDbSecretName'))]",
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2018-02-14",
@@ -383,6 +433,23 @@
       "properties": {
         "Application_Type": "web"
       }
+    },
+    {
+      "name": "[concat(variables('posApiFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('posApiFunctionName'))]"
+      ]
     }
   ],
   "outputs": {

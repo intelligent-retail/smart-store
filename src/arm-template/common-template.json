@@ -26,6 +26,23 @@
       "type": "string",
       "defaultValue": "-"
     },
+    "logAnalyticsSku": {
+      "type": "string",
+      "defaultValue": "Free",
+      "allowedValues": [
+        "Free",
+        "Standard",
+        "Premium",
+        "PerNode",
+        "PerGB2018",
+        "Standalone",
+        "CapacityReservation"
+      ]
+    },
+    "logAnalyticsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 7
+    },
     "vnetNetworkAddress": {
       "type": "string",
       "defaultValue": "10.0"
@@ -40,11 +57,16 @@
     },
     "services": {
       "type": "array"
+    },
+    "vnetExists": {
+      "type": "bool",
+      "defaultValue": false
     }
   },
   "variables": {
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
     "keyVaultName": "[concat(parameters('prefix'), parameters('delimiter'), 'keyvault', parameters('suffix'))]",
+    "logAnalyticsWorkspaceName": "[concat(parameters('prefix'), parameters('delimiter'), 'log', parameters('suffix'))]",
     "bastionName": "[concat(parameters('prefix'), parameters('delimiter'), 'bastion', parameters('suffix'))]",
     "bastionPublicIpName": "[concat(parameters('prefix'), parameters('delimiter'), 'bastion-ip', parameters('suffix'))]",
     "vnetName": "[concat(parameters('prefix'), parameters('delimiter'), 'vnet', parameters('suffix'))]",
@@ -74,6 +96,20 @@
   },
   "resources": [
     {
+      "name": "[variables('logAnalyticsWorkspaceName')]",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2020-03-01-preview",
+      "location": "[variables('location')]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('logAnalyticsSku')]"
+        },
+        "retentionInDays": "[parameters('logAnalyticsRetentionInDays')]",
+        "publicNetworkAccessForIngestion": "Disabled",
+        "publicNetworkAccessForQuery": "Disabled"
+      }
+    },
+    {
       "name": "[variables('keyVaultName')]",
       "type": "Microsoft.KeyVault/vaults",
       "apiVersion": "2018-02-14",
@@ -88,6 +124,30 @@
       }
     },
     {
+      "name": "[concat(variables('keyVaultName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.KeyVault/vaults/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+        "logs": [
+          {
+            "category": "AuditEvent",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ] 
+    },
+    {
+      "condition": "[not(parameters('vnetExists'))]",
       "name": "[variables('vnetName')]",
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2019-11-01",
@@ -100,6 +160,29 @@
         },
         "subnets": "[variables('subnets')]"
       }
+    },
+    {
+      "name": "[concat(variables('vnetName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+        "logs": [
+          {
+            "category": "VMProtectionAlerts",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ] 
     },
     {
       "name": "[variables('bastionPublicIpName')]",
@@ -137,6 +220,23 @@
         "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpName'))]"
       ]
+    },
+    {
+      "name": "[concat(variables('bastionName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.Network/bastionHosts/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+        "logs": [
+          {
+            "category": "BastionAuditLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/bastionHosts', variables('bastionName'))]"
+      ] 
     }
   ],
   "outputs": {
@@ -147,6 +247,10 @@
     "vnetName": {
      "type": "string",
      "value": "[variables('vnetName')]"
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
     }
   }
 }
