@@ -125,6 +125,23 @@
     },
     "keyVaultName": {
       "type": "string"
+    },
+    "service": {
+      "type": "object"
+    },
+    "vnetName": {
+      "type": "string"
+    },
+    "allowableSubnetNames": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "allowedWorkspaceIpAddress": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string"
     }
   },
   "variables": {
@@ -169,13 +186,80 @@
     "stockProcessorFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockProcessor'), parameters('suffix'))]",
     "stockProcessorStorageAccountsName": "[replace(concat(parameters('prefix'), variables('stockProcessor'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "stockProcessorAppService": "stockServiceAppServicePlanName",
-    "stockServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceAppInsights'), parameters('suffix'))]"
+    "stockServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), variables('stockServiceAppInsights'), parameters('suffix'))]",
+    "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
+    "delegatedSubnetName": "[parameters('service').identifier]",
+    "ipSecurityRestrictionsBasePriority": 300,
+    "allowableSubnetNames": "[createArray(variables('delegatedSubnetName'))]",
+    "allowableIpAddresses": "[if(
+      equals(parameters('allowedWorkspaceIpAddress'), ''),
+      json('[]'),
+      createArray(
+        allowableIpAddress.create(
+          'workspace',
+          parameters('allowedWorkspaceIpAddress')
+        )
+      )
+    )]",
+    "alloableSubnetsAndIpAddressesExternal": "[concat(variables('allowableSubnetsExternal'), variables('allowableIpAddresses'))]",
+    "copy": [
+      {
+        "name": "allowableSubnetsInternal",
+        "count": "[length(variables('allowableSubnetNames'))]",
+        "input": "[
+          alloableSubnet.create(
+            variables('allowableSubnetNames')[copyIndex('allowableSubnetsInternal')],
+            resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('allowableSubnetNames')[copyIndex('allowableSubnetsInternal')])
+          )
+        ]"
+      },
+      {
+        "name": "allowableSubnetsExternal",
+        "count": "[length(parameters('allowableSubnetNames'))]",
+        "input": "[
+          alloableSubnet.create(
+            parameters('allowableSubnetNames')[copyIndex('allowableSubnetsExternal')],
+            resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('allowableSubnetNames')[copyIndex('allowableSubnetsExternal')])
+          )
+        ]"
+      },
+      {
+        "name": "ipSecurityRestrictionsInternal",
+        "count": "[length(variables('allowableSubnetsInternal'))]",
+        "input": "[
+          ipSecurityRestriction.createBySubnet(
+            variables('allowableSubnetsInternal')[copyIndex('ipSecurityRestrictionsInternal')].name,
+            variables('allowableSubnetsInternal')[copyIndex('ipSecurityRestrictionsInternal')].vnetSubnetResourceId,
+            add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictionsInternal'))
+          )
+        ]"
+      },
+      {
+        "name": "ipSecurityRestrictionsExternal",
+        "count": "[length(variables('alloableSubnetsAndIpAddressesExternal'))]",
+        "input": "[
+          if(
+            contains(variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')], 'ipAddress'),
+            ipSecurityRestriction.createByIpAddress(
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].name,
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].ipAddress,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictionsExternal'))
+            ),
+            ipSecurityRestriction.createBySubnet(
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].name,
+              variables('alloableSubnetsAndIpAddressesExternal')[copyIndex('ipSecurityRestrictionsExternal')].vnetSubnetResourceId,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictionsExternal'))
+            )
+          )
+        ]"
+      }
+    ]
   },
   "resources": [
     {
       "name": "[variables('stockServiceCosmosDbName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2016-03-31",
+      "apiVersion": "2019-12-12",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -187,7 +271,15 @@
           {
             "locationName": "[variables('location')]"
           }
-        ]
+        ],
+        "isVirtualNetworkFilterEnabled": true,
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "ignoreMissingVNetServiceEndpoint": false
+          }
+        ],
+        "ipRangeFilter": "[variables('cosmosDbIpRangeFilter')]"
       },
       "resources": [
         {
@@ -231,6 +323,53 @@
       }
     },
     {
+      "name": "[concat(variables('stockServiceCosmosDbName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "DataPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "MongoRequests",
+            "enabled": true
+          },
+          {
+            "category": "QueryRuntimeStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyRUConsumption",
+            "enabled": true
+          },
+          {
+            "category": "ControlPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "CassandraRequests",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "Requests",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('stockServiceCosmosDbName'))]"
+      ] 
+    },
+    {
       "name": "[concat(parameters('keyVaultName'), '/', variables('stockServiceCosmosDbSecretName'))]",
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2018-02-14",
@@ -249,36 +388,113 @@
       "properties": {
         "administratorLogin": "[parameters('stockServiceSqlServerAdminUserName')]",
         "administratorLoginPassword": "[parameters('stockServiceSqlServerAdminPassword')]"
-      }
-    },
-    {
-      "name": "[concat(variables('stockServiceSqlServerName'), '/', variables('stockServiceSqlDatabaseName'))]",
-      "type": "Microsoft.Sql/servers/databases",
-      "apiVersion": "2017-10-01-preview",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "[parameters('stockServiceSqlDatabaseSkuName')]",
-        "tier": "[parameters('stockServiceSqlDatabaseSkuTier')]"
       },
-      "properties": {
-        "collation": "[parameters('stockServiceSqlDatabaseCollation')]",
-        "maxSizeBytes": "[variables('stockServiceSqlDatabaseMaxSizeBytes')]"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
+      "resources": [
+        {
+          "name": "[variables('stockServiceSqlDatabaseName')]",
+          "type": "databases",
+          "apiVersion": "2017-10-01-preview",
+          "location": "[variables('location')]",
+          "sku": {
+            "name": "[parameters('stockServiceSqlDatabaseSkuName')]",
+            "tier": "[parameters('stockServiceSqlDatabaseSkuTier')]"
+          },
+          "properties": {
+            "collation": "[parameters('stockServiceSqlDatabaseCollation')]",
+            "maxSizeBytes": "[variables('stockServiceSqlDatabaseMaxSizeBytes')]"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
+          ]
+        },
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallRules",
+          "apiVersion": "2015-05-01-preview",
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
+          ]
+        },
+        {
+          "name": "[parameters('service').identifier]",
+          "type": "virtualNetworkRules",
+          "apiVersion": "2015-05-01-preview",
+          "properties": {
+            "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "ignoreMissingVnetServiceEndpoint": false
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
+          ]
+        }
       ]
     },
     {
-      "name": "[concat(variables('stockServiceSqlServerName'), '/AllowAllWindowsAzureIps')]",
-      "type": "Microsoft.Sql/servers/firewallRules",
-      "apiVersion": "2015-05-01-preview",
+      "name": "[concat(variables('stockServiceSqlServerName'), '/', variables('stockServiceSqlDatabaseName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
       "properties": {
-        "startIpAddress": "0.0.0.0",
-        "endIpAddress": "0.0.0.0"
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "SQLInsights",
+            "enabled": true
+          },
+          {
+            "category": "AutomaticTuning",
+            "enabled": true
+          },
+          {
+            "category": "QueryStoreRuntimeStatistics",
+            "enabled": true
+          },
+          {
+            "category": "QueryStoreWaitStatistics",
+            "enabled": true
+          },
+          {
+            "category": "Errors",
+            "enabled": true
+          },
+          {
+            "category": "DatabaseWaitStatistics",
+            "enabled": true
+          },
+          {
+            "category": "Timeouts",
+            "enabled": true
+          },
+          {
+            "category": "Blocks",
+            "enabled": true
+          },
+          {
+            "category": "Deadlocks",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "Basic",
+            "enabled": true
+          },
+          {
+            "category": "InstanceAndAppAdvanced",
+            "enabled": true
+          },
+          {
+            "category": "WorkloadManagement",
+            "enabled": true
+          }
+        ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('stockServiceSqlServerName'))]"
-      ]
+        "[resourceId('Microsoft.Sql/servers/databases', variables('stockServiceSqlServerName'), variables('stockServiceSqlDatabaseName'))]"
+      ] 
     },
     {
       "name": "[concat(parameters('keyVaultName'), '/', variables('stockServiceSqlDatabaseSecretName'))]",
@@ -307,19 +523,29 @@
       "comments": "stock-command-api",
       "name": "[variables('stockCommandApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2019-04-01",
       "sku": {
         "name": "[parameters('storageAccountsSkuName')]"
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+        "networkAcls": {
+          "virtualNetworkRules": [
+            {
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        }
+      }
     },
     {
       "comments": "stock-command-api",
       "name": "[variables('stockCommandApiFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
@@ -328,12 +554,32 @@
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
-          }
+          },
+          "ipSecurityRestrictions": "[
+            concat(
+              variables('ipSecurityRestrictionsInternal'),
+              variables('ipSecurityRestrictionsExternal')
+            )
+          ]"
         }
       },
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName'))]"
+          ]
+        }
+      ],
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockCommandApiAppService')))]"
       ]
@@ -342,19 +588,29 @@
       "comments": "stock-query-api",
       "name": "[variables('stockQueryApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2019-04-01",
       "sku": {
         "name": "[parameters('storageAccountsSkuName')]"
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+        "networkAcls": {
+          "virtualNetworkRules": [
+            {
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        }
+      }
     },
     {
       "comments": "stock-query-api",
       "name": "[variables('stockQueryApiFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
@@ -363,12 +619,33 @@
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
-          }
+          },
+          "ipSecurityRestrictions": "[
+            concat(
+              variables('ipSecurityRestrictionsInternal'),
+              variables('ipSecurityRestrictionsExternal')
+            )
+          ]"
         }
       },
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName'))]",
+            "[resourceId('Microsoft.Web/sites/config', variables('stockCommandApiFunctionName'), 'virtualNetwork')]"
+          ]
+        }
+      ],
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockQueryApiAppService')))]"
       ]
@@ -377,19 +654,29 @@
       "comments": "stock-processor",
       "name": "[variables('stockProcessorStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2019-04-01",
       "sku": {
         "name": "[parameters('storageAccountsSkuName')]"
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+        "networkAcls": {
+          "virtualNetworkRules": [
+            {
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        }
+      }
     },
     {
       "comments": "stock-processor",
       "name": "[variables('stockProcessorFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
@@ -398,12 +685,29 @@
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
-          }
+          },
+          "ipSecurityRestrictions": "[variables('ipSecurityRestrictionsInternal')]"
         }
       },
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName'))]",
+            "[resourceId('Microsoft.Web/sites/config', variables('stockCommandApiFunctionName'), 'virtualNetwork')]",
+            "[resourceId('Microsoft.Web/sites/config', variables('stockQueryApiFunctionName'), 'virtualNetwork')]"
+          ]
+        }
+      ],
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables(variables('stockProcessorAppService')))]"
       ]
@@ -523,6 +827,57 @@
       "properties": {
         "Application_Type": "web"
       }
+    },
+    {
+      "name": "[concat(variables('stockProcessorFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('stockProcessorFunctionName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockCommandApiFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('stockQueryApiFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('stockQueryApiFunctionName'))]"
+      ]
     }
   ],
   "outputs": {
@@ -530,5 +885,128 @@
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Web/sites', variables('stockCommandApiFunctionName')), '2018-02-01').defaultHostName]"
     }
-  }
+  },
+  "functions": [
+    {
+      "namespace": "alloableSubnet",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "subnetName",
+              "type": "string"
+            },
+            {
+              "name": "subnetResourceId",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('subnetResourceId')]",
+              "name": "[parameters('subnetName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "allowableIpAddress",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "name": "workspace",
+              "ipAddress": "[parameters('ipAddress')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "ipSecurityRestriction",
+      "members": {
+        "createBySubnet": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "vnetSubnetResourceId",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('vnetSubnetResourceId')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        },
+        "createByIpAddress": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "ipAddress": "[concat(parameters('ipAddress'), '/32')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "cosmosDbIpRangeFilter",
+      "members": {
+        // Allow to access to Cosmos DB via Azure Portal
+        "allowAccessFromPortal": {
+          "parameters": [
+            {
+              "name": "ipRangeFilter",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat(parameters('ipRangeFilter'), if(equals(parameters('ipRangeFilter'),''),'',','), '104.42.195.92,40.76.54.131,52.176.6.30,52.169.50.45,52.187.184.26')]"
+          }
+        }
+      }
+    }
+  ]
 }

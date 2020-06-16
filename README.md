@@ -16,4 +16,4 @@
 
 ## Getting Started
 
-Azure のリソースのデプロイおよびプロビジョニングについては、 [src/arm-template/README](src/arm-template/README.md) をご参照ください。
+Azure のリソースのデプロイおよびプロビジョニングについては、 [セルフペースドハンズオン資料](/docs/self-paced-handson.md) をご参照ください。
