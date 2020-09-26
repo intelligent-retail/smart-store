@@ -15,13 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="BoxManagementService">
-      <HintPath>..\..\box-service\BoxManagementService\bin\Release\netcoreapp3.1\bin\BoxManagementService.dll</HintPath>
-    </Reference>
+    <Folder Include="Batch\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Batch\" />
+    <ProjectReference Include="..\..\box-service\BoxManagementService\BoxManagementService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
