@@ -325,7 +325,7 @@ namespace BoxManagementService
                 }
 
                 // デバイスに通知します。
-                await new NotificationUtility().PushClosedCartNotificationAsync(box.DeviceId);
+                await new NotificationUtility(log).PushClosedCartNotificationAsync(box.DeviceId);
             }
 
             return (new BoxResponse(), null);
@@ -413,7 +413,7 @@ namespace BoxManagementService
                 }
 
                 // デバイスに通知します。
-                await new NotificationUtility().PushUpdatedCartNotificationAsync(box.DeviceId);
+                await new NotificationUtility(log).PushUpdatedCartNotificationAsync(box.DeviceId);
             }
 
             return (new BoxResponse(), null);

@@ -32,7 +32,7 @@ namespace SendPush.Sample.Batch
             var actionList = new[] { update_cart, receipt };
             var action = Prompt.Select("Select Action", actionList);
 
-            var utiility = new NotificationUtility();
+            var utiility = new NotificationUtility(_logger);
             utiility.ConnectionString = connectionString;
             utiility.HubName = hubName;
 
