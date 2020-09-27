@@ -45,7 +45,7 @@ namespace SmartRetailApp.Models
         /// <summary>
         /// Notification Hub のハブ名
         /// </summary>
-        public const string NotificationHubName = "{HubName}";
+        public const string NotificationHubName = "{NotificationHubName}";
 
         /// <summary>
         /// 登録するタグ
