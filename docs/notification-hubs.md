@@ -104,6 +104,8 @@ public const string NotificationHubName = "NotificationHubName";
 　　![](images/notification-hubs-009.png)
   - `src\test\SamplePush.Sample\SamplePush.Sample.csproj` を VSCode で開きます
   - Terminal を起動して下記のコマンドを実行します
+    > dotnet build
+    
     > dotnet run sendpush --deviceIdList {コピーしたデバイスID}
   - 実行するアクション（カートの更新または清算）を聞かれるので選択します
     ```
