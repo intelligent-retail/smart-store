@@ -18,10 +18,9 @@ namespace SmartRetailApp.Views
             InitializeComponent();
 
             this.DeviceId.IsVisible = false;
-#if DEBUG
             this.DeviceId.Text = deviceId;
             this.DeviceId.IsVisible = true;
-#endif
+
             // BOX名を表示
             lblBoxName.Text = (Application.Current as App).BoxId;
 
