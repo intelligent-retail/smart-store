@@ -40,12 +40,12 @@ namespace SmartRetailApp.Models
         // 接続文字列
         // Azure Portal → Notification Hub → Access Policies → DefaultListenShared AccessSignature
         // ※ Listen のみの接続文字列でないと動作しないので注意
-        public static string ListenConnectionString { get; set; } = "{DefaultListenSharedAccessSignature}";
+        public const string ListenConnectionString = "{DefaultListenSharedAccessSignature}";
 
         /// <summary>
         /// Notification Hub のハブ名
         /// </summary>
-        public static string NotificationHubName { get; set; } = "{HubName}";
+        public const string NotificationHubName = "{HubName}";
 
         /// <summary>
         /// 登録するタグ
