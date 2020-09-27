@@ -8,7 +8,8 @@
 1. Firebase で Cloud Messaging を追加する
 1. Notification Hub を作成する
 1. FCM の設定を Notification Hub 用に構成する
-1. 接続文字列を Xamarin のプロジェクトに設定する
+1. Notification Hub の値を Xamarin のプロジェクトに設定する
+1. プッシュ通知をテスト送信する
 
 ### 1. Firebase でプロジェクトを作成する
 
@@ -18,7 +19,6 @@
   - 「プロジェクト名」に任意の名前を入力します
   - 「地域/ロケーション」は任意で指定します（例: 「アナリティクスの地域」を `日本` 、 「Cloud Firestore のロケーション」を `asia-northeast1` )
   - 「Firebase 向け Google アナリティクスのデータ共有にデフォルトの設定を使用する」と「測定管理者間のデータ保護条項に同意します」については、必要に応じてチェックをしてください。
-
 ![](images/notification-hubs-005.png)
 
 ### 2. Android のパッケージ名を取得する
@@ -41,7 +41,6 @@
 - 「General」（または、「全般」）タブの「Your apps」（または、「マイアプリ」）で、Androidのキャラクターのアイコンをクリックします
 - 「Android パッケージ名」に、4. で取得したパッケージ名を貼り付けます
 - 「アプリを登録」をクリックすると `google-services.json` をダウンロードできるのでこれを保存しておきます（Xamarin プロジェクトで使用します）
-
 ![](images/notification-hubs-006.png)
 
 ### 4. Notification Hub を作成する
@@ -67,15 +66,14 @@
 - Azure Portal の Notification Hub から 「Google (GCM/FCM)」をクリックします
 - サーバーキーをペーストします
 - 「Save」をクリックします
-
 ![](images/notification-hubs-007.png)
 ![](images/notification-hubs-008.png)
 
 
-## 6. 接続文字列を Xamarin のプロジェクトに設定する
+## 6. Notification Hub の値を Xamarin のプロジェクトに設定する
 - `SmartRetailApp\Models\Constant.cs` に値を設定します
-  - `ListenConnectionString` には Notification Hub の Access Policies の DefaultListenSharedAccessSignature の値
-  - `NotificationHubName` は Notification Hub Namespace の値
+  - `ListenConnectionString`: Notification Hub の Access Policies の DefaultListenSharedAccessSignature の値
+  - `NotificationHubName`: Notification Hub Namespace の値
 
 ```cs
 // 接続文字列
@@ -88,6 +86,22 @@ public const string ListenConnectionString = "DefaultListenSharedAccessSignature
 /// </summary>
 public const string NotificationHubName = "NotificationHubName";
 ```
+
+## 7. プッシュ通知をテスト送信する
+サンプルプログラムを使用してデバイスにプッシュう通知を送信するテストをおこないます。
+- ` src/test/SendPush.Sample/local.settings.sample.json` を `local.settings.json` にリネームします
+- 以下の値を設定します
+  - `NotificaitonHubConnectionStrings`: Notification Hub の Access Policies の DefaultFullSharedAccessSignature の値
+  - `HubName`: Notification Hub Namespace の値
+```json
+{
+    "NotificaitonHubConnectionStrings": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=***",
+    "HubName": "***HubName",
+}
+```
+  - デバイスを起動してデバイス ID をコピーします
+  - 
+
 
 
 参考: [Get Started with Xamarin](https://docs.microsoft.com/en-us/appcenter/sdk/getting-started/xamarin)
