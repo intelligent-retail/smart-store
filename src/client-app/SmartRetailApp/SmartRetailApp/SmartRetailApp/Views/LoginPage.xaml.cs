@@ -171,7 +171,7 @@ namespace SmartRetailApp.Views
                 }
 
                 // デバイスIDを取得
-                var deviceId = await AppCenter.GetInstallIdAsync();
+                var deviceId = (Application.Current as App)?.DeviceId;
 
                 // 取引開始
                 var api = new CartApiService();
@@ -185,7 +185,7 @@ namespace SmartRetailApp.Views
                 //if (cartResult != null && /*cartResult.IsSuccess*/ !string.IsNullOrEmpty(cartResult.CartId))
                 //{
                 (Application.Current as App).CartId = cartResult.CartId;
-                await this.Navigation.PushAsync(new RegisterPage(deviceId.Value.ToString(), false));
+                await this.Navigation.PushAsync(new RegisterPage(deviceId, false));
                 //}
                 //else
                 //{
