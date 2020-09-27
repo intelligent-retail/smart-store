@@ -99,9 +99,19 @@ public const string NotificationHubName = "NotificationHubName";
     "HubName": "***HubName",
 }
 ```
-  - デバイスを起動してデバイス ID をコピーします
-  - 
-
+  - デバイスでアプリを起動してデバイス ID をコピーします
+    - デバイス ID の取得方法は、「買い物を開始します」をタップした後、カメラの画面をキャンセル（戻る）→ 画面上部に表示されているのでこれをコピーします
+　　![](images/notification-hubs-009.png)
+  - `src\test\SamplePush.Sample\SamplePush.Sample.csproj` を VSCode で開きます
+  - Terminal を起動して下記のコマンドを実行します
+    > dotnet run sendpush --deviceIdList {コピーしたデバイスID}
+  - 実行するアクション（カートの更新または清算）を聞かれるので選択します
+    ```
+    ? Select Action
+    > update_cart
+      receipt
+    ```
+  - デバイスで画面が遷移することを確認します
 
 
 参考: [Get Started with Xamarin](https://docs.microsoft.com/en-us/appcenter/sdk/getting-started/xamarin)
