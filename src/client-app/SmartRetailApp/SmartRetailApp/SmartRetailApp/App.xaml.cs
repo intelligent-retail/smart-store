@@ -121,7 +121,7 @@ namespace SmartRetailApp
 #endif
 
                 var nav = this.MainPage as NavigationPage;
-                var deviceId = await AppCenter.GetInstallIdAsync();
+                var deviceId = (Application.Current as App)?.DeviceId;
 
                 // すでにRegisterPageを開いている
                 if (nav.CurrentPage is RegisterPage)
@@ -131,7 +131,7 @@ namespace SmartRetailApp
                 }
                 else
                 {
-                    await nav.Navigation.PushAsync(new RegisterPage(deviceId.ToString(), true));
+                    await nav.Navigation.PushAsync(new RegisterPage(deviceId, true));
                 }
             });
         }
