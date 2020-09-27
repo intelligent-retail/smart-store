@@ -3,27 +3,30 @@
 
 以下の手順をおこなうことでプッシュ通知の環境構築をおこなうことができます。
 
-1. App Center でアプリケーションを追加する
-2. App Center で Push 環境を設定する
-3. Firebase で プロジェクトを作成する
+1. Notification Hub を作成する
+2. Firebase でプロジェクトを作成する
+3. Android のパッケージ名を取得する
 4. Firebase で Cloud Messaging を追加する
-5. Firebase と App Center Push を関連付ける
+5. FCM の設定を Notification Hub 用に構成する
 
-### 1. App Center でアプリケーションを追加する
+### 1. Notification Hub を作成する
+- [Azure Portal](https://portal.azure.com/) にログインします
+- 「リソースの作成」→「Notification Hub」で検索して「作成」をクリックします。
+![](images/notification-hubs-001.png)
 
-- [App Center](https://appcenter.ms/) にログインします
-- `All apps` から右上の `Add new` → `Add new app` をクリックします
-- App name: でアプリケーション名の入力、OS: は Android、Platform: は Xamarin を選択します
-- 右下の `Add new app` をクリックします
+- サブスクリプション、リソースグループを選択します
+- 「Notification Hub Namespace」で名前空間を入力します
+- 「Notification Hub」でハブ名を入力します
+- 場所、「Select price tier」を選択します
+- 「Create」をクリックします
+![](images/notification-hubs-002.png)
 
-![](images/appcenter-001.png)
+- リソースグルプから作成した Notification Hub を選択して、「Access Policies」をクリックします
+- ２つの接続文字列をコピーしておきます。この後のプッシュ通知を実装する際に必要になります。
+![](images/notification-hubs-003.png)
 
-### 2. AppCenter で Push 環境を設定する
 
-- 作成したアプリケーションを選択して、Push をクリックします
-- Xamarin 用のコードをコピーします（Xamarin プロジェクトで使用します）
-
-### 3. Firebase でプロジェクトを作成する
+### 2. Firebase でプロジェクトを作成する
 
 - [Firebase](https://firebase.google.com/?hl=ja) にログインします
 - 右上の「コンソールへ移動」をクリックします
@@ -32,9 +35,9 @@
   - 「地域/ロケーション」は任意で指定します（例: 「アナリティクスの地域」を `日本` 、 「Cloud Firestore のロケーション」を `asia-northeast1` )
   - 「Firebase 向け Google アナリティクスのデータ共有にデフォルトの設定を使用する」と「測定管理者間のデータ保護条項に同意します」については、必要に応じてチェックをしてください。
 
-![](images/appcenter-005.png)
+![](images/notification-hubs-005.png)
 
-### 4. Android のパッケージ名を取得する
+### 3. Android のパッケージ名を取得する
 
 #### Visual Studio で Android のパッケージ名を確認する場合
 
@@ -48,22 +51,24 @@
 - `src\client-app\SmartRetailApp\SmartRetailApp\SmartRetailApp.Android\Properties\AndroidManifest.xml` を開きます
 - `<manifest>` タグの `package` プロパティの値をコピーしておきます
 
-### 5. Firebase で Cloud Messaging を追加する
+### 4. Firebase で Cloud Messaging を追加する
 
 - Firebase コンソール（の左上）の設定→「プロジェクトの設定」をクリックします
 - 「General」（または、「全般」）タブの「Your apps」（または、「マイアプリ」）で、Androidのキャラクターのアイコンをクリックします
 - 「Android パッケージ名」に、4. で取得したパッケージ名を貼り付けます
 - 「アプリを登録」をクリックすると `google-services.json` をダウンロードできるのでこれを保存しておきます（Xamarin プロジェクトで使用します）
 
-![](images/appcenter-006.png)
+![](images/notification-hubs-006.png)
 
-### 6. Firebase と App Center Push を関連付ける
+### 5. FCM の設定を Notification Hub 用に構成する
 
 - Firebase の設定画面の「クラウドメッセージング」の「サーバーキー」をコピーします
-- App Center の　Push Notificatins を開き、「Next」ボタンをクリックします
-- 「SET UP FIREBASE」では、上記で作業したのでなにもせず「Next」ボタンをクリックします
-- 「ADD KEY」では、 `Add Server Key` の欄にコピーしたサーバーキーをペーストし、「Done」ボタンをクリックします
+- Azure Portal の Notification Hub から 「Google (GCM/FCM)」をクリックします
+- サーバーキーをペーストします
+- 「Save」をクリックします
 
-![](images/appcenter-007.png)
+![](images/notification-hubs-007.png)
+![](images/notification-hubs-008.png)
+
 
 参考: [Get Started with Xamarin](https://docs.microsoft.com/en-us/appcenter/sdk/getting-started/xamarin)
