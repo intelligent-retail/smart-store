@@ -26,7 +26,7 @@ namespace SmartRetailApp.Views
             loadingIndicator.IsVisible = false;
 
             edtBoxName.Text = "SmartBox1";
-            btnStartShopping.IsVisible = false;
+            // btnStartShopping.IsVisible = false;
 
             btnLoginLogout.Clicked += async (sender, e) =>
             {
@@ -64,7 +64,7 @@ namespace SmartRetailApp.Views
 
                         await DisplayAlert("ログインしました", msg.ToString(), "OK");
                         btnLoginLogout.Text = "ログアウト";
-                        btnStartShopping.IsVisible = true;
+                        // btnStartShopping.IsVisible = true;
 
                     }
                 }
@@ -113,7 +113,7 @@ namespace SmartRetailApp.Views
             app.SignOut();
 
             btnLoginLogout.Text = "ログイン";
-            btnStartShopping.IsVisible = false;
+            // btnStartShopping.IsVisible = false;
 
             await DisplayAlert("ログアウトしました", "", "OK");
         }
