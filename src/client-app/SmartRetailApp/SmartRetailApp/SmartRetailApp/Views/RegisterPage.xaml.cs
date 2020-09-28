@@ -18,7 +18,7 @@ namespace SmartRetailApp.Views
             InitializeComponent();
 
             this.DeviceId.IsVisible = false;
-            this.DeviceId.Text = deviceId ?? "";
+            this.DeviceId.Text = "";
             this.DeviceId.IsVisible = true;
 
             // BOX名を表示
