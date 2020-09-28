@@ -1,4 +1,4 @@
 {
     "NotificaitonHubConnectionStrings": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=***",
-    "HubName": "***HubName",
+    "HubName": "***HubName"
 }
