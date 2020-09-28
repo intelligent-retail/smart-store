@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -37,6 +38,7 @@ namespace SmartRetailApp
                 .WithRedirectUri($"msal{Constant.ClientId}://auth")
                 .Build();
 
+
             MainPage = new NavigationPage(new LoginPage());
         }
 
@@ -45,8 +47,20 @@ namespace SmartRetailApp
             AppCenter.Start($"android={Constant.AppCenterKeyAndroid};" +
                             "uwp={Your UWP App secret here};" +
                             $"ios={Constant.AppCenterKeyiOS}"
-                            ,typeof(Analytics),typeof(Crashes))
-                ;
+                            ,typeof(Analytics),typeof(Crashes));
+
+            // 記憶する
+            if (!string.IsNullOrEmpty(this.DeviceId))
+            {
+                Preferences.Set("DeviceId", this.DeviceId);
+            }
+
+            // 呼び出す
+            var deviceId = Preferences.Get("DeviceId", "");
+            if ( string.IsNullOrEmpty(this.DeviceId) && !string.IsNullOrEmpty(deviceId))
+            {
+                this.DeviceId = deviceId;
+            }
         }
 
         public async Task<AuthenticationResult> SignInAsync()
