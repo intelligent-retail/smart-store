@@ -20,7 +20,7 @@ namespace SmartRetailApp
         public static IPublicClientApplication AuthenticationClient { get; private set; }
         public static object UIParent { get; set; } = null;
 
-        public string DeviceId { get; set; }
+        public string DeviceId { get; set; } = "";
         public string CartId { get; set; }
         public string BoxId { get; set; }
         public string AuthErrorMessage { get; set; }
