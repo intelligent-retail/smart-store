@@ -22,22 +22,6 @@ namespace BoxManagementService.Utilities
         public string IotHubConnectionString => _instance[nameof(IotHubConnectionString)];
 
         /// <summary>
-        /// アプリケーション通知APIキーヘッダ
-        /// </summary>
-        public string NotificationApiKeyHeader => _instance[nameof(NotificationApiKeyHeader)];
-
-        /// <summary>
-        /// アプリケーション通知APIキー
-        /// </summary>
-        public string NotificationApiKey => _instance[nameof(NotificationApiKey)];
-
-        /// <summary>
-        /// アプリケーション通知URI
-        /// App Center PushのUri
-        /// </summary>
-        public string NotificationUri => _instance[nameof(NotificationUri)];
-
-        /// <summary>
         /// POSサービスのAPIキーヘッダ
         /// </summary>
         public string PosApiKeyHeader => _instance[nameof(PosApiKeyHeader)];
@@ -71,5 +55,15 @@ namespace BoxManagementService.Utilities
         /// POSのカート精算パス
         /// </summary>
         public string PosCartBillPath => _instance[nameof(PosCartBillPath)];
+
+        /// <summary>
+        /// Notification Hubsの接続文字列
+        /// </summary>
+        public string NotificaitonHubConnectionStrings => _instance[nameof(NotificaitonHubConnectionStrings)];
+        
+        /// <summary>
+        /// Notification Hubsのハブ名
+        /// </summary>
+        public string HubName => _instance[nameof(HubName)];
     }
 }

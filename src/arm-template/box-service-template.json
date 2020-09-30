@@ -47,39 +47,41 @@
     "boxIotHubSku": {
       "type": "string"
     },
-    "boxApiName": {
-      "type": "string"
-    },
-    "boxApiAppServicePlanName": {
-      "type": "string"
-    },
     "boxApiAppServicePlanSku": {
       "type": "string"
     },
     "boxServiceApiZipUrl": {
       "type": "string"
     },
-    "posApiAppServicePlanName": {
-      "type": "string"
-    },
     "posApiFunctionUrl": {
-      "type": "string"
-    },
-    "appInsightsName": {
       "type": "string"
     },
     "keyVaultName": {
       "type": "string"
+    },
+    "service": {
+      "type": "object"
+    },
+    "vnetName": {
+      "type": "string"
+    },
+    "allowedWorkspaceIpAddress": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string"
     }
   },
   "variables": {
-    "boxServiceGroupName": "box-service",
+    "boxApiAppServicePlan": "aspBox",
+    "boxApiName": "box-api",
     "location": "[if(equals(parameters('location'), ''), resourceGroup().location, parameters('location'))]",
-    "needToCreateAppServiceForBoxService": "[not(equals(parameters('posApiAppServicePlanName'), parameters('boxApiAppServicePlanName')))]",
-    "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
+    "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxApiAppServicePlan'), parameters('suffix'))]",
+    "boxIotHubName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "boxServiceIoTHubSecretName": "boxServiceIoTHubConnectionString",
     "boxServiceIoTHubEventSecretName": "boxServiceIoTHubEventConnectionString",
-    "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxServiceGroupName'), parameters('suffix'))]",
+    "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
     "boxCosmosDbDatabaseName": "smartretailboxmanagement",
     "boxCosmosDbDatabaseThroughput": 400,
     "boxCosmosDbCollections": [
@@ -101,10 +103,12 @@
       }
     ],
     "boxServiceCosmosDbSecretName": "boxServiceCosmosDbConnectionString",
-    "boxApiAppServicePlanName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiAppServicePlanName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]",
-    "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), parameters('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
-    "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]"
+    "boxApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('boxApiName'), parameters('suffix'))]",
+    "boxApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('boxApiName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "boxServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
+    "posCartsUri": "[concat('https://', parameters('posApiFunctionUrl'), '/api/v1/carts/')]",
+    "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
+    "delegatedSubnetName": "[parameters('service').identifier]"
   },
   "resources": [
     {
@@ -157,7 +161,7 @@
     {
       "name": "[variables('boxCosmosDbAccountName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2016-03-31",
+      "apiVersion": "2019-12-12",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -169,7 +173,15 @@
           {
             "locationName": "[variables('location')]"
           }
-        ]
+        ],
+        "isVirtualNetworkFilterEnabled": true,
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "ignoreMissingVNetServiceEndpoint": false
+          }
+        ],
+        "ipRangeFilter": "[variables('cosmosDbIpRangeFilter')]"
       },
       "resources": [
         {
@@ -213,6 +225,53 @@
       }
     },
     {
+      "name": "[concat(variables('boxCosmosDbAccountName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "DataPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "MongoRequests",
+            "enabled": true
+          },
+          {
+            "category": "QueryRuntimeStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyRUConsumption",
+            "enabled": true
+          },
+          {
+            "category": "ControlPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "CassandraRequests",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "Requests",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('boxCosmosDbAccountName'))]"
+      ] 
+    },
+    {
       "name": "[concat(parameters('keyVaultName'), '/', variables('boxServiceCosmosDbSecretName'))]",
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2018-02-14",
@@ -224,33 +283,40 @@
       ]
     },
     {
-      "condition": "[variables('needToCreateAppServiceForBoxService')]",
       "name": "[variables('boxApiAppServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "location": "[variables('location')]",
       "sku": {
         "name": "[parameters('boxApiAppServicePlanSku')]"
       },
-      "properties": {
-        "numberOfWorkers": 1
-      }
+      "properties": {}
     },
     {
       "name": "[variables('boxApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2019-04-01",
       "sku": {
         "name": "[parameters('storageAccountsSkuName')]"
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+        "networkAcls": {
+          "virtualNetworkRules": [
+            {
+              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        }
+      }
     },
     {
       "name": "[variables('boxApiFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
@@ -267,6 +333,20 @@
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('boxApiFunctionName'))]"
+          ]
+        }
+      ],
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('boxApiAppServicePlanName'))]"
       ]
@@ -300,7 +380,7 @@
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('boxApiStorageAccountsName'), ';AccountKey=', listKeys(variables('boxApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('boxServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('boxServiceApiZipUrl')]",
         "CosmosDbConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
         "PosCartsUri": "[variables('posCartsUri')]",
@@ -320,6 +400,56 @@
         "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceIoTHubEventSecretName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('boxApiStorageAccountsName'))]"
       ]
+    },
+    {
+      "name": "[variables('boxServiceAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[variables('location')]",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('boxApiFunctionName'))]": "Resource"
+      },
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
+    },
+    {
+      "name": "[concat(variables('boxApiFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('boxApiFunctionName'))]"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "namespace": "cosmosDbIpRangeFilter",
+      "members": {
+        // Allow to access to Cosmos DB via Azure Portal
+        "allowAccessFromPortal": {
+          "parameters": [
+            {
+              "name": "ipRangeFilter",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat(parameters('ipRangeFilter'), if(equals(parameters('ipRangeFilter'),''),'',','), '104.42.195.92,40.76.54.131,52.176.6.30,52.169.50.45,52.187.184.26')]"
+          }
+        }
+      }
     }
   ]
 }

@@ -69,6 +69,23 @@
     },
     "keyVaultName": {
       "type": "string"
+    },
+    "service": {
+      "type": "object"
+    },
+    "vnetName": {
+      "type": "string"
+    },
+    "allowableSubnetNames": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "allowedWorkspaceIpAddress": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "logAnalyticsWorkspaceId": {
+      "type": "string"
     }
   },
   "variables": {
@@ -84,13 +101,61 @@
     "itemMasterApiFunctionName": "[concat(parameters('prefix'), parameters('delimiter'), variables('itemMasterApi'), parameters('suffix'))]",
     "itemMasterApiStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemMasterApi'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
     "itemMasterApiAppService": "itemServiceAppServicePlanName",
-    "itemServiceAssetsStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemServiceGroupName'), variables('itemServiceAssetsName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]"
+    "itemServiceAssetsStorageAccountsName": "[replace(concat(parameters('prefix'), variables('itemServiceGroupName'), variables('itemServiceAssetsName'), parameters('storageAccountsSuffix'), parameters('suffix')), parameters('delimiter'), '')]",
+    "itemServiceAppInsightsName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
+    "cosmosDbIpRangeFilter": "[cosmosDbIpRangeFilter.allowAccessFromPortal(parameters('allowedWorkspaceIpAddress'))]",
+    "delegatedSubnetName": "[parameters('service').identifier]",
+    "ipSecurityRestrictionsBasePriority": 300,
+    "allowableSubnetNames": "[createArray(variables('delegatedSubnetName'))]",
+    "allAllowableSubnetNames": "[concat(variables('allowableSubnetNames'), parameters('allowableSubnetNames'))]",
+    "allowableIpAddresses": "[if(
+      equals(parameters('allowedWorkspaceIpAddress'), ''),
+      json('[]'),
+      createArray(
+        allowableIpAddress.create(
+          'workspace',
+          parameters('allowedWorkspaceIpAddress')
+        )
+      )
+    )]",
+    "alloableSubnetsAndIpAddresses": "[concat(variables('allAllowableSubnets'), variables('allowableIpAddresses'))]",
+    "copy": [
+      {
+        "name": "allAllowableSubnets",
+        "count": "[length(variables('allAllowableSubnetNames'))]",
+        "input": "[
+          alloableSubnet.create(
+            variables('allAllowableSubnetNames')[copyIndex('allAllowableSubnets')],
+            resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('allAllowableSubnetNames')[copyIndex('allAllowableSubnets')])
+          )
+        ]"
+      },
+      {
+        "name": "ipSecurityRestrictions",
+        "count": "[length(variables('alloableSubnetsAndIpAddresses'))]",
+        "input": "[
+          if(
+            contains(variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')], 'ipAddress'),
+            ipSecurityRestriction.createByIpAddress(
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].name,
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].ipAddress,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictions'))
+            ),
+            ipSecurityRestriction.createBySubnet(
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].name,
+              variables('alloableSubnetsAndIpAddresses')[copyIndex('ipSecurityRestrictions')].vnetSubnetResourceId,
+              add(variables('ipSecurityRestrictionsBasePriority'), copyIndex('ipSecurityRestrictions'))
+            )
+          )
+        ]"
+      }
+    ]
   },
   "resources": [
     {
       "name": "[variables('itemServiceCosmosDbName')]",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2015-04-08",
+      "apiVersion": "2019-12-12",
       "location": "[variables('location')]",
       "tags": {
         "defaultExperience": "Core (SQL)"
@@ -102,8 +167,63 @@
           {
             "locationName": "[variables('location')]"
           }
-        ]
+        ],
+        "isVirtualNetworkFilterEnabled": true,
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "ignoreMissingVNetServiceEndpoint": false
+          }
+        ],
+        "ipRangeFilter": "[variables('cosmosDbIpRangeFilter')]"
       }
+    },
+    {
+      "name": "[concat(variables('itemServiceCosmosDbName'), '/microsoft.insights/logs')]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "DataPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "MongoRequests",
+            "enabled": true
+          },
+          {
+            "category": "QueryRuntimeStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyStatistics",
+            "enabled": true
+          },
+          {
+            "category": "PartitionKeyRUConsumption",
+            "enabled": true
+          },
+          {
+            "category": "ControlPlaneRequests",
+            "enabled": true
+          },
+          {
+            "category": "CassandraRequests",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "Requests",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('itemServiceCosmosDbName'))]"
+      ] 
     },
     {
       "name": "[concat(parameters('keyVaultName'), '/', variables('itemServiceCosmosDbSecretName'))]",
@@ -132,19 +252,29 @@
       "comments": "item-master-api",
       "name": "[variables('itemMasterApiStorageAccountsName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2019-04-01",
       "sku": {
         "name": "[parameters('storageAccountsSkuName')]"
       },
       "kind": "[parameters('storageAccountsKind')]",
       "location": "[variables('location')]",
-      "properties": {}
+      "properties": {
+        "networkAcls": {
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "action": "Allow"
+          }
+        ],
+        "defaultAction": "Deny"
+        }
+      }
     },
     {
       "comments": "item-master-api",
       "name": "[variables('itemMasterApiFunctionName')]",
       "type": "Microsoft.Web/sites",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "kind": "functionapp",
       "location": "[variables('location')]",
       "properties": {
@@ -153,12 +283,27 @@
           "alwaysOn": true,
           "cors": {
             "allowedOrigins": ["*"]
-          }
+          },
+          "ipSecurityRestrictions": "[variables('ipSecurityRestrictions')]"
         }
       },
       "identity": {
         "type": "SystemAssigned"
       },
+      "resources": [
+        {
+          "name": "virtualNetwork",
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "properties": {
+            "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('delegatedSubnetName'))]",
+            "swiftSupported": true
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName'))]"
+          ]
+        }
+      ],
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables(variables('itemMasterApiAppService')))]"
       ]
@@ -192,6 +337,7 @@
       "properties": {
         "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('itemMasterApiStorageAccountsName'), ';AccountKey=', listKeys(variables('itemMasterApiStorageAccountsName'),'2018-07-01').keys[0].value)]",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('itemServiceAppInsightsName')), '2015-05-01').InstrumentationKey]",
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('itemMasterApiZipUrl')]",
         "CosmosDBConnection": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('itemServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]"
       },
@@ -199,6 +345,37 @@
         "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",
         "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('itemServiceCosmosDbSecretName'))]"
       ]
+    },
+    {
+      "name": "[concat(variables('itemMasterApiFunctionName'), '/microsoft.insights/FunctionAppLogs')]",
+      "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+      "apiVersion": "2017-05-01-preview",
+      "properties": {
+        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
+        "logs": [
+          {
+            "category": "FunctionAppLogs",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName'))]"
+      ]
+    },
+    {
+      "comments": "stock-service",
+      "name": "[variables('itemServiceAppInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "location": "[parameters('location')]",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('itemMasterApiFunctionName'))]": "Resource"
+      },
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
     },
     {
       "comments": "item-service",
@@ -230,5 +407,128 @@
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Web/sites', variables('itemMasterApiFunctionName')), '2018-02-01').defaultHostName]"
     }
-  }
+  },
+  "functions": [
+    {
+      "namespace": "alloableSubnet",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "subnetName",
+              "type": "string"
+            },
+            {
+              "name": "subnetResourceId",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('subnetResourceId')]",
+              "name": "[parameters('subnetName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "allowableIpAddress",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "name": "workspace",
+              "ipAddress": "[parameters('ipAddress')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "ipSecurityRestriction",
+      "members": {
+        "createBySubnet": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "vnetSubnetResourceId",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "vnetSubnetResourceId": "[parameters('vnetSubnetResourceId')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        },
+        "createByIpAddress": {
+          "parameters": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ipAddress",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "ipAddress": "[concat(parameters('ipAddress'), '/32')]",
+              "action": "Allow",
+              "priority": "[parameters('priority')]",
+              "name": "[parameters('name')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "namespace": "cosmosDbIpRangeFilter",
+      "members": {
+        // Allow to access to Cosmos DB via Azure Portal
+        "allowAccessFromPortal": {
+          "parameters": [
+            {
+              "name": "ipRangeFilter",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat(parameters('ipRangeFilter'), if(equals(parameters('ipRangeFilter'),''),'',','), '104.42.195.92,40.76.54.131,52.176.6.30,52.169.50.45,52.187.184.26')]"
+          }
+        }
+      }
+    }
+  ]
 }

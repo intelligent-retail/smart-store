@@ -145,25 +145,13 @@
         "P3"
       ]
     },
-    "posApiName": {
-      "type": "string"
-    },
-    "posApiAppServicePlanName": {
-      "type": "string"
-    },
     "posApiAppServicePlanSku": {
       "type": "string"
     },
     "posServiceApiZipUrl": {
       "type": "string"
     },
-    "boxApiName": {
-      "type": "string"
-    },
     "boxIotHubSku": {
-      "type": "string"
-    },
-    "boxApiAppServicePlanName": {
       "type": "string"
     },
     "boxApiAppServicePlanSku": {
@@ -171,17 +159,50 @@
     },
     "boxServiceApiZipUrl": {
       "type": "string"
+    },
+    "allowedWorkspaceIpAddress": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "vnetExists": {
+      "type": "bool",
+      "defaultValue": false
     }
   },
   "variables": {
     "prefix": "[toLower(parameters('prefix'))]",
-    "posApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('posApiName'), parameters('suffix'))]",
-    "boxApiFunctionName": "[concat(variables('prefix'), parameters('delimiter'), parameters('boxApiName'), parameters('suffix'))]"
+    "delegationToServerFarms": {
+      "name": "Delegate to app plan",
+      "properties": {
+        "serviceName": "Microsoft.Web/serverFarms"
+      }
+    },
+    "itemService": {
+      "identifier": "item-service",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
+    "stockService": {
+      "identifier": "stock-service",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Sql', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
+    "posService": {
+      "identifier": "pos-service",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
+    "boxService": {
+      "identifier": "box-service",
+      "serviceEndpoints": "[createArray(serviceEndpoint.create('Microsoft.Storage', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.AzureCosmosDB', createArray(parameters('location'))), serviceEndpoint.create('Microsoft.Web', createArray(parameters('location'))))]",
+      "delegations": "[createArray(variables('delegationToServerFarms'))]"
+    },
+    "services": "[concat(createArray(variables('itemService'), variables('stockService'), variables('posService'), variables('boxService')))]"
   },
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "commonTemplate",
       "properties": {
         "mode": "Incremental",
@@ -202,18 +223,18 @@
           "delimiter": {
             "value": "[parameters('delimiter')]"
           },
-          "posApiFunctionName": {
-            "value": "[variables('posApiFunctionName')]"
+          "services": {
+            "value": "[variables('services')]"
           },
-          "boxApiFunctionName": {
-            "value": "[variables('boxApiFunctionName')]"
+          "vnetExists": {
+            "value": "[parameters('vnetExists')]"
           }
         }
       }
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "itemServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -251,6 +272,21 @@
           },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
+          },
+          "service": {
+            "value": "[variables('itemService')]"
+          },
+          "vnetName": {
+            "value": "[reference('commonTemplate').outputs.vnetName.value]"
+          },
+          "allowableSubnetNames": {
+            "value": "[createArray(variables('posService').identifier)]"
+          },
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },
@@ -260,7 +296,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "stockServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -325,6 +361,21 @@
           },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
+          },
+          "service": {
+            "value": "[variables('stockService')]"
+          },
+          "vnetName": {
+            "value": "[reference('commonTemplate').outputs.vnetName.value]"
+          },
+          "allowableSubnetNames": {
+            "value": "[createArray(variables('posService').identifier)]"
+          },
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },
@@ -334,7 +385,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "posServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -364,23 +415,11 @@
           "storageAccountsSuffix": {
             "value": "[parameters('storageAccountsSuffix')]"
           },
-          "posApiName": {
-            "value": "[parameters('posApiName')]"
-          },
           "posServiceApiZipUrl": {
             "value": "[parameters('posServiceApiZipUrl')]"
           },
-          "posApiFunctionName": {
-            "value": "[variables('posApiFunctionName')]"
-          },
-          "posApiAppServicePlanName": {
-            "value": "[parameters('posApiAppServicePlanName')]"
-          },
           "posApiAppServicePlanSku": {
             "value": "[parameters('posApiAppServicePlanSku')]"
-          },
-          "appInsightsName": {
-            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
           },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
@@ -390,6 +429,21 @@
           },
           "stockCommandUri": {
             "value": "[reference('stockServiceTemplate').outputs.stockCommandUri.value]"
+          },
+          "service": {
+            "value": "[variables('posService')]"
+          },
+          "vnetName": {
+            "value": "[reference('commonTemplate').outputs.vnetName.value]"
+          },
+          "allowableSubnetNames": {
+            "value": "[createArray(variables('boxService').identifier)]"
+          },
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },
@@ -401,7 +455,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2018-05-01",
+      "apiVersion": "2019-10-01",
       "name": "boxServiceTemplate",
       "properties": {
         "mode": "Incremental",
@@ -434,29 +488,29 @@
           "boxIotHubSku": {
             "value": "[parameters('boxIotHubSku')]"
           },
-          "boxApiName": {
-            "value": "[parameters('boxApiName')]"
-          },
           "boxServiceApiZipUrl": {
             "value": "[parameters('boxServiceApiZipUrl')]"
-          },
-          "boxApiAppServicePlanName": {
-            "value": "[parameters('boxApiAppServicePlanName')]"
           },
           "boxApiAppServicePlanSku": {
             "value": "[parameters('boxApiAppServicePlanSku')]"
           },
-          "appInsightsName": {
-            "value": "[reference('commonTemplate').outputs.appInsightsName.value]"
-          },
           "keyVaultName": {
             "value": "[reference('commonTemplate').outputs.keyVaultName.value]"
           },
-          "posApiAppServicePlanName": {
-            "value": "[reference('posServiceTemplate').outputs.posApiAppServicePlanName.value]"
-          },
           "posApiFunctionUrl": {
             "value": "[reference('posServiceTemplate').outputs.posApiFunctionUrl.value]"
+          },
+          "service": {
+            "value": "[variables('boxService')]"
+          },
+          "vnetName": {
+            "value": "[reference('commonTemplate').outputs.vnetName.value]"
+          },
+          "allowedWorkspaceIpAddress": {
+            "value": "[parameters('allowedWorkspaceIpAddress')]"
+          },
+          "logAnalyticsWorkspaceId": {
+            "value": "[reference('commonTemplate').outputs.logAnalyticsWorkspaceId.value]"
           }
         }
       },
@@ -467,5 +521,31 @@
     }
   ],
   "outputs": {
-  }
+  },
+  "functions": [
+    {
+      "namespace": "serviceEndpoint",
+      "members": {
+        "create": {
+          "parameters": [
+            {
+              "name": "serviceName",
+              "type": "string"
+            },
+            {
+              "name": "locations",
+              "type": "array"
+            }
+          ],
+          "output": {
+            "type": "object",
+            "value": {
+              "service": "[parameters('serviceName')]",
+              "locations": "[parameters('locations')]"
+            }
+          }
+        }
+      }
+    }
+  ]
 }
