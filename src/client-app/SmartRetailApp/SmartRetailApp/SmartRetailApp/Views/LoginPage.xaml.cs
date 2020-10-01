@@ -63,8 +63,6 @@ namespace SmartRetailApp.Views
 
                         await DisplayAlert("ログインしました", msg.ToString(), "OK");
                         btnLoginLogout.Text = "ログアウト";
-                        // btnStartShopping.IsVisible = true;
-
                     }
                 }
             };
@@ -80,7 +78,6 @@ namespace SmartRetailApp.Views
                 AuthenticationResult result = await App.AuthenticationClient
                     .AcquireTokenSilent(Constant.Scopes, accounts.FirstOrDefault())
                     .ExecuteAsync();
-
             }
             catch
             {
