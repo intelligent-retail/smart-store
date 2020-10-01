@@ -212,7 +212,7 @@ az group create `
   --location ${LOCATION}
 
 # 作成したリソースグループの中に、リソースをデプロイする
-az group deployment create `
+az deployment group create `
   --resource-group ${RESOURCE_GROUP} `
   --template-uri ${TEMPLATE_URL}/template.json `
   --parameters ${TEMPLATE_URL}/parameters.json `
@@ -279,42 +279,13 @@ Azure Functions の API key は、関数全体、または関数個別に設定�
 
 ※ 変数は前項から引き継いでるものとします。
 
-前項で設定した API key とプッシュ通知の情報を Azure Functions の Application Settings に追加します。
+前項で設定した API key の情報を Azure Functions の Application Settings に追加します。
 
-後述の手順のうち、下記の変数には、Azure Functions で設定した API key を指定してください。
+下記の変数には、Azure Functions で設定した API key を指定してください。
 
 - `ITEM_MASTER_API_KEY`
 - `STOCK_COMMAND_API_KEY`
 - `POS_API_KEY`
-
-また、下記の変数には、それぞれプッシュ通知のキーとURLを指定してください。
-
-- `NOTIFICATION_API_KEY`
-- `NOTIFICATION_URI`
-
-`NOTIFICATION_API_KEY` は、下記の手順で取得した値を貼り付けてください。
-
-- App Center 右上のアイコンをクリックし、「Account settings」を開く
-- 「Settings」の「API Tokens」を開く
-- 右上の「New API token」ボタンをクリックする
-- 下記を参考にトークンを発行する
-  - 「Description」に任意の説明文を入力する
-  - 「Access」で `Full Access` を選択する
-  - 「Add new API token」ボタンをクリックし、発行する
-- 「Here’s your API token.」で表示されたトークンをコピーしておく（一度しか表示されないのでご留意ください）
-
-`NOTIFICATION_URI` は、下記の手順で取得した値を貼り付けてください。
-
-- App Center で作成したアプリケーションを開く
-- URLが下記のような構成になっているので、 `{owner_name}` と `{app_name}` の部分を取得する
-  - `https://appcenter.ms/users/{owner_name}/apps/{app_name}`
-- `NOTIFICATION_URI` 下記の URL の `{owner_name}` と `{app_name}` を置き換えて、`NOTIFICATION_URI` に設定する
-  - `https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications`
-
-詳細は下記をご参考下さい。
-
-- [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
-- [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
 
 ```ps1
 # item-service と stock-service の api key を pos-api に設定する
@@ -329,14 +300,10 @@ az functionapp config appsettings set `
 
 # pos-service の api key と通知の設定を box-api に設定する
 $POS_API_KEY="<pos api key>"
-$NOTIFICATION_API_KEY="<app center push api key>"
-$NOTIFICATION_URI="https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications"
 az functionapp config appsettings set `
   --resource-group ${RESOURCE_GROUP} `
   --name ${PREFIX}-box-api `
   --settings `
-    NotificationApiKey=${NOTIFICATION_API_KEY} `
-    NotificationUri=${NOTIFICATION_URI} `
     PosApiKey=${POS_API_KEY}
 ```
 

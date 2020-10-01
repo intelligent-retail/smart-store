@@ -1,24 +1,23 @@
-## Notification Hub でのプッシュ通知の環境構築
-プッシュ通知の環境構築には Notification Hub と Firebase の設定が必要になります。ここでは Notification Hub と Firebase Cloud Messaging（FCM） の設定方法を説明します。
+## Azure Notification Hub でのプッシュ通知の環境構築
+プッシュ通知の環境構築には Azure Notification Hub と Google Firebase の設定が必要になります。ここでは Azure Notification Hub と Google Firebase Cloud Messaging（FCM） の設定方法を説明します。
 
 以下の手順をおこなうことでプッシュ通知の環境構築をおこなうことができます。
 
-1. Firebase でプロジェクトを作成する
+1. Google Firebase でプロジェクトを作成する
 1. Android のパッケージ名を取得する
-1. Firebase で Cloud Messaging を追加する
-1. Notification Hub を作成する
-1. FCM の設定を Notification Hub 用に構成する
-1. Notification Hub の値を Xamarin のプロジェクトに設定する
+1. Google Firebase で Cloud Messaging を追加する
+1. Azure Notification Hub を作成する
+1. FCM の設定を Azure Notification Hub 用に構成する
+1. Azure Notification Hub の値を Xamarin のプロジェクトに設定する
 1. プッシュ通知をテスト送信する
 
-### 1. Firebase でプロジェクトを作成する
+### 1. Google Firebase でプロジェクトを作成する
 
-- [Firebase](https://firebase.google.com/?hl=ja) にログインします
+- [Google Firebase](https://firebase.google.com/?hl=ja) にログインします
 - 右上の「コンソールへ移動」をクリックします
-- 「プロジェクトを作成」をクリックし、下記を参考にプロジェクトを作成します
+- 「プロジェクトを追加」をクリックし、下記を参考にプロジェクトを作成します
   - 「プロジェクト名」に任意の名前を入力します
-  - 「地域/ロケーション」は任意で指定します（例: 「アナリティクスの地域」を `日本` 、 「Cloud Firestore のロケーション」を `asia-northeast1` )
-  - 「Firebase 向け Google アナリティクスのデータ共有にデフォルトの設定を使用する」と「測定管理者間のデータ保護条項に同意します」については、必要に応じてチェックをしてください。
+  - 「このプロジェクトで Google アナリティクスを有効にする」のトグルは、必要に応じてチェックをしてください。有効にする場合は Google アナリティクスアカウントの選択または新規作成を促されます。
 ![](images/notification-hubs-005.png)
 
 ### 2. Android のパッケージ名を取得する
@@ -35,34 +34,17 @@
 - `src\client-app\SmartRetailApp\SmartRetailApp\SmartRetailApp.Android\Properties\AndroidManifest.xml` を開きます
 - `<manifest>` タグの `package` プロパティの値をコピーしておきます
 
-### 3. Firebase で Cloud Messaging を追加する
+### 3. Google Firebase で Cloud Messaging を追加する
 
-- Firebase コンソール（の左上）の設定→「プロジェクトの設定」をクリックします
+- Google Firebase コンソール（の左上）の設定→「プロジェクトの設定」をクリックします
 - 「General」（または、「全般」）タブの「Your apps」（または、「マイアプリ」）で、Androidのキャラクターのアイコンをクリックします
 - 「Android パッケージ名」に、4. で取得したパッケージ名を貼り付けます
 - 「アプリを登録」をクリックすると `google-services.json` をダウンロードできるのでこれを保存しておきます（Xamarin プロジェクトで使用します）
 ![](images/notification-hubs-006.png)
 
-### 4. Notification Hub を作成する
-- [Azure Portal](https://portal.azure.com/) にログインします
-- 「リソースの作成」→「Notification Hub」で検索して「作成」をクリックします。
-![](images/notification-hubs-001.png)
+### 4. FCM の設定を Azure Notification Hub 用に構成する
 
-- サブスクリプション、リソースグループを選択します
-- 「Notification Hub Namespace」で名前空間を入力します
-- 「Notification Hub」でハブ名を入力します
-- 場所、「Select price tier」を選択します
-- 「Create」をクリックします
-![](images/notification-hubs-002.png)
-
-- リソースグルプから作成した Notification Hub を選択して、「Access Policies」をクリックします
-- ２つの接続文字列をコピーしておきます。この後のプッシュ通知を実装する際に必要になります。
-![](images/notification-hubs-003.png)
-
-
-### 5. FCM の設定を Notification Hub 用に構成する
-
-- Firebase の設定画面の「クラウドメッセージング」の「サーバーキー」をコピーします
+- Google Firebase の設定画面の「クラウドメッセージング」の「サーバーキー」をコピーします
 - Azure Portal の Notification Hub から 「Google (GCM/FCM)」をクリックします
 - サーバーキーをペーストします
 - 「Save」をクリックします
@@ -70,33 +52,33 @@
 ![](images/notification-hubs-008.png)
 
 
-## 6. Notification Hub の値を Xamarin のプロジェクトに設定する
+## 5. Azure Notification Hub の値を Xamarin のプロジェクトに設定する
 - `SmartRetailApp\Models\Constant.cs` に値を設定します
-  - `ListenConnectionString`: Notification Hub の Access Policies の DefaultListenSharedAccessSignature の値
+  - `ListenConnectionString`: Notification Hub の Access Policies の「box-service-listen-only」の値
   - `NotificationHubName`: Notification Hub のハブ名の値
 
 ```cs
 // 接続文字列
-// Azure Portal → Notification Hub → Access Policies → DefaultListenShared AccessSignature
+// Azure Portal → Notification Hub → Access Policies → 「box-service-listen-only」の値
 // ※ Listen のみの接続文字列でないと動作しないので注意
-public const string ListenConnectionString = "DefaultListenSharedAccessSignature";
+public const string ListenConnectionString = "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=box-service-listen-only;SharedAccessKey=***";
 
 /// <summary>
 /// Notification Hub のハブ名
 /// </summary>
-public const string NotificationHubName = "NotificationHubName";
+public const string NotificationHubName = "<PREFIX>-box-service";
 ```
 
-## 7. プッシュ通知をテスト送信する
+## 6. プッシュ通知をテスト送信する
 サンプルプログラムを使用してデバイスにプッシュう通知を送信するテストをおこないます。
 - ` src/test/SendPush.Sample/local.settings.sample.json` を `local.settings.json` にリネームします
 - 以下の値を設定します
-  - `NotificaitonHubConnectionStrings`: Notification Hub の Access Policies の DefaultFullSharedAccessSignature の値
-  - `HubName`: Notification Hub のハブ名の値
+  - `NotificaitonHubConnectionStrings`: Azure Notification Hub の Access Policies の「box-service-full-access」の値
+  - `NotificationHubName`: Notification Hub のハブ名の値
 ```json
 {
-    "NotificaitonHubConnectionStrings": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=***",
-    "HubName": "***HubName",
+    "NotificaitonHubConnectionStrings": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=box-service-full-access;SharedAccessKey=***",
+    "NotificationHubName": "<PREFIX>-box-service",
 }
 ```
   - デバイスでアプリを起動してデバイス ID をコピーします

@@ -26,13 +26,13 @@
 - `CartsApiName`: `https://<PREFIX>-box-api.azurewebsites.net/api/v1/carts`
 - `ApiKey`: _<PREFIX>-box-api_ に設定したAPIキー
 - `AppCenterKeyAndroid`: App Center -> Overview の手順 2. Start the SDK の `AppCenter.Start("<この部分>", ...)`
+- `ListenConnectionString`: Notification Hub の接続文字列（box-service-listen-only）
+- `NotificationHubName`: Notification Hub のハブ名
 - `TenantName`: Azure AD B2C のテナント名
 - `ClientId`: Azure AD B2C のクライアントID（アプリケーションID）
 - `PolicySignin`: Azure AD B2C のユーザーフロー
 - `AppCenterKeyiOS`: iOS 用 App Center 用のキー
 - `IosKeyChain`: キーチェーン（iOSのみ）
-- `ListenConnectionString`: Notification Hub の接続文字列（DefaultListenSharedAccessSignature）
-- `NotificationHubName`: Notification Hub のハブ名
 
 ```cs
 public class Constant
@@ -102,10 +102,12 @@ public class Constant
 
 |  変数名  |  値  |
 | ---- | ---- |
-|  GoogleJson  |  google-services.json の内容  |
 |  CartsApiName  |  API の URL  |
 |  ApiKey  |  API の Key  |
 |  AppCenterKeyAndroid  |  Android 用 App Center 用のキー  |
+|  GoogleJson  |  google-services.json の内容  |
+|  ListenConnectionString  |  Notification Hub の接続文字列（box-service-listen-only） |
+|  NotificationHubName  | Notification Hub のハブ名  |
 |  TenantName  |  Azure AD B2C のテナント名  |
 |  ClientId  |  Azure AD B2C のクライアントID（アプリケーションID）  |
 |  PolicySignin  |  Azure AD B2C のユーザーフロー  |
