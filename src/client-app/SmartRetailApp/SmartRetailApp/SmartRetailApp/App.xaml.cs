@@ -38,7 +38,6 @@ namespace SmartRetailApp
                 .WithRedirectUri($"msal{Constant.ClientId}://auth")
                 .Build();
 
-
             MainPage = new NavigationPage(new LoginPage());
         }
 
