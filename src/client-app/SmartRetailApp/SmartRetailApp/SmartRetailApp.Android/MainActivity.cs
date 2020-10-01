@@ -1,17 +1,14 @@
-﻿using System;
-
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using Android.OS;
-using ZXing.Mobile;
-using Microsoft.Identity.Client;
 using Android.Gms.Common;
-using Android.Util;
+using Android.OS;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.Identity.Client;
 using SmartRetailApp.Models;
+using System;
+using System.Collections.Generic;
+using ZXing.Mobile;
 
 namespace SmartRetailApp.Droid
 {
@@ -62,10 +59,14 @@ namespace SmartRetailApp.Droid
             if (resultCode != ConnectionResult.Success)
             {
                 if (GoogleApiAvailability.Instance.IsUserResolvableError(resultCode))
-                    Log.Debug(Constant.DebugTag, GoogleApiAvailability.Instance.GetErrorString(resultCode));
+                {
+                    Analytics.TrackEvent(Constant.DebugTag,
+                        new Dictionary<string, string> { { "error", GoogleApiAvailability.Instance.GetErrorString(resultCode) } });
+                }
                 else
                 {
-                    Log.Debug(Constant.DebugTag, "This device is not supported");
+                    Analytics.TrackEvent(Constant.DebugTag,
+                        new Dictionary<string, string> { { "error", "This device is not supported" } });
                 }
                 return false;
             }
