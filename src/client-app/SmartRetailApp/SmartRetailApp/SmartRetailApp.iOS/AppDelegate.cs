@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Foundation;
+using Microsoft.AppCenter.Analytics;
+using SmartRetailApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Foundation;
-using SmartRetailApp.Models;
 using UIKit;
 using UserNotifications;
 using WindowsAzure.Messaging;
@@ -86,7 +87,8 @@ namespace SmartRetailApp.iOS
             {
                 if (error != null)
                 {
-                    Debug.WriteLine($"Unable to call unregister {error}");
+                    Analytics.TrackEvent("Unable to call unregister",
+                        new Dictionary<string, string>{{ nameof(error),error.ToString() }});
                     return;
                 }
 
@@ -95,7 +97,8 @@ namespace SmartRetailApp.iOS
                 {
                     if (errorCallback != null)
                     {
-                        Debug.WriteLine($"RegisterNativeAsync error: {errorCallback}");
+                        Analytics.TrackEvent("RegisterNativeAsync",
+                            new Dictionary<string, string> { { nameof(errorCallback), errorCallback.ToString() } });
                     }
                 });
 
@@ -106,7 +109,8 @@ namespace SmartRetailApp.iOS
                     {
                         if (errorCallback != null)
                         {
-                            Debug.WriteLine($"RegisterTemplateAsync error: {errorCallback}");
+                            Analytics.TrackEvent("RegisterTemplateAsync",
+                                new Dictionary<string, string> { { nameof(errorCallback), errorCallback.ToString() } });
                         }
                     }
                 });

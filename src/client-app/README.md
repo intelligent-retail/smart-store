@@ -31,6 +31,8 @@
 - `PolicySignin`: Azure AD B2C のユーザーフロー
 - `AppCenterKeyiOS`: iOS 用 App Center 用のキー
 - `IosKeyChain`: キーチェーン（iOSのみ）
+- `ListenConnectionString`: Notification Hub の接続文字列（DefaultListenSharedAccessSignature）
+- `NotificationHubName`: Notification Hub のハブ名
 
 ```cs
 public class Constant
@@ -63,6 +65,16 @@ public class Constant
   // iOS プロジェクト→Entitlement.plist→Keychain
   // （iOS プロジェクト→info.plist→バンドル識別子と同じ）
   public const string IosKeyChain = "IosKeyChain";
+
+  // Notification Hub の接続文字列
+  // Azure Portal → Notification Hub → Access Policies → DefaultListenShared AccessSignature
+  // ※ Listen のみの接続文字列でないと動作しないので注意
+  public const string ListenConnectionString = "ListenConnectionString";
+
+  ///
+  /// Notification Hub のハブ名
+  ///
+  public const string NotificationHubName = "NotificationHubName";
 ...
 }
 ```

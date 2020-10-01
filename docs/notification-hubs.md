@@ -73,7 +73,7 @@
 ## 6. Notification Hub の値を Xamarin のプロジェクトに設定する
 - `SmartRetailApp\Models\Constant.cs` に値を設定します
   - `ListenConnectionString`: Notification Hub の Access Policies の DefaultListenSharedAccessSignature の値
-  - `NotificationHubName`: Notification Hub Namespace の値
+  - `NotificationHubName`: Notification Hub のハブ名の値
 
 ```cs
 // 接続文字列
@@ -92,7 +92,7 @@ public const string NotificationHubName = "NotificationHubName";
 - ` src/test/SendPush.Sample/local.settings.sample.json` を `local.settings.json` にリネームします
 - 以下の値を設定します
   - `NotificaitonHubConnectionStrings`: Notification Hub の Access Policies の DefaultFullSharedAccessSignature の値
-  - `HubName`: Notification Hub Namespace の値
+  - `HubName`: Notification Hub のハブ名の値
 ```json
 {
     "NotificaitonHubConnectionStrings": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=***",
