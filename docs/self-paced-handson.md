@@ -87,7 +87,7 @@ az account set -s xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 ```ps1
 # IoT エクステンションをインストールする
-az extension add --name azure-cli-iot-ext
+az extension add --name azure-iot
 ```
 
 #### `sqlcmd` ユーティリティ について
@@ -255,7 +255,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 プッシュ通知の環境を準備します。下記をご参照ください。
 
-- [App Center でのプッシュ通知の環境構築](/docs/appcenter.md)
+- [Azure Notification Hub でのプッシュ通知の環境構築](/docs/azure-notification-hubs.md)
 
 ### 各 Functions に API key を設定する
 
@@ -263,16 +263,16 @@ Azure Functions に API key を設定します。
 
 Azure Functions の API key は、関数全体、または関数個別に設定することができます。ここでは、作業簡略化のため、同じ値のキーを関数全体に設定します。
 
-1. Azureポータルで、デプロイした Azure Functions のひとつを開き、「Function App の設定」を開きます。
-2. 「Function App の設定」画面で、「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
-3. 「名前」の欄に `app` と入力し、「保存」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
-4. 保存されたら、「アクション」欄の「コピー」をクリックし、生成されたキーをコピーします。
+1. Azureポータルで、デプロイした Azure Functions のひとつを開き、メニューの「関数（または、Functions）」>「アプリ キー（または、App keys）」を開きます。
+2. 「ホスト キー (すべての関数)（または、Host keys (all functions)）」のフィールドで、「新しいホスト キー（または、New host key）」ボタンをクリックします。
+3. 「名前（または、Name）」の欄に `app` と入力し、「OK」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
+4. 保存されたら、「値を表示する（または、Show values）」を選択し、「app」の欄から生成された値をコピーします。
 
 次に、コピーしたキーをほかの Azure Functions に設定します。
 
 1. 他の Azure Functions を開き、「Function App の設定」画面に移動します。
-2. 「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
-3. 「名前」に `app` 、「値」にコピーしたキーをはりつけて、「保存」ボタンをクリックし保存します。
+2. 「ホスト キー (すべての関数)」のフィールドで、「新しいホスト キー」ボタンをクリックします。
+3. 「名前」に `app` 、「値」にコピーしたキーをはりつけて、「OK」ボタンをクリックし保存します。
 4. その他の Azure Functions も同様に設定します。
 
 ### Azure Functions の Application Settings に設定を追加する

@@ -52,8 +52,8 @@
 ![](images/notification-hubs-008.png)
 
 
-## 5. Azure Notification Hub の値を Xamarin のプロジェクトに設定する
-- `SmartRetailApp\Models\Constant.cs` に値を設定します
+## 5. (ローカルビルドをする場合) Azure Notification Hub の値を Xamarin のプロジェクトに設定する
+- `src\client-app\SmartRetailApp\SmartRetailApp\SmartRetailApp\Models\Constant.cs` に値を設定します
   - `ListenConnectionString`: Notification Hub の Access Policies の「box-service-listen-only」の値
   - `NotificationHubName`: Notification Hub のハブ名の値
 
