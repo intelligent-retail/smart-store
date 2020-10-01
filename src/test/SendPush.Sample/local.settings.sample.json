@@ -1,4 +1,4 @@
 {
-    "NotificaitonHubConnectionStrings": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=***",
-    "HubName": "***HubName"
+  "NotificaitonHubConnectionStrings": "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=box-service-full-access;SharedAccessKey=***",
+  "NotificationHubName": "<PREFIX>-box-service"
 }
