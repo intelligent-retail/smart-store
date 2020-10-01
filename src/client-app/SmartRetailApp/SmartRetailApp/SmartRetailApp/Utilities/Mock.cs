@@ -19,11 +19,11 @@ namespace SmartRetailApp.Utilities
                     {
                         new Lineitem
                         {
-                            ItemName="DARS",
+                            ItemName="Chocolate",
                             UnitPrice=150.0f,
                             Amount=1,
                             Quantity=1,
-                            ImageUrls=new []{ "https://www.morinaga.co.jp/dars/images/item_01_01.png" }
+                            ImageUrls=new []{ "https://github.com/intelligent-retail/smart-store/raw/master/src/arm-template/sample-data/public/item-service/images/testimage.png" }
                         }
                     },
                     Taxes = new Tax[]
