@@ -26,7 +26,7 @@ namespace BoxManagementService.Utilities
         {
             _logger = logger;
             this.ConnectionString = Settings.Instance.NotificaitonHubConnectionStrings;
-            this.HubName = Settings.Instance.HubName;
+            this.HubName = Settings.Instance.NotificationHubName;
 
         }
 
