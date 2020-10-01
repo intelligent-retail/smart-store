@@ -1,13 +1,13 @@
 # $RESOURCE_GROUP = ""
 # $PREFIX=""
 
-$hubName = "${PREFIX}-box-service"
+$iotHubName = "${PREFIX}-box-service"
 $boxServiceFunctionName = "${PREFIX}-box-api"
 $boxServiceApiBaseUrl = "https://${boxServiceFunctionName}.azurewebsites.net/api/v1/"
 
 $deviceId = "SmartBox1_AI"
 $boxId = "SmartBox1"
-$clientDeviceId = "<Past deviceId>"
+$clientDeviceId = "<Paste deviceId>"
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
 $d2cMessage = @{
@@ -53,7 +53,7 @@ $d2cMessageStart.message_type = "stock_start"
 $d2cMessageStart.items[0].quantity = 10
 
 az iot device send-d2c-message `
-  --hub-name $hubName `
+  --hub-name $iotHubName `
   --device-id $deviceId `
   --props '$.ct=application/json;$.ce=utf-8' `
   --data (($d2cMessageStart | ConvertTo-Json -Compress) -replace '"', '""')
@@ -65,7 +65,7 @@ $d2cMessageUpdate.message_type = "stock_diff_trading"
 $d2cMessageUpdate.items[0].quantity = -1
 
 az iot device send-d2c-message `
-  --hub-name $hubName `
+  --hub-name $iotHubName `
   --device-id $deviceId `
   --props '$.ct=application/json;$.ce=utf-8' `
   --data (($d2cMessageUpdate | ConvertTo-Json -Compress) -replace '"', '""')
@@ -85,7 +85,7 @@ $d2cMessageClose.message_type = "stock_end"
 $d2cMessageClose.items[0].quantity = 0
 
 az iot device send-d2c-message `
-  --hub-name $hubName `
+  --hub-name $iotHubName `
   --device-id $deviceId `
   --props '$.ct=application/json;$.ce=utf-8' `
   --data (($d2cMessageClose | ConvertTo-Json -Compress) -replace '"', '""')
