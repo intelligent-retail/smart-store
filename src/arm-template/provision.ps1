@@ -98,7 +98,7 @@ dt `
   /s:JsonFile `
   /s.Files:.\\src\\arm-template\\sample-data\\public\\item-service\\itemMasterSampleData.json `
   /t:DocumentDB `
-  /t.ConnectionString:"${ITEM_SERVICE_COSMOSDB_CONNSTR};Database=${ITEM_SERVICE_COSMOSDB_DATABASE};" `
+  /t.ConnectionString:"${ITEM_SERVICE_COSMOSDB_CONNSTR}Database=${ITEM_SERVICE_COSMOSDB_DATABASE};" `
   /t.Collection:${ITEM_SERVICE_COSMOSDB_COLLECTION} `
   /t.PartitionKey:${ITEM_SERVICE_COSMOSDB_COLLECTION_PARTITIONKEY} `
   /t.CollectionThroughput:400
@@ -118,7 +118,7 @@ dt `
   /s:JsonFile `
   /s.Files:.\\src\\arm-template\\sample-data\\public\\pos-service\\PosMasters.json `
   /t:DocumentDB `
-  /t.ConnectionString:"${POS_SERVICE_COSMOSDB_CONNSTR};Database=${POS_DB_NAME};" `
+  /t.ConnectionString:"${POS_SERVICE_COSMOSDB_CONNSTR}Database=${POS_DB_NAME};" `
   /t.Collection:PosMasters
 
 # Create collections of Cosmos DB for box-service
@@ -136,11 +136,11 @@ dt `
   /s:JsonFile `
   /s.Files:.\\src\\arm-template\\sample-data\\public\\box-service\\Skus.json `
   /t:DocumentDB `
-  /t.ConnectionString:"${BOX_SERVICE_COSMOSDB_CONNSTR};Database=${BOX_DB_NAME};" `
+  /t.ConnectionString:"${BOX_SERVICE_COSMOSDB_CONNSTR}Database=${BOX_DB_NAME};" `
   /t.Collection:Skus
 dt `
   /s:JsonFile `
   /s.Files:.\\src\\arm-template\\sample-data\\public\\box-service\\Terminals.json `
   /t:DocumentDB `
-  /t.ConnectionString:"${BOX_SERVICE_COSMOSDB_CONNSTR};Database=${BOX_DB_NAME};" `
+  /t.ConnectionString:"${BOX_SERVICE_COSMOSDB_CONNSTR}Database=${BOX_DB_NAME};" `
   /t.Collection:Terminals
