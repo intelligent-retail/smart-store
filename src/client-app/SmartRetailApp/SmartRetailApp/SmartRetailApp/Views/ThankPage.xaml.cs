@@ -1,4 +1,7 @@
-﻿using SmartRetailApp.Services;
+﻿#define MOCK
+using SmartRetailApp.Models;
+using SmartRetailApp.Services;
+using SmartRetailApp.Utilities;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +32,12 @@ namespace SmartRetailApp.Views
         {
             var service = new CartApiService();
             var cartId = this.CartId;
+
+#if MOCK
+            var cartStatus = Mock.CreateMockCart(1);
+#else
             var cartStatus = await service.CartStatusAsync(cartId, CartApiService.CartAction.bill);
+#endif
 
             // ユーザー名
             this.lblUserName.Text = cartStatus.User.UserName;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Crashes;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using SmartRetailApp.Models;
@@ -39,7 +40,7 @@ namespace SmartRetailApp.Views
 
                     if (authResult == null)
                     {
-                        await DisplayAlert("ログインできませんでした", app.AuthErrorMessage,"OK");
+                        await DisplayAlert("ログインできませんでした", app.AuthErrorMessage, "OK");
                     }
                     else
                     {
@@ -62,6 +63,8 @@ namespace SmartRetailApp.Views
 
                         await DisplayAlert("ログインしました", msg.ToString(), "OK");
                         btnLoginLogout.Text = "ログアウト";
+                        // btnStartShopping.IsVisible = true;
+
                     }
                 }
             };
@@ -166,7 +169,7 @@ namespace SmartRetailApp.Views
                 }
 
                 // デバイスIDを取得
-                var deviceId = await AppCenter.GetInstallIdAsync();
+                var deviceId = (Application.Current as App)?.DeviceId;
 
                 // 取引開始
                 var api = new CartApiService();
@@ -177,18 +180,8 @@ namespace SmartRetailApp.Views
                 });
 
                 // 取引開始で商品カートへ遷移
-                if (cartResult != null && /*cartResult.IsSuccess*/ !string.IsNullOrEmpty(cartResult.CartId))
-                {
-                    (Application.Current as App).CartId = cartResult.CartId;
-                    await this.Navigation.PushAsync(new RegisterPage(deviceId.Value.ToString(), false));
-                }
-                else
-                {
-                    await this.DisplayAlert("SmartRetail", $"買い物を開始できません\n{cartResult.ErrorMessage}", "OK");
-
-                    // 取引開始できない場合はログインへ戻る
-                    await this.Navigation.PopAsync();
-                }
+                (Application.Current as App).CartId = cartResult.CartId;
+                await this.Navigation.PushAsync(new RegisterPage(deviceId, false));
 
                 //インジケータを隠す
                 SetIndicator(false);
@@ -200,5 +193,18 @@ namespace SmartRetailApp.Views
             }
         }
 
+        void btnCrash_Clicked(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                Crashes.GenerateTestCrash();
+            }catch(Exception ex)
+            {
+                Crashes.TrackError(ex, new Dictionary<string, string>
+                {
+                    { "CrashLog",$"DeviceId={(App.Current as App).DeviceId}"}
+                });
+            }
+        }
     }
 }

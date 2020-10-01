@@ -1,5 +1,6 @@
 ﻿using Microsoft.AppCenter;
-using Microsoft.AppCenter.Push;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 using Microsoft.Identity.Client;
 using SmartRetailApp.Models;
 using SmartRetailApp.Views;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -18,6 +20,7 @@ namespace SmartRetailApp
         public static IPublicClientApplication AuthenticationClient { get; private set; }
         public static object UIParent { get; set; } = null;
 
+        public string DeviceId { get; set; } = "";
         public string CartId { get; set; }
         public string BoxId { get; set; }
         public string AuthErrorMessage { get; set; }
@@ -40,15 +43,23 @@ namespace SmartRetailApp
 
         protected override async void OnStart()
         {
-            if (!AppCenter.Configured)
-            {
-                Push.PushNotificationReceived += this.Push_PushNotificationReceived;
-            }
-
             AppCenter.Start($"android={Constant.AppCenterKeyAndroid};" +
                             "uwp={Your UWP App secret here};" +
-                            $"ios={Constant.AppCenterKeyiOS}",
-                typeof(Push));
+                            $"ios={Constant.AppCenterKeyiOS}"
+                            ,typeof(Analytics),typeof(Crashes));
+
+            // 記憶する
+            if (!string.IsNullOrEmpty(this.DeviceId))
+            {
+                Preferences.Set("DeviceId", this.DeviceId);
+            }
+
+            // 呼び出す
+            var deviceId = Preferences.Get("DeviceId", "");
+            if ( string.IsNullOrEmpty(this.DeviceId) && !string.IsNullOrEmpty(deviceId))
+            {
+                this.DeviceId = deviceId;
+            }
         }
 
         public async Task<AuthenticationResult> SignInAsync()
@@ -80,6 +91,25 @@ namespace SmartRetailApp
             return result;
         }
 
+        public void DoActionAsync(string action)
+        {
+            Analytics.TrackEvent("DoAction",
+                new Dictionary<string, string>{
+                    { nameof(action),action}
+                });
+
+            if (action == "receipt")
+            {
+                PushReceiptPageAsync();
+            }
+            if (action == "update_cart")
+            {
+                PushCartPageAsync();
+            }
+
+            // do nothing!!
+        }
+
         public async void SignOut()
         {
             IEnumerable<IAccount> accounts = await App.AuthenticationClient.GetAccountsAsync();
@@ -91,76 +121,59 @@ namespace SmartRetailApp
             }
         }
 
-        private async void Push_PushNotificationReceived(object sender, PushNotificationReceivedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(e.Message))
-            {
-                return;
-            }
-
-            if (e.CustomData != null && e.CustomData.ContainsKey("action"))
-            {
-                var action = e.CustomData["action"];
-                switch (action)
-                {
-                    // カート情報を更新する
-                    case "update_cart":
-                        await PushCartPageAsync();
-                        break;
-                    // カート情報を更新する
-                    case "receipt":
-                        await PushReceiptPageAsync();
-                        break;
-                }
-            }
-        }
-
         /// <summary>
         /// カートを更新する
         /// </summary>
-        async Task PushCartPageAsync()
+        void PushCartPageAsync()
         {
+            Xamarin.Forms.Device.BeginInvokeOnMainThread(async () =>
+            {
+
 #if DEBUG
-            await this.MainPage.DisplayAlert("SmartRetail", "カート情報を更新します", "OK");
+                await this.MainPage.DisplayAlert("SmartRetail", "カート情報を更新します", "OK");
 #endif
 
-            var nav = this.MainPage as NavigationPage;
-            var deviceId = await AppCenter.GetInstallIdAsync();
+                var nav = this.MainPage as NavigationPage;
+                var deviceId = (Application.Current as App)?.DeviceId;
 
-            // すでにRegisterPageを開いている
-            if (nav.CurrentPage is RegisterPage)
-            {
-                var cartPage = nav.CurrentPage as RegisterPage;
-                await cartPage.UpdateCart();
-            }
-            else
-            {
-                await nav.Navigation.PushAsync(new RegisterPage(deviceId.ToString(), true));
-            }
+                // すでにRegisterPageを開いている
+                if (nav.CurrentPage is RegisterPage)
+                {
+                    var cartPage = nav.CurrentPage as RegisterPage;
+                    cartPage.UpdateCart();
+                }
+                else
+                {
+                    await nav.Navigation.PushAsync(new RegisterPage(deviceId, true));
+                }
+            });
         }
 
         /// <summary>
         /// レシートを表示する
         /// </summary>
-        async Task PushReceiptPageAsync()
+        void PushReceiptPageAsync()
         {
+            Xamarin.Forms.Device.BeginInvokeOnMainThread(async () =>
+            {
 
 #if DEBUG
-            await this.MainPage.DisplayAlert("SmartRetail", "レシートを表示します", "OK");
+                await this.MainPage.DisplayAlert("SmartRetail", "レシートを表示します", "OK");
 #endif
 
-            var nav = this.MainPage as NavigationPage;
+                var nav = this.MainPage as NavigationPage;
 
-            // すでにRegisterPageを開いている
-            if (nav.CurrentPage is ThankPage)
-            {
-                var thankPage = nav.CurrentPage as ThankPage;
-                await thankPage.UpdateReceipt();
-            }
-            else
-            {
-                await nav.Navigation.PushAsync(new ThankPage());
-            }
+                // すでにRegisterPageを開いている
+                if (nav.CurrentPage is ThankPage)
+                {
+                    var thankPage = nav.CurrentPage as ThankPage;
+                    await thankPage.UpdateReceipt();
+                }
+                else
+                {
+                    await nav.Navigation.PushAsync(new ThankPage());
+                }
+            });
         }
 
         protected override void OnSleep()

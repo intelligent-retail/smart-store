@@ -1,15 +1,14 @@
-﻿using System;
-
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
+using Android.Gms.Common;
 using Android.OS;
-using Microsoft.AppCenter.Push;
-using ZXing.Mobile;
+using Microsoft.AppCenter.Analytics;
 using Microsoft.Identity.Client;
+using SmartRetailApp.Models;
+using System;
+using System.Collections.Generic;
+using ZXing.Mobile;
 
 namespace SmartRetailApp.Droid
 {
@@ -29,18 +28,67 @@ namespace SmartRetailApp.Droid
             LoadApplication(new App());
 
             App.UIParent = this;
+
+            if (IsPlayServiceAvailable() == false)
+            {
+                throw new Exception("This device does not have Google Play Services and cannot receive push notifications.");
+            }
+
+            CreateNotificationChannel();
         }
 
         protected override void OnNewIntent(Intent intent)
         {
+            if (intent.Extras != null)
+            {
+                var message = intent.GetStringExtra("message");
+                (App.Current as App)?.DoActionAsync(message);
+            }
             base.OnNewIntent(intent);
-            Push.CheckLaunchedFromNotification(this, intent);
         }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
             AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
+        }
+
+        bool IsPlayServiceAvailable()
+        {
+            int resultCode = GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(this);
+            if (resultCode != ConnectionResult.Success)
+            {
+                if (GoogleApiAvailability.Instance.IsUserResolvableError(resultCode))
+                {
+                    Analytics.TrackEvent(Constant.DebugTag,
+                        new Dictionary<string, string> { { "error", GoogleApiAvailability.Instance.GetErrorString(resultCode) } });
+                }
+                else
+                {
+                    Analytics.TrackEvent(Constant.DebugTag,
+                        new Dictionary<string, string> { { "error", "This device is not supported" } });
+                }
+                return false;
+            }
+            return true;
+        }
+
+        void CreateNotificationChannel()
+        {
+            // Notification channels are new as of "Oreo".
+            // There is no need to create a notification channel on older versions of Android.
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+            {
+                var channelName = Constant.NotificationChannelName;
+                var channelDescription = String.Empty;
+                var channel = new NotificationChannel(channelName, channelName, NotificationImportance.Default)
+                {
+                    Description = channelDescription
+                };
+
+                var notificationManager = (NotificationManager)GetSystemService(NotificationService);
+                notificationManager.CreateNotificationChannel(channel);
+            }
         }
     }
 }

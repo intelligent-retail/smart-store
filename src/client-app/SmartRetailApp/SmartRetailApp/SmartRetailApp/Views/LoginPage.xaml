@@ -45,6 +45,8 @@
                     Text="買い物を開始します" />
             <Button x:Name="btnLoginLogout"
                     Text="ログイン" />
+            <Button x:Name="btnCrash" Clicked="btnCrash_Clicked"
+                    Text="Crash Test" />
         </StackLayout>
     </StackLayout>
 
