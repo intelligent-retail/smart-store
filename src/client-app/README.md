@@ -15,10 +15,13 @@
 `iOS` で実行するためのプロジェクトです。
 
 ## プロジェクトをビルドするために必要な作業
+
 プロジェクトをビルドするために以下の作業が必要になります。
 
 1. Constant.cs の書き換え
 1. google-services.json のコピー（ Android のみ）
+
+なお、プロジェクトのビルドには Visual Studio、及び 「.NET によるモバイル開発（または、Mobile development with .NET）」のワークロードが必要です。
 
 ### Constant.cs の書き換え
 共通プロジェクトの `Models/Constant.cs` の定数を書き換えます。
@@ -67,14 +70,14 @@ public class Constant
   public const string IosKeyChain = "IosKeyChain";
 
   // Notification Hub の接続文字列
-  // Azure Portal → Notification Hub → Access Policies → DefaultListenShared AccessSignature
+  // Azure Portal → Notification Hub → Access Policies → 「box-service-listen-only」の値
   // ※ Listen のみの接続文字列でないと動作しないので注意
-  public const string ListenConnectionString = "ListenConnectionString";
+  public const string ListenConnectionString = "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=box-service-listen-only;SharedAccessKey=***";
 
   ///
   /// Notification Hub のハブ名
   ///
-  public const string NotificationHubName = "NotificationHubName";
+  public const string NotificationHubName = "<PREFIX>-box-service";
 ...
 }
 ```
