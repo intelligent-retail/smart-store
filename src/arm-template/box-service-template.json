@@ -47,6 +47,11 @@
     "boxIotHubSku": {
       "type": "string"
     },
+    "boxNotificationHubSku": {
+      "type": "string",
+      "defaultValue": "Free",
+      "allowedValues": ["Free", "Basic", "Standard"]
+    },
     "boxApiAppServicePlanSku": {
       "type": "string"
     },
@@ -82,6 +87,10 @@
     "boxServiceIoTHubSecretName": "boxServiceIoTHubConnectionString",
     "boxServiceIoTHubEventSecretName": "boxServiceIoTHubEventConnectionString",
     "boxCosmosDbAccountName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
+    "boxServiceNotificationHubName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
+    "boxServiceNotificationHubNamespaceName": "[concat(parameters('prefix'), parameters('delimiter'), parameters('service').identifier, parameters('suffix'))]",
+    "boxServiceNotificationHubFullAccessPolicyName": "[concat(parameters('service').identifier, '-full-access')]",
+    "boxServiceNotificationHubListenOnlyPolicyName": "[concat(parameters('service').identifier, '-listen-only')]",
     "boxCosmosDbDatabaseName": "smartretailboxmanagement",
     "boxCosmosDbDatabaseThroughput": 400,
     "boxCosmosDbCollections": [
@@ -283,6 +292,58 @@
       ]
     },
     {
+      "name": "[variables('boxServiceNotificationHubNamespaceName')]",
+      "type": "Microsoft.NotificationHubs/namespaces",
+      "apiVersion": "2017-04-01",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('boxNotificationHubSku')]"
+      },
+      "properties": {},
+      "resources": [
+        {
+          "name": "[variables('boxServiceNotificationHubName')]",
+          "apiVersion": "2017-04-01",
+          "type": "notificationHubs",
+          "location": "[variables('location')]",
+          "properties": {},
+          "dependsOn": [
+            "[resourceId('Microsoft.NotificationHubs/namespaces', variables('boxServiceNotificationHubNamespaceName'))]"
+          ],
+          "resources": [
+            {
+              "name": "[variables('boxServiceNotificationHubFullAccessPolicyName')]",
+              "type": "AuthorizationRules",
+              "apiVersion": "2017-04-01",
+              "properties": {
+                "rights": [
+                  "Manage",
+                  "Send",
+                  "Listen"
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.NotificationHubs/namespaces/notificationHubs', variables('boxServiceNotificationHubNamespaceName'), variables('boxServiceNotificationHubName'))]"
+              ]
+            },
+            {
+              "name": "[variables('boxServiceNotificationHubListenOnlyPolicyName')]",
+              "type": "AuthorizationRules",
+              "apiVersion": "2017-04-01",
+              "properties": {
+                "rights": [
+                  "Listen"
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.NotificationHubs/namespaces/notificationHubs', variables('boxServiceNotificationHubNamespaceName'), variables('boxServiceNotificationHubName'))]"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "[variables('boxApiAppServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2019-08-01",
@@ -384,14 +445,15 @@
         "WEBSITE_RUN_FROM_PACKAGE": "[parameters('boxServiceApiZipUrl')]",
         "CosmosDbConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceCosmosDbSecretName'))).secretUriWithVersion, ')')]",
         "PosCartsUri": "[variables('posCartsUri')]",
-        "NotificationApiKeyHeader": "X-API-Token",
         "PosApiKeyHeader": "x-functions-key",
         "PosCartItemsPath": "items/",
         "PosCartSubtotalPath": "subtotal/",
         "PosCartPaymentsPath": "payments/",
         "PosCartBillPath": "bill/",
         "IotHubConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceIoTHubSecretName'))).secretUriWithVersion, ')')]",
-        "IotHubEventConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceIoTHubEventSecretName'))).secretUriWithVersion, ')')]"
+        "IotHubEventConnectionString": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), variables('boxServiceIoTHubEventSecretName'))).secretUriWithVersion, ')')]",
+        "NotificaitonHubConnectionStrings": "[concat('Endpoint=sb://', variables('boxServiceNotificationHubNamespaceName'),'.servicebus.windows.net/;SharedAccessKeyName=', variables('boxServiceNotificationHubFullAccessPolicyName'), ';SharedAccessKey=', listKeys(resourceId('Microsoft.NotificationHubs/Namespaces/NotificationHubs/authorizationRules', variables('boxServiceNotificationHubNamespaceName'), variables('boxServiceNotificationHubName'), variables('boxServiceNotificationHubFullAccessPolicyName')), '2017-04-01').primaryKey)]",
+        "NotificationHubName": "[variables('boxServiceNotificationHubName')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults/accessPolicies', parameters('keyVaultName'), 'add')]",

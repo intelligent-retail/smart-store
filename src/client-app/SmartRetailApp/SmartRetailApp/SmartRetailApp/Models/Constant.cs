@@ -38,14 +38,14 @@ namespace SmartRetailApp.Models
         public static string[] Scopes => scopes;
 
         // 接続文字列
-        // Azure Portal → Notification Hub → Access Policies → DefaultListenShared AccessSignature
+        // Azure Portal → Notification Hub → Access Policies → 「box-service-listen-only」
         // ※ Listen のみの接続文字列でないと動作しないので注意
-        public const string ListenConnectionString = "DefaultListenSharedAccessSignature";
+        public const string ListenConnectionString = "Endpoint=sb://***.servicebus.windows.net/;SharedAccessKeyName=box-service-listen-only;SharedAccessKey=***";
 
         /// <summary>
         /// Notification Hub のハブ名
         /// </summary>
-        public const string NotificationHubName = "NotificationHubName";
+        public const string NotificationHubName = "<PREFIX>-box-service";
 
         /// <summary>
         /// 登録するタグ

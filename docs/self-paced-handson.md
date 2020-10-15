@@ -87,7 +87,7 @@ az account set -s xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 ```ps1
 # IoT エクステンションをインストールする
-az extension add --name azure-cli-iot-ext
+az extension add --name azure-iot
 ```
 
 #### `sqlcmd` ユーティリティ について
@@ -212,7 +212,7 @@ az group create `
   --location ${LOCATION}
 
 # 作成したリソースグループの中に、リソースをデプロイする
-az group deployment create `
+az deployment group create `
   --resource-group ${RESOURCE_GROUP} `
   --template-uri ${TEMPLATE_URL}/template.json `
   --parameters ${TEMPLATE_URL}/parameters.json `
@@ -255,7 +255,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 プッシュ通知の環境を準備します。下記をご参照ください。
 
-- [App Center でのプッシュ通知の環境構築](/docs/appcenter.md)
+- [Azure Notification Hub でのプッシュ通知の環境構築](/docs/azure-notification-hubs.md)
 
 ### 各 Functions に API key を設定する
 
@@ -263,58 +263,29 @@ Azure Functions に API key を設定します。
 
 Azure Functions の API key は、関数全体、または関数個別に設定することができます。ここでは、作業簡略化のため、同じ値のキーを関数全体に設定します。
 
-1. Azureポータルで、デプロイした Azure Functions のひとつを開き、「Function App の設定」を開きます。
-2. 「Function App の設定」画面で、「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
-3. 「名前」の欄に `app` と入力し、「保存」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
-4. 保存されたら、「アクション」欄の「コピー」をクリックし、生成されたキーをコピーします。
+1. Azureポータルで、デプロイした Azure Functions のひとつを開き、メニューの「関数（または、Functions）」>「アプリ キー（または、App keys）」を開きます。
+2. 「ホスト キー (すべての関数)（または、Host keys (all functions)）」のフィールドで、「新しいホスト キー（または、New host key）」ボタンをクリックします。
+3. 「名前（または、Name）」の欄に `app` と入力し、「OK」ボタンをクリックして保存します。（値は空欄のままとし、自動生成させる）
+4. 保存されたら、「値を表示する（または、Show values）」を選択し、「app」の欄から生成された値をコピーします。
 
 次に、コピーしたキーをほかの Azure Functions に設定します。
 
 1. 他の Azure Functions を開き、「Function App の設定」画面に移動します。
-2. 「ホスト キー（すべての関数）」の「新しいホスト キーの追加」ボタンをクリックします。
-3. 「名前」に `app` 、「値」にコピーしたキーをはりつけて、「保存」ボタンをクリックし保存します。
+2. 「ホスト キー (すべての関数)」のフィールドで、「新しいホスト キー」ボタンをクリックします。
+3. 「名前」に `app` 、「値」にコピーしたキーをはりつけて、「OK」ボタンをクリックし保存します。
 4. その他の Azure Functions も同様に設定します。
 
 ### Azure Functions の Application Settings に設定を追加する
 
 ※ 変数は前項から引き継いでるものとします。
 
-前項で設定した API key とプッシュ通知の情報を Azure Functions の Application Settings に追加します。
+前項で設定した API key の情報を Azure Functions の Application Settings に追加します。
 
-後述の手順のうち、下記の変数には、Azure Functions で設定した API key を指定してください。
+下記の変数には、Azure Functions で設定した API key を指定してください。
 
 - `ITEM_MASTER_API_KEY`
 - `STOCK_COMMAND_API_KEY`
 - `POS_API_KEY`
-
-また、下記の変数には、それぞれプッシュ通知のキーとURLを指定してください。
-
-- `NOTIFICATION_API_KEY`
-- `NOTIFICATION_URI`
-
-`NOTIFICATION_API_KEY` は、下記の手順で取得した値を貼り付けてください。
-
-- App Center 右上のアイコンをクリックし、「Account settings」を開く
-- 「Settings」の「API Tokens」を開く
-- 右上の「New API token」ボタンをクリックする
-- 下記を参考にトークンを発行する
-  - 「Description」に任意の説明文を入力する
-  - 「Access」で `Full Access` を選択する
-  - 「Add new API token」ボタンをクリックし、発行する
-- 「Here’s your API token.」で表示されたトークンをコピーしておく（一度しか表示されないのでご留意ください）
-
-`NOTIFICATION_URI` は、下記の手順で取得した値を貼り付けてください。
-
-- App Center で作成したアプリケーションを開く
-- URLが下記のような構成になっているので、 `{owner_name}` と `{app_name}` の部分を取得する
-  - `https://appcenter.ms/users/{owner_name}/apps/{app_name}`
-- `NOTIFICATION_URI` 下記の URL の `{owner_name}` と `{app_name}` を置き換えて、`NOTIFICATION_URI` に設定する
-  - `https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications`
-
-詳細は下記をご参考下さい。
-
-- [Push | App Center API](https://openapi.appcenter.ms/#/push/Push_Send)
-- [How to find the app name and owner name from your app URL | App Center Help Center](https://intercom.help/appcenter/general-questions/how-to-find-the-app-name-and-owner-name-from-your-app-url)
 
 ```ps1
 # item-service と stock-service の api key を pos-api に設定する
@@ -329,14 +300,10 @@ az functionapp config appsettings set `
 
 # pos-service の api key と通知の設定を box-api に設定する
 $POS_API_KEY="<pos api key>"
-$NOTIFICATION_API_KEY="<app center push api key>"
-$NOTIFICATION_URI="https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/push/notifications"
 az functionapp config appsettings set `
   --resource-group ${RESOURCE_GROUP} `
   --name ${PREFIX}-box-api `
   --settings `
-    NotificationApiKey=${NOTIFICATION_API_KEY} `
-    NotificationUri=${NOTIFICATION_URI} `
     PosApiKey=${POS_API_KEY}
 ```
 

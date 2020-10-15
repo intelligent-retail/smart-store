@@ -25,7 +25,7 @@ then
     sed -i '' 's#ClientId = "[-A-Za-z0-9:_./]*"#ClientId = "'$ClientId'"#' $APP_CONSTANT_FILE
     sed -i '' 's#PolicySignin = "[-A-Za-z0-9:_./]*"#PolicySignin = "'$PolicySignin'"#' $APP_CONSTANT_FILE
     sed -i '' 's#ListenConnectionString = "[-A-Za-z0-9:_./]*"#ListenConnectionString = "'$ListenConnectionString'"#' $APP_CONSTANT_FILE
-    sed -i '' 's#NotificationHubName = "[-A-Za-z0-9:_./]*"#NotificationHubName = "'$NotificationHubName'"#' $APP_CONSTANT_FILE
+    sed -i '' 's#NotificationHubName = "[-A-Za-z0-9:_./><]*"#NotificationHubName = "'$NotificationHubName'"#' $APP_CONSTANT_FILE
 
     echo "File content:"
     cat $APP_CONSTANT_FILE

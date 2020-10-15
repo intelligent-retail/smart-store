@@ -27,7 +27,7 @@ namespace SendPush.Sample.Batch
         public async Task Run(string deviceIdList)
         {
             var connectionString = Models.Settings.Instance.NotificaitonHubConnectionStrings;
-            var hubName = Models.Settings.Instance.HubName;
+            var hubName = Models.Settings.Instance.NotificationHubName;
 
             var actionList = new[] { update_cart, receipt };
             var action = Prompt.Select("Select Action", actionList);

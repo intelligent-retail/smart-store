@@ -27,6 +27,6 @@ namespace SendPush.Sample.Models
         /// <summary>
         /// Notification Hubsのハブ名
         /// </summary>
-        public string HubName => _instance[nameof(HubName)];
+        public string NotificationHubName => _instance[nameof(NotificationHubName)];
     }
 }
