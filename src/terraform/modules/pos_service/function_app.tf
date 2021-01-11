@@ -1,3 +1,15 @@
+locals {
+  ip_restriction_priority_initial_value = 300
+  ip_restrictions = [
+    for index, subnet in var.subnets_permitted : {
+      virtual_network_subnet_id = subnet["id"]
+      name                      = subnet["name"]
+      priority                  = local.ip_restriction_priority_initial_value + index
+      action                    = "Allow"
+    }
+  ]
+}
+
 resource "azurerm_function_app" "pos_service" {
   name                       = "func-${local.identifier_in_module}"
   location                   = var.resource_group.location
@@ -13,14 +25,15 @@ resource "azurerm_function_app" "pos_service" {
       allowed_origins = ["*"]
     }
 
-    # ip_restriction {
-    #   # TODO: Set the subnet for box service
-    #   # virtual_network_subnet_id = azurerm_subnet.pos_service.id
-    #   # name                      = local.identifier_in_module
-
-    #   priority                  = 300
-    #   action                    = "Allow"
-    # }
+    dynamic "ip_restriction" {
+      for_each = local.ip_restrictions
+      content {
+        virtual_network_subnet_id = ip_restriction.value["virtual_network_subnet_id"]
+        name                      = ip_restriction.value["name"]
+        priority                  = ip_restriction.value["priority"]
+        action                    = ip_restriction.value["action"]
+      }
+    }
 
     dynamic "ip_restriction" {
       for_each = var.workspace_ip_address_permitted != "" ? [1] : []

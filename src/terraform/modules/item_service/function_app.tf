@@ -1,10 +1,10 @@
 locals {
   ip_restriction_priority_initial_value = 300
   ip_restrictions = [
-    for key, subnet in var.subnets_permitted : {
+    for index, subnet in var.subnets_permitted : {
       virtual_network_subnet_id = subnet["id"]
       name                      = subnet["name"]
-      priority                  = local.ip_restriction_priority_initial_value + key
+      priority                  = local.ip_restriction_priority_initial_value + index
       action                    = "Allow"
     }
   ]

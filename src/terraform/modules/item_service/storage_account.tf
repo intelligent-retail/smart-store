@@ -29,9 +29,39 @@ resource "azurerm_storage_account" "item_service" {
   account_kind             = var.storage_account.kind
   account_tier             = var.storage_account.tier
   account_replication_type = var.storage_account.replication_type
+}
 
-  network_rules {
-    default_action             = "Deny"
-    virtual_network_subnet_ids = [azurerm_subnet.item_service.id]
+resource "azurerm_storage_account_network_rules" "item_service" {
+  resource_group_name  = var.resource_group.name
+  storage_account_name = azurerm_storage_account.item_service.name
+
+  default_action             = "Deny"
+  bypass                     = ["Logging", "Metrics", "AzureServices"]
+  virtual_network_subnet_ids = [azurerm_subnet.item_service.id]
+}
+
+resource "azurerm_monitor_diagnostic_setting" "storage_account_item_service" {
+  name                       = "diag-${azurerm_storage_account.item_service.name}"
+  target_resource_id         = azurerm_storage_account.item_service.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  metric {
+    category = "Transaction"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  metric {
+    category = "Capacity"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
   }
 }

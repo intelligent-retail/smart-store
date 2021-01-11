@@ -1,12 +1,7 @@
-variable "vnet_address_space" {
-  type    = string
-  default = "10.0.0.0/16"
-}
-
 resource "azurerm_virtual_network" "shared" {
   name                = "vnet-${local.identifier_in_module}"
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
+  location            = azurerm_resource_group.shared.location
+  resource_group_name = azurerm_resource_group.shared.name
   address_space       = [var.vnet_address_space]
 }
 

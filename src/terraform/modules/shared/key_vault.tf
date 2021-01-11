@@ -10,8 +10,8 @@ variable "key_vault" {
 
 resource "azurerm_key_vault" "shared" {
   name                = "kv-${local.identifier_in_module}"
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
+  location            = azurerm_resource_group.shared.location
+  resource_group_name = azurerm_resource_group.shared.name
   sku_name            = var.key_vault.sku_name
   tenant_id           = data.azurerm_client_config.current.tenant_id
 
@@ -23,6 +23,7 @@ resource "azurerm_key_vault" "shared" {
       "get",
       "set",
       "purge",
+      "recover",
       "delete"
     ]
   }

@@ -12,8 +12,8 @@ variable "log_analytics_workspace" {
 
 resource "azurerm_log_analytics_workspace" "shared" {
   name                = "log-${local.identifier_in_module}"
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
+  location            = azurerm_resource_group.shared.location
+  resource_group_name = azurerm_resource_group.shared.name
   sku                 = var.log_analytics_workspace.sku
   retention_in_days   = var.log_analytics_workspace.retention_in_days
 }

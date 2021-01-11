@@ -1,32 +1,31 @@
+variable "bastion_snet_address_prefix" {
+  type = string
+}
+
 locals {
-  bastion_name                           = "${local.identifier_in_module}-bastion"
-  bastion_subnet_name                    = "AzureBastionSubnet"
-  bastion_subnet_bitdiff                 = 8
-  bastion_subnet_netnum                  = length(azurerm_virtual_network.shared.subnet)
-  bastion_subnet_address_prefix          = cidrsubnet(var.vnet_address_space, local.bastion_subnet_bitdiff, local.bastion_subnet_netnum)
-  bastion_subnet_address_prefix_existing = matchkeys(azurerm_virtual_network.shared.subnet[*].address_prefix, azurerm_virtual_network.shared.subnet[*].name, [local.bastion_subnet_name])
-  bastion_subnet_address_prefix_actual   = length(local.bastion_subnet_address_prefix_existing) > 0 ? local.bastion_subnet_address_prefix_existing[0] : local.bastion_subnet_address_prefix
+  bastion_name        = "bastion-${local.identifier_in_module}"
+  bastion_subnet_name = "AzureBastionSubnet"
 }
 
 resource "azurerm_subnet" "bastion_shared" {
   name                 = local.bastion_subnet_name
-  resource_group_name  = var.resource_group.name
+  resource_group_name  = azurerm_resource_group.shared.name
   virtual_network_name = azurerm_virtual_network.shared.name
-  address_prefixes     = [local.bastion_subnet_address_prefix_actual]
+  address_prefixes     = [var.bastion_snet_address_prefix]
 }
 
 resource "azurerm_public_ip" "bastion_shared" {
-  name                = "pip-${local.bastion_name}"
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
+  name                = "pip-${local.identifier_in_module}-bastion"
+  location            = azurerm_resource_group.shared.location
+  resource_group_name = azurerm_resource_group.shared.name
   sku                 = "Standard"
   allocation_method   = "Static"
 }
 
 resource "azurerm_bastion_host" "shared" {
   name                = local.bastion_name
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
+  location            = azurerm_resource_group.shared.location
+  resource_group_name = azurerm_resource_group.shared.name
 
   ip_configuration {
     name                 = "ipConfigBastion"
