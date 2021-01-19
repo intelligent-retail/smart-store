@@ -1,0 +1,36 @@
+name: Package code for Azure function
+
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - src/box-service/**
+    - src/item-service/**
+    - src/pos-service/**
+    - src/stock-service/**
+  workflow_dispatch:
+
+env:
+  dotnet-version: '3.1.x'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core SDK ${{ env.dotnet-version }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.dotnet-version }}
+    - uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
