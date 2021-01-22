@@ -36,29 +36,40 @@ jobs:
     #   env:
     #     CONTEXT: ${{ toJson(github) }}
     #   shell: bash
-    - uses: actions/checkout@v2
-    - name: Check updates in ${{ matrix.target_path }}
-      id: check_updates
-      run: |
-        COUNT=`git diff --name-only ${BEFORE} ${AFTER} | grep -E -n "^${TARGET_PATH}(.+)$" | wc -l`
-        if [ ${COUNT} -gt 0 ]; then
-          echo "Updates are found under ${TARGET_PATH}"
-        else
-          echo 'Any updates not found'
-        fi
-        echo "::set-output name=COUNT::${COUNT}"
-      shell: bash
+    - name: Get diff
+      id: get_diff
+      uses: octokit/request-action@v2.x
+      with:
+        route: GET /repos/:repo/compare/:base...:head
+        repo: ${{ github.repository }}
+        base: ${{ github.event.before }}
+        head: ${{ github.event.after }}
       env:
-        BEFORE: ${{ github.event.before }}
-        AFTER: ${{ github.event.after }}
-        TARGET_PATH: ${{ matrix.target_path }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v2
+      if: ${{ contains(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
+    # - name: Check updates in ${{ matrix.target_path }}
+    #   id: check_updates
+    #   run: |
+    #     COUNT=`git diff --name-only ${BEFORE} ${AFTER} | grep -E -n "^${TARGET_PATH}(.+)$" | wc -l`
+    #     if [ ${COUNT} -gt 0 ]; then
+    #       echo "Updates are found under ${TARGET_PATH}"
+    #     else
+    #       echo 'Any updates not found'
+    #     fi
+    #     echo "::set-output name=COUNT::${COUNT}"
+    #   shell: bash
+    #   env:
+    #     BEFORE: ${{ github.event.before }}
+    #     AFTER: ${{ github.event.after }}
+    #     TARGET_PATH: ${{ matrix.target_path }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
-      if: ${{ steps.check_upadtes.outputs.COUNT > 0 }}
+      if: ${{ success() }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.dotnet-version }}
     - uses: actions/cache@v2
-      if: ${{ steps.check_upadtes.outputs.COUNT > 0 }}
+      if: ${{ success() }}
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
