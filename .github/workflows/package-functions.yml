@@ -21,29 +21,44 @@ jobs:
 
     strategy:
       matrix:
-        path: 
-        - src/box-service
-        - src/item-service
-        - src/pos-service
-        - src/stock-service
+        target_path: 
+        - src/box-service/
+        - src/item-service/
+        - src/pos-service/
+        - src/stock-service/
 
-    defaults:
-      run:
-        shell: pwsh
+    # defaults:
+    #   run:
+    #     shell: pwsh
 
     steps:
-    - run: echo $CONTEXT | jq
-      env:
-        CONTEXT: ${{ toJson(github) }}
+    # - run: echo $CONTEXT | jq
+    #   env:
+    #     CONTEXT: ${{ toJson(github) }}
+    #   shell: bash
     - uses: actions/checkout@v2
-    # - name: Check updates in ${{ matrix.path }}
-    #   run: |
-
+    - name: Check updates in ${{ matrix.target_path }}
+      id: check_updates
+      run: |
+        COUNT=`git diff --name-only ${BEFORE} ${AFTER} | grep -E -n "^${TARGET_PATH}(.+)$" | wc -l`
+        if [ ${COUNT} -gt 0 ]; then
+          echo "Updates are found under ${TARGET_PATH}"
+        else
+          echo 'Any updates not found'
+        fi
+        echo "::set-output name=COUNT::${COUNT}"
+      shell: bash
+      env:
+        BEFORE: ${{ github.event.before }}
+        AFTER: ${{ github.event.after }}
+        TARGET_PATH: ${{ matrix.target_path }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
+      if: ${{ steps.check_upadtes.outputs.COUNT > 0 }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.dotnet-version }}
     - uses: actions/cache@v2
+      if: ${{ steps.check_upadtes.outputs.COUNT > 0 }}
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
