@@ -46,9 +46,12 @@ jobs:
         head: ${{ github.event.after }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: echo $RESULT | jq
+    - run: |
+        echo $FILES | jq
+        echo $RESULT | jq
       env:
-        RESULT: ${{ steps.get_diff.outputs.data }}
+        FILES: ${{ fromJson(steps.get_diff.outputs.data).files.*.filename }}
+        RESULT: ${{ startsWith(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
       shell: bash
     - name: Check updates under ${{ matrix.target_path }}
       id: check_updates
