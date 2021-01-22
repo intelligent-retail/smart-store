@@ -27,15 +27,11 @@ jobs:
         - src/pos-service/
         - src/stock-service/
 
-    # defaults:
-    #   run:
-    #     shell: pwsh
+    outputs:
+      target_path: ${{ matrix.target_path }}
+      update: ${{ steps.check_updates.outputs.COUNT > 0 }}
 
     steps:
-    # - run: echo $CONTEXT | jq
-    #   env:
-    #     CONTEXT: ${{ toJson(github) }}
-    #   shell: bash
     - name: Get diff
       id: get_diff
       uses: octokit/request-action@v2.x
@@ -51,28 +47,12 @@ jobs:
       shell: bash
       run: |
         COUNT=`echo $FILES | jq "map(select(. | startswith(\"${TARGET_PATH}\"))) | length"`
-        echo ${COUNT}
         echo "::set-output name=COUNT::${COUNT}"
       env:
         FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
         TARGET_PATH: ${{ matrix.target_path }}
     - uses: actions/checkout@v2
       if: ${{ fromJson(steps.check_updates.outputs.COUNT) > 0 }}
-    # - name: Check updates in ${{ matrix.target_path }}
-    #   id: check_updates
-    #   run: |
-    #     COUNT=`git diff --name-only ${BEFORE} ${AFTER} | grep -E -n "^${TARGET_PATH}(.+)$" | wc -l`
-    #     if [ ${COUNT} -gt 0 ]; then
-    #       echo "Updates are found under ${TARGET_PATH}"
-    #     else
-    #       echo 'Any updates not found'
-    #     fi
-    #     echo "::set-output name=COUNT::${COUNT}"
-    #   shell: bash
-    #   env:
-    #     BEFORE: ${{ github.event.before }}
-    #     AFTER: ${{ github.event.after }}
-    #     TARGET_PATH: ${{ matrix.target_path }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
       if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       uses: actions/setup-dotnet@v1
@@ -85,3 +65,18 @@ jobs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
         restore-keys: |
           ${{ runner.os }}-nuget
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+    - build
+
+    steps:
+    - run: |
+        echo $CONTEXT | jq
+        echo $OUTPUT | jq
+        echo $PREVIOUS_JOB_RESULT | jq
+      env:
+        CONTEXT: ${{ github }}
+        OUTPUT: ${{ needs.outputs }}
+        PREVIOUS_JOB_RESULT: ${{ needs.outputs.result }}
