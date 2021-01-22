@@ -46,8 +46,16 @@ jobs:
         head: ${{ github.event.after }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - run: echo $RESULT | jq
+      env:
+        RESULT: ${{ steps.get_diff.outputs.data }}
+      shell: bash
+    - name: Check updates under ${{ matrix.target_path }}
+      id: check_updates
+      if: ${{ startsWith(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
+      run: echo '::set-output name=FOUND::true'
     - uses: actions/checkout@v2
-      if: ${{ contains(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
+      if: ${{ steps.check_updates.outputs.FOUND == true }}
     # - name: Check updates in ${{ matrix.target_path }}
     #   id: check_updates
     #   run: |
@@ -64,12 +72,12 @@ jobs:
     #     AFTER: ${{ github.event.after }}
     #     TARGET_PATH: ${{ matrix.target_path }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
-      if: ${{ success() }}
+      if: ${{ steps.check_updates.outputs.FOUND }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.dotnet-version }}
     - uses: actions/cache@v2
-      if: ${{ success() }}
+      if: ${{ steps.check_updates.outputs.FOUND == 'true' }}
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
