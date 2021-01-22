@@ -51,6 +51,7 @@ jobs:
       shell: bash
       run: |
         COUNT=`echo $FILES | jq 'map(select(. | startswith("src/item-service/"))) | length'`
+        echo ${COUNT}
         echo "::set-output name=COUNT::${COUNT}"
       env:
         FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
