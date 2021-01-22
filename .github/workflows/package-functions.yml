@@ -50,11 +50,12 @@ jobs:
       id: check_updates
       shell: bash
       run: |
-        COUNT=`echo $FILES | jq 'map(select(. | startswith("src/item-service/"))) | length'`
+        COUNT=`echo $FILES | jq "map(select(. | startswith(\"${TARGET_PATH}\"))) | length"`
         echo ${COUNT}
         echo "::set-output name=COUNT::${COUNT}"
       env:
         FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
+        TARGET_PATH: ${{ matrix.target_path }}
     - uses: actions/checkout@v2
       if: ${{ fromJson(steps.check_updates.outputs.COUNT) > 0 }}
     # - name: Check updates in ${{ matrix.target_path }}
