@@ -3,7 +3,8 @@ name: Package code for Azure function
 on:
   push:
     branches:
-    - master
+    # - master
+    - update-workflow
     paths:
     - src/box-service/**
     - src/item-service/**
@@ -18,12 +19,26 @@ jobs:
   build:
     runs-on: windows-latest
 
+    strategy:
+      matrix:
+        path: 
+        - src/box-service
+        - src/item-service
+        - src/pos-service
+        - src/stock-service
+
     defaults:
       run:
         shell: pwsh
 
     steps:
+    - run: echo $CONTEXT | jq
+      env:
+        CONTEXT: ${{ toJson(github) }}
     - uses: actions/checkout@v2
+    # - name: Check updates in ${{ matrix.path }}
+    #   run: |
+
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
       uses: actions/setup-dotnet@v1
       with:
