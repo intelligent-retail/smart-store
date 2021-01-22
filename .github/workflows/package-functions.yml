@@ -55,7 +55,7 @@ jobs:
       env:
         FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
     - uses: actions/checkout@v2
-      if: ${{ fromJson(steps.check_updates.COUNT) > 0 }}
+      if: ${{ fromJson(steps.check_updates.outputs.COUNT) > 0 }}
     # - name: Check updates in ${{ matrix.target_path }}
     #   id: check_updates
     #   run: |
@@ -72,12 +72,12 @@ jobs:
     #     AFTER: ${{ github.event.after }}
     #     TARGET_PATH: ${{ matrix.target_path }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
-      if: ${{ steps.check_updates.COUNT > 0 }}
+      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.dotnet-version }}
     - uses: actions/cache@v2
-      if: ${{ steps.check_updates.COUNT > 0 }}
+      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
