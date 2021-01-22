@@ -49,16 +49,18 @@ jobs:
     - run: |
         echo $FILES | jq
         echo $RESULT | jq
+        echo $TEST | jq
       env:
         FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
         RESULT: ${{ contains(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
+        TEST: ${{ contains(fromJson('["src/item-service/debug.txt"]'), 'debug') }}
       shell: bash
     - name: Check updates under ${{ matrix.target_path }}
       id: check_updates
       if: ${{ contains(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
       run: echo '::set-output name=FOUND::true'
     - uses: actions/checkout@v2
-      if: ${{ fromJson(steps.check_updates.outputs.FOUND) }}
+      if: ${{ steps.check_updates.outcome == 'success' }}
     # - name: Check updates in ${{ matrix.target_path }}
     #   id: check_updates
     #   run: |
@@ -75,12 +77,12 @@ jobs:
     #     AFTER: ${{ github.event.after }}
     #     TARGET_PATH: ${{ matrix.target_path }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
-      if: ${{ fromJson(steps.check_updates.outputs.FOUND) }}
+      if: ${{ steps.check_updates.outcome == 'success' }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.dotnet-version }}
     - uses: actions/cache@v2
-      if: ${{ fromJson(steps.check_updates.outputs.FOUND) }}
+      if: ${{ steps.check_updates.outcome == 'success' }}
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
