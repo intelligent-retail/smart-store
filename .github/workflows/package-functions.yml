@@ -46,21 +46,16 @@ jobs:
         head: ${{ github.event.after }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: |
-        echo $FILES | jq
-        echo $RESULT | jq
-        echo $TEST | jq
-      env:
-        FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
-        RESULT: ${{ contains(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
-        TEST: ${{ contains(fromJson('["src/item-service/debug.txt"]'), 'debug') }}
-      shell: bash
     - name: Check updates under ${{ matrix.target_path }}
       id: check_updates
-      if: ${{ contains(fromJson(steps.get_diff.outputs.data).files.*.filename, matrix.target_path) }}
-      run: echo '::set-output name=FOUND::true'
+      shell: bash
+      run: |
+        COUNT=`echo $FILES | jq 'map(select(. | startswith("src/item-service/"))) | length'`
+        echo "::set-output name=COUNT::${COUNT}"
+      env:
+        FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
     - uses: actions/checkout@v2
-      if: ${{ steps.check_updates.outcome == 'success' }}
+      if: ${{ fromJson(steps.check_updates.COUNT) > 0 }}
     # - name: Check updates in ${{ matrix.target_path }}
     #   id: check_updates
     #   run: |
@@ -77,12 +72,12 @@ jobs:
     #     AFTER: ${{ github.event.after }}
     #     TARGET_PATH: ${{ matrix.target_path }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
-      if: ${{ steps.check_updates.outcome == 'success' }}
+      if: ${{ steps.check_updates.COUNT > 0 }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.dotnet-version }}
     - uses: actions/cache@v2
-      if: ${{ steps.check_updates.outcome == 'success' }}
+      if: ${{ steps.check_updates.COUNT > 0 }}
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
