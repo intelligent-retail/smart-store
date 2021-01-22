@@ -1,0 +1,36 @@
+{
+  "name": "stock-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "test:unit": "vue-cli-service test:unit"
+  },
+  "dependencies": {
+    "@aspnet/signalr": "^1.1.4",
+    "buefy": "^0.7.10",
+    "vue": "^2.6.12",
+    "vue-router": "^3.4.9"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.9.1",
+    "@vue/cli-plugin-eslint": "^3.12.1",
+    "@vue/cli-plugin-typescript": "^3.12.1",
+    "@vue/cli-plugin-unit-jest": "^4.5.10",
+    "@vue/cli-service": "^4.5.10",
+    "@vue/eslint-config-prettier": "^4.0.1",
+    "@vue/eslint-config-typescript": "^4.0.0",
+    "@vue/test-utils": "1.0.0-beta.29",
+    "axios": "^0.21.1",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.2.3",
+    "ts-jest": "^26.4.4",
+    "typescript": "^3.9.7",
+    "vue-cli-plugin-axios": "0.0.4",
+    "vue-cli-plugin-buefy": "^0.3.8",
+    "vue-template-compiler": "^2.6.12"
+  }
+}
