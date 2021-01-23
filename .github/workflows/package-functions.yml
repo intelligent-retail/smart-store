@@ -91,7 +91,7 @@ jobs:
     - name: Setup .NET Core SDK ${{ env.dotnet_version }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet_version: ${{ env.dotnet_version }}
+        dotnet-version: ${{ env.dotnet_version }}
     - uses: actions/cache@v2
       with:
         path: ~/.nuget/packages
