@@ -3,7 +3,8 @@ name: Package code for Azure function
 on:
   push:
     branches:
-    - master
+    # - master
+    - update-workflow
     paths:
     - src/box-service/**
     - src/item-service/**
