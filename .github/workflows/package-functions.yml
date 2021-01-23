@@ -32,9 +32,14 @@ jobs:
         repo: ${{ github.repository }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Debug
+      run: |
+        echo $RESULT | jq
+      env:
+        RESULT: ${{ toJson(steps.get_latest_release) }}
     - name: Format latest release
       id: format_latest_release
-      if: ${{ fromJson(false) }}
+      if: ${{ steps.get_latest_release.outcome == 'success' }}
       run: |
         VERSION=$(echo $LATEST_VERSION | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p')
         echo "::set-output name=version::$VERSION"
