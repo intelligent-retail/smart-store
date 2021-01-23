@@ -44,7 +44,7 @@ jobs:
         VERSION=$(echo $LATEST_VERSION | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p')
         echo "::set-output name=version::$VERSION"
       env:
-        LATEST_VERSION: ${{ fromJson(steps.get_latest_release.outputs.data).tag_name }}
+        LATEST_VERSION: ${{ steps.get_latest_release.outputs && fromJson(steps.get_latest_release.outputs.data).tag_name }}
     - name: Calculate next release version
       id: next_release_version
       uses: christian-draeger/increment-semantic-version@1.0.2
