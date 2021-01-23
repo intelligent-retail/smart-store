@@ -78,5 +78,5 @@ jobs:
         echo $PREVIOUS_JOB_RESULT | jq
       env:
         CONTEXT: ${{ toJson(github) }}
-        OUTPUT: ${{ toJson(needs.outputs) }}
-        PREVIOUS_JOB_RESULT: ${{ toJson(needs.outputs.result) }}
+        OUTPUT: ${{ toJson(needs.build.outputs) }}
+        PREVIOUS_JOB_RESULT: ${{ toJson(needs.build.outputs.result) }}
