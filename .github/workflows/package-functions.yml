@@ -87,7 +87,7 @@ jobs:
         COMMITS: ${{ toJson(github.event.commits.*.id) }}
     - uses: actions/checkout@v2
       with:
-        fetch-depth: ${{ steps.count_commits.outputs.COUNT }}
+        fetch-depth: ${{ steps.count_commits.outputs.COUNT + 1 }}
     - name: Check updates under target paths
       id: check_updates
       shell: bash
