@@ -111,6 +111,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget
     - name: Build package
+      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       run: |
         pushd ${{ matrix.service.build_path }}
         dotnet restore
@@ -118,9 +119,11 @@ jobs:
         dotnet publish --configuration Release --output ${{ env.output-dir }}
         popd
     - name: Archive
+      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       run: |
         Compress-Archive -Path ${{ env.output-dir }}/* -DestinationPath ${{ matrix.service.package_file_name }}
     - uses: actions/upload-artifact@v2
+      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       with:
         name: ${{ env.artifact-name-function-package }} ${{ matrix.service.package_file_name }}
         path: ${{ matrix.service.package_file_name }}
