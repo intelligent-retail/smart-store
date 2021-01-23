@@ -16,79 +16,82 @@ env:
   dotnet_version: '3.1.x'
 
 jobs:
-  build:
+  create-draft-release:
+    runs-on: ubuntu-latest
+
+    outputs:
+      DRAFT_RELEASE_UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+    - name: Get latest release
+      id: get_latest_release
+      continue-on-error: true
+      uses: octokit/request-action@v2.x
+      with:
+        route: GET /repos/:repo/releases/latest
+        repo: ${{ github.repository }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Format latest release
+      id: format_latest_release
+      run: |
+        VERSION=$(echo $LATEST_VERSION | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p')
+        echo "::set-output name=version::$VERSION"
+      env:
+        LATEST_VERSION: ${{ fromJson(steps.get_latest_release.outputs.data).tag_name }}
+    - name: Calculate next release version
+      id: next_release_version
+      uses: christian-draeger/increment-semantic-version@1.0.2
+      with:
+        current-version: ${{ steps.format_latest_release.outputs.version || '0.0.0' }}
+        version-fragment: 'feature'
+    - name: Create draft release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v${{ steps.next_release_version.outputs.next-version }}
+        release_name: v${{ steps.next_release_version.outputs.next-version }}
+        draft: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-and-attach:
+    needs:
+    - create-draft-release
     runs-on: windows-latest
 
     strategy:
       matrix:
         service:
-        - target_paths:
-          - src/box-service/
-          build_path: src/box-service/BoxManagementService
+        - build_path: src/box-service/BoxManagementService
           package_name: BoxManagementService
-        - target_paths:
-          - src/item-service/
-          build_path: src/item-service/ItemService.ItemMaster
+        - build_path: src/item-service/ItemService.ItemMaster
           package_name: ItemService.ItemMaster
-        - target_paths:
-          - src/pos-service/
-          build_path: src/pos-service/PosService
+        - build_path: src/pos-service/PosService
           package_name: PosService
-        - target_paths:
-          - src/stock-service/StockService.StockCommand/
-          - src/stock-service/StockService.Core/
-          build_path: src/stock-service/StockService.StockCommand
+        - build_path: src/stock-service/StockService.StockCommand
           package_name: StockService.StockCommand
-        - target_paths:
-          - src/stock-service/StockService.StockProcessor/
-          - src/stock-service/StockService.Core/
-          build_path: src/stock-service/StockService.StockProcessor
+        - build_path: src/stock-service/StockService.StockProcessor
           package_name: StockService.StockProcessor
-        - target_paths:
-          - src/stock-service/StockService.StockQuery/
-          - src/stock-service/StockService.Core/
-          build_path: src/stock-service/StockService.StockQuery
+        - build_path: src/stock-service/StockService.StockQuery
           package_name: StockService.StockQuery
 
     env:
       output-dir: ${{ github.workspace }}/outputs
       
     steps:
-    - name: Calculate fetch-depth
-      id: calc_fetch_depth
-      shell: bash
-      run: |
-        COUNT=`echo ${COMMITS} | jq 'length + 1'`
-        echo "::set-output name=COUNT::${COUNT}"
-      env:
-        COMMITS: ${{ toJson(github.event.commits.*.id) }}
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: ${{ steps.calc_fetch_depth.outputs.COUNT }}
-    - name: Check updates under target paths
-      id: check_updates
-      shell: bash
-      run: |
-        COUNT=`git diff --name-only ${BEFORE} ${AFTER} ${TARGET_PATHS} | wc -l`
-        echo "::set-output name=COUNT::${COUNT}"
-      env:
-        BEFORE: ${{ github.event.before }}
-        AFTER: ${{ github.event.after }}
-        TARGET_PATHS: ${{ join(matrix.service.target_paths, ' ') }}
     - name: Setup .NET Core SDK ${{ env.dotnet_version }}
-      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet_version: ${{ env.dotnet_version }}
     - uses: actions/cache@v2
-      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
         restore-keys: |
           ${{ runner.os }}-nuget
     - name: Build package
-      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       run: |
         pushd ${{ matrix.service.build_path }}
         dotnet restore
@@ -96,20 +99,13 @@ jobs:
         dotnet publish --configuration Release --output ${{ env.output-dir }}
         popd
     - name: Archive
-      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       run: |
         Compress-Archive -Path ${{ env.output-dir }}/* -DestinationPath ${{ matrix.service.package_name }}.zip
-    - uses: actions/upload-artifact@v2
-      if: ${{ steps.check_updates.outputs.COUNT > 0 }}
+    - uses: actions/upload-release-asset@v1
       with:
-        name: ${{ matrix.service.package_name }}
-        path: ${{ matrix.service.package_name }}.zip
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs:
-    - build
-
-    steps:
-    - uses: actions/download-artifact@v2
-    - run: ls -la
+        upload_url: ${{ needs.create-draft-release.outputs.DRAFT_RELEASE_UPLOAD_URL }}
+        asset_path: ${{ matrix.service.package_name }}.zip
+        asset_name: ${{ matrix.service.package_name }}.zip
+        asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
