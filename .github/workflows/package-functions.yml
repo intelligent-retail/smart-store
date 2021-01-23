@@ -41,10 +41,11 @@ jobs:
       id: format_latest_release
       if: ${{ steps.get_latest_release.outcome == 'success' }}
       run: |
-        VERSION=$(echo $LATEST_VERSION | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p')
+        VERSION=`echo ${PREVIOUS_OUTPUT} | jq  -r '.data.tag_name'`
+        # VERSION=$(echo $LATEST_VERSION | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p')
         echo "::set-output name=version::$VERSION"
       env:
-        LATEST_VERSION: ${{ steps.get_latest_release.outputs && fromJson(steps.get_latest_release.outputs.data).tag_name }}
+        PREVIOUS_OUTPUT: ${{ toJson(steps.get_latest_release.outputs) }}
     - name: Calculate next release version
       id: next_release_version
       uses: christian-draeger/increment-semantic-version@1.0.2
