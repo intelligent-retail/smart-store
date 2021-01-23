@@ -41,7 +41,7 @@ jobs:
       id: format_latest_release
       if: ${{ steps.get_latest_release.outcome == 'success' }}
       run: |
-        VERSION=`echo ${DATA} | jq -r '.tag_name'`
+        VERSION=`echo ${DATA} | jq -r '.tag_name' | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p'`
         echo "::set-output name=version::$VERSION"
       env:
         DATA: ${{ steps.get_latest_release.outputs.data }}
