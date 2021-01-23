@@ -21,38 +21,75 @@ jobs:
 
     strategy:
       matrix:
-        target_path: 
-        - src/box-service/
-        - src/item-service/
-        - src/pos-service/
-        - src/stock-service/
+        service:
+        - target_paths:
+          - src/box-service/
+          package_file_name: BoxManagementService.zip
+        - target_paths:
+          - src/item-service/
+          package_file_name: ItemService.ItemMaster.zip
+        - target_paths:
+          - src/pos-service/
+          package_file_name: PosService.zip
+        - target_paths:
+          - src/stock-service/StockService.StockCommand/
+          - src/stock-service/StockService.Core/
+          package_file_name: StockService.StockCommand.zip
+        - target_paths:
+          - src/stock-service/StockService.StockProcessor/
+          - src/stock-service/StockService.Core/
+          package_file_name: StockService.StockProcessor.zip
+        - target_paths:
+          - src/stock-service/StockService.StockQuery/
+          - src/stock-service/StockService.Core/
+          package_file_name: StockService.StockQuery.zip
 
     outputs:
-      target_path: ${{ matrix.target_path }}
+      target_path: ${{ matrix.service.target_paths }}
       update: ${{ steps.check_updates.outputs.COUNT > 0 }}
 
     steps:
-    - name: Get diff
-      id: get_diff
-      uses: octokit/request-action@v2.x
-      with:
-        route: GET /repos/:repo/compare/:base...:head
-        repo: ${{ github.repository }}
-        base: ${{ github.event.before }}
-        head: ${{ github.event.after }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Check updates under ${{ matrix.target_path }}
-      id: check_updates
-      shell: bash
+    # - name: Get diff
+    #   id: get_diff
+    #   uses: octokit/request-action@v2.x
+    #   with:
+    #     route: GET /repos/:repo/compare/:base...:head
+    #     repo: ${{ github.repository }}
+    #     base: ${{ github.event.before }}
+    #     head: ${{ github.event.after }}
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Check updates under ${{ matrix.target_path }}
+    #   id: check_updates
+    #   shell: bash
+    #   run: |
+    #     COUNT=`echo $FILES | jq "map(select(. | startswith(\"${TARGET_PATH}\"))) | length"`
+    #     echo "::set-output name=COUNT::${COUNT}"
+    #   env:
+    #     FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
+    #     TARGET_PATH: ${{ matrix.target_path }}
+    # - uses: actions/checkout@v2
+    #   if: ${{ fromJson(steps.check_updates.outputs.COUNT) > 0 }}
+
+    - name: Count commits
+      id: count_commits
       run: |
-        COUNT=`echo $FILES | jq "map(select(. | startswith(\"${TARGET_PATH}\"))) | length"`
+        COUNT=`echo ${COMMITS} | jq 'length'`
         echo "::set-output name=COUNT::${COUNT}"
       env:
-        FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
-        TARGET_PATH: ${{ matrix.target_path }}
+        COMMITS: ${{ toJson(github.event.commits.*.id) }}
     - uses: actions/checkout@v2
-      if: ${{ fromJson(steps.check_updates.outputs.COUNT) > 0 }}
+      with:
+        fetch-depth: ${{ steps.count_commits.outputs.COUNT }}
+    - name: Check updates under target paths
+      id: check_updates
+      run: |
+        COUNT=`git diff --name-only ${BEFORE} ${AFTER} ${TARGET_PATHS} | wc -l`
+        echo "::set-output name=COUNT::${COUNT}"
+      env:
+        BEFORE: ${{ github.event.before }}
+        AFTER: ${{ github.event.after }}
+        TARGET_PATHS: ${{ join(matrix.service.target_paths, ' ') }}
     - name: Setup .NET Core SDK ${{ env.dotnet-version }}
       if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       uses: actions/setup-dotnet@v1
