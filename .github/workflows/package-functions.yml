@@ -34,6 +34,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Format latest release
       id: format_latest_release
+      if: ${{ success() }}
       run: |
         VERSION=$(echo $LATEST_VERSION | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p')
         echo "::set-output name=version::$VERSION"
