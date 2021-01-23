@@ -73,6 +73,7 @@ jobs:
 
     - name: Count commits
       id: count_commits
+      shell: bash
       run: |
         COUNT=`echo ${COMMITS} | jq 'length'`
         echo "::set-output name=COUNT::${COUNT}"
@@ -83,6 +84,7 @@ jobs:
         fetch-depth: ${{ steps.count_commits.outputs.COUNT }}
     - name: Check updates under target paths
       id: check_updates
+      shell: bash
       run: |
         COUNT=`git diff --name-only ${BEFORE} ${AFTER} ${TARGET_PATHS} | wc -l`
         echo "::set-output name=COUNT::${COUNT}"
