@@ -13,8 +13,7 @@ on:
   workflow_dispatch:
 
 env:
-  dotnet-version: '3.1.x'
-  artifact-name-function-package: function-packages
+  dotnet_version: '3.1.x'
 
 jobs:
   build:
@@ -26,57 +25,35 @@ jobs:
         - target_paths:
           - src/box-service/
           build_path: src/box-service/BoxManagementService
-          package_file_name: BoxManagementService.zip
+          package_name: BoxManagementService
         - target_paths:
           - src/item-service/
           build_path: src/item-service/ItemService.ItemMaster
-          package_file_name: ItemService.ItemMaster.zip
+          package_name: ItemService.ItemMaster
         - target_paths:
           - src/pos-service/
           build_path: src/pos-service/PosService
-          package_file_name: PosService.zip
+          package_name: PosService
         - target_paths:
           - src/stock-service/StockService.StockCommand/
           - src/stock-service/StockService.Core/
           build_path: src/stock-service/StockService.StockCommand
-          package_file_name: StockService.StockCommand.zip
+          package_name: StockService.StockCommand
         - target_paths:
           - src/stock-service/StockService.StockProcessor/
           - src/stock-service/StockService.Core/
           build_path: src/stock-service/StockService.StockProcessor
-          package_file_name: StockService.StockProcessor.zip
+          package_name: StockService.StockProcessor
         - target_paths:
           - src/stock-service/StockService.StockQuery/
           - src/stock-service/StockService.Core/
           build_path: src/stock-service/StockService.StockQuery
-          package_file_name: StockService.StockQuery.zip
+          package_name: StockService.StockQuery
 
     env:
       output-dir: ${{ github.workspace }}/outputs
       
     steps:
-    # - name: Get diff
-    #   id: get_diff
-    #   uses: octokit/request-action@v2.x
-    #   with:
-    #     route: GET /repos/:repo/compare/:base...:head
-    #     repo: ${{ github.repository }}
-    #     base: ${{ github.event.before }}
-    #     head: ${{ github.event.after }}
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    # - name: Check updates under ${{ matrix.target_path }}
-    #   id: check_updates
-    #   shell: bash
-    #   run: |
-    #     COUNT=`echo $FILES | jq "map(select(. | startswith(\"${TARGET_PATH}\"))) | length"`
-    #     echo "::set-output name=COUNT::${COUNT}"
-    #   env:
-    #     FILES: ${{ toJson(fromJson(steps.get_diff.outputs.data).files.*.filename) }}
-    #     TARGET_PATH: ${{ matrix.target_path }}
-    # - uses: actions/checkout@v2
-    #   if: ${{ fromJson(steps.check_updates.outputs.COUNT) > 0 }}
-
     - name: Calculate fetch-depth
       id: calc_fetch_depth
       shell: bash
@@ -98,11 +75,11 @@ jobs:
         BEFORE: ${{ github.event.before }}
         AFTER: ${{ github.event.after }}
         TARGET_PATHS: ${{ join(matrix.service.target_paths, ' ') }}
-    - name: Setup .NET Core SDK ${{ env.dotnet-version }}
+    - name: Setup .NET Core SDK ${{ env.dotnet_version }}
       if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: ${{ env.dotnet-version }}
+        dotnet_version: ${{ env.dotnet_version }}
     - uses: actions/cache@v2
       if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       with:
@@ -121,12 +98,12 @@ jobs:
     - name: Archive
       if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       run: |
-        Compress-Archive -Path ${{ env.output-dir }}/* -DestinationPath ${{ matrix.service.package_file_name }}
+        Compress-Archive -Path ${{ env.output-dir }}/* -DestinationPath ${{ matrix.service.package_name }}.zip
     - uses: actions/upload-artifact@v2
       if: ${{ steps.check_updates.outputs.COUNT > 0 }}
       with:
-        name: ${{ env.artifact-name-function-package }} ${{ matrix.service.package_file_name }}
-        path: ${{ matrix.service.package_file_name }}
+        name: ${{ matrix.service.package_name }}
+        path: ${{ matrix.service.package_name }}.zip
 
   deploy:
     runs-on: ubuntu-latest
