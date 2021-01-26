@@ -22,13 +22,24 @@ jobs:
       DRAFT_RELEASE_UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
 
     steps:
+    - name: Split repository context
+      id: split_context_repo
+      uses: actions/github-script@v3
+      with:
+        script: |
+          const split = context.payload.repository.full_name.split('/');
+          return {
+            owner: split[0],
+            repo: split[1]
+          };
     - name: Get latest release
       id: get_latest_release
       continue-on-error: true
       uses: octokit/request-action@v2.x
       with:
-        route: GET /repos/:repo/releases/latest
-        repo: ${{ github.repository }}
+        route: GET /repos/{owner}/{repo}/releases/latest
+        owner: ${{ fromJson(steps.split_context_repo.outputs.result).owner }}
+        repo: ${{ fromJson(steps.split_context_repo.outputs.result).repo }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Format latest release
