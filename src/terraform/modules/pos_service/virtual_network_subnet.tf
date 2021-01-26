@@ -9,6 +9,9 @@ resource "azurerm_subnet" "pos_service" {
     name = "Delegate to app plan"
 
     service_delegation {
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/action"
+      ]
       name = "Microsoft.Web/serverFarms"
     }
   }
