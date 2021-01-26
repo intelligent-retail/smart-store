@@ -1,0 +1,122 @@
+name: Package code for Azure function
+
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - src/box-service/**
+    - src/item-service/**
+    - src/pos-service/**
+    - src/stock-service/**
+  workflow_dispatch:
+
+env:
+  dotnet_version: '3.1.x'
+
+jobs:
+  create-draft-release:
+    runs-on: ubuntu-latest
+
+    outputs:
+      DRAFT_RELEASE_UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+    - name: Split repository context
+      id: split_context_repo
+      uses: actions/github-script@v3
+      with:
+        script: |
+          const split = context.payload.repository.full_name.split('/');
+          return {
+            owner: split[0],
+            repo: split[1]
+          };
+    - name: Get latest release
+      id: get_latest_release
+      continue-on-error: true
+      uses: octokit/request-action@v2.x
+      with:
+        route: GET /repos/{owner}/{repo}/releases/latest
+        owner: ${{ fromJson(steps.split_context_repo.outputs.result).owner }}
+        repo: ${{ fromJson(steps.split_context_repo.outputs.result).repo }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Format latest release
+      id: format_latest_release
+      if: ${{ steps.get_latest_release.outcome == 'success' }}
+      run: |
+        VERSION=`echo ${DATA} | jq -r '.tag_name' | sed -E -n 's/v?([\d.]*)(-\w)?/\1\2/p'`
+        echo "::set-output name=version::$VERSION"
+      env:
+        DATA: ${{ steps.get_latest_release.outputs.data }}
+    - name: Calculate next release version
+      id: next_release_version
+      uses: christian-draeger/increment-semantic-version@1.0.2
+      with:
+        current-version: ${{ steps.format_latest_release.outputs.version || '0.0.0' }}
+        version-fragment: 'feature'
+    - name: Create draft release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v${{ steps.next_release_version.outputs.next-version }}
+        release_name: v${{ steps.next_release_version.outputs.next-version }}
+        draft: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-and-attach:
+    needs:
+    - create-draft-release
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        service:
+        - build_path: src/box-service/BoxManagementService
+          package_name: BoxManagementService
+        - build_path: src/item-service/ItemService.ItemMaster
+          package_name: ItemService.ItemMaster
+        - build_path: src/pos-service/PosService
+          package_name: PosService
+        - build_path: src/stock-service/StockService.StockCommand
+          package_name: StockService.StockCommand
+        - build_path: src/stock-service/StockService.StockProcessor
+          package_name: StockService.StockProcessor
+        - build_path: src/stock-service/StockService.StockQuery
+          package_name: StockService.StockQuery
+
+    env:
+      output-dir: ${{ github.workspace }}/outputs
+      
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core SDK ${{ env.dotnet_version }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.dotnet_version }}
+    - uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
+    - name: Build package
+      run: |
+        pushd ${{ matrix.service.build_path }}
+        dotnet restore
+        dotnet build --configuration Release
+        dotnet publish --configuration Release --output ${{ env.output-dir }}
+        popd
+    - name: Archive
+      run: |
+        Compress-Archive -Path ${{ env.output-dir }}/* -DestinationPath ${{ matrix.service.package_name }}.zip
+    - uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ needs.create-draft-release.outputs.DRAFT_RELEASE_UPLOAD_URL }}
+        asset_path: ${{ matrix.service.package_name }}.zip
+        asset_name: ${{ matrix.service.package_name }}.zip
+        asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
