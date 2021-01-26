@@ -31,14 +31,15 @@ module "shared" {
 module "pos_service" {
   source = "./modules/pos_service"
 
-  resource_group                 = module.shared.resource_group
-  identifier                     = var.identifier
-  vnet_name                      = module.shared.vnet_name
-  snet_address_prefix            = local.snet_address_prefixies["pos_service"]
-  key_vault_id                   = module.shared.key_vault_id
-  log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted = var.workspace_ip_address_permitted
-  app_service_plan               = var.app_service_plan
+  resource_group                     = module.shared.resource_group
+  identifier                         = var.identifier
+  vnet_name                          = module.shared.vnet_name
+  snet_address_prefix                = local.snet_address_prefixies["pos_service"]
+  key_vault_id                       = module.shared.key_vault_id
+  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
+  app_service_plan                   = var.app_service_plan
+  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
 
   depends_on = [
     module.shared
@@ -58,7 +59,8 @@ module "item_service" {
   subnets_permitted = [
     module.pos_service.subnet
   ]
-  app_service_plan = var.app_service_plan
+  app_service_plan                   = var.app_service_plan
+  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
 
   depends_on = [
     module.shared

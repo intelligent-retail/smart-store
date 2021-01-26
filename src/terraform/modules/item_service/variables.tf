@@ -38,3 +38,7 @@ variable "subnets_permitted" {
   }))
   default = []
 }
+
+variable "storage_account_for_fileshare_name" {
+  type = string
+}
