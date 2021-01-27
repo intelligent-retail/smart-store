@@ -72,6 +72,16 @@ resource "azurerm_function_app" "pos_service" {
     FUNCTIONS_WORKER_RUNTIME                 = "dotnet"
     WEBSITE_VNET_ROUTE_ALL                   = 1
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url.pos_service.download_url
+    # APPINSIGHTS_INSTRUMENTATIONKEY = 
+    CosmosDbConnectionString = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.pos_service_cosmosdb_conn_string.version})"
+    # ItemMasterUri = 
+    # StockUri = 
+    ApplicationTimeZone   = "Tokyo Standard Time"
+    FunctionsApiKeyHeader = "x-functions-key"
+  }
+
+  identity {
+    type = "SystemAssigned"
   }
 
   depends_on = [
@@ -82,4 +92,15 @@ resource "azurerm_function_app" "pos_service" {
 resource "azurerm_app_service_virtual_network_swift_connection" "function_app_pos_service" {
   app_service_id = azurerm_function_app.pos_service.id
   subnet_id      = azurerm_subnet.pos_service.id
+}
+
+resource "azurerm_key_vault_access_policy" "function_app_pos_service" {
+  key_vault_id = data.azurerm_key_vault.shared.id
+  tenant_id    = azurerm_function_app.pos_service.identity[0].tenant_id
+  object_id    = azurerm_function_app.pos_service.identity[0].principal_id
+
+  secret_permissions = [
+    "get",
+    "list"
+  ]
 }
