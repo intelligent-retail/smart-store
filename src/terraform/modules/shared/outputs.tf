@@ -2,8 +2,8 @@ output "resource_group" {
   value = azurerm_resource_group.shared
 }
 
-output "key_vault_id" {
-  value = azurerm_key_vault.shared.id
+output "key_vault_name" {
+  value = azurerm_key_vault.shared.name
 }
 
 output "vnet_name" {

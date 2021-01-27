@@ -126,5 +126,5 @@ resource "azurerm_monitor_diagnostic_setting" "cosmosdb_account_item_service" {
 resource "azurerm_key_vault_secret" "cosmosdb_account_item_service" {
   name         = azurerm_cosmosdb_account.item_service.name
   value        = azurerm_cosmosdb_account.item_service.connection_strings[0]
-  key_vault_id = var.key_vault_id
+  key_vault_id = data.azurerm_key_vault.shared.id
 }

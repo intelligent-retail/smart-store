@@ -35,7 +35,7 @@ module "pos_service" {
   identifier                         = var.identifier
   vnet_name                          = module.shared.vnet_name
   snet_address_prefix                = local.snet_address_prefixies["pos_service"]
-  key_vault_id                       = module.shared.key_vault_id
+  key_vault_name                     = module.shared.key_vault_name
   log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
   workspace_ip_address_permitted     = var.workspace_ip_address_permitted
   app_service_plan                   = var.app_service_plan
@@ -53,7 +53,7 @@ module "item_service" {
   identifier                     = var.identifier
   vnet_name                      = module.shared.vnet_name
   snet_address_prefix            = local.snet_address_prefixies["item_service"]
-  key_vault_id                   = module.shared.key_vault_id
+  key_vault_name                 = module.shared.key_vault_name
   log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
   workspace_ip_address_permitted = var.workspace_ip_address_permitted
   subnets_permitted = [

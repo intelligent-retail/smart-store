@@ -18,7 +18,7 @@ variable "snet_address_prefix" {
   type = string
 }
 
-variable "key_vault_id" {
+variable "key_vault_name" {
   type = string
 }
 
