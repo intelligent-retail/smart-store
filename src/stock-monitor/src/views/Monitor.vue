@@ -1,14 +1,14 @@
 <template>
   <div id="monitor" class="section">
     <h1 class="title is-3 has-text-grey">
-      リアルタイム在庫モニター - 店舗コード: {{ store.storeCode }}
+      リアルタイム在庫モニター - 店舗コード: {{ shop.shopCode }}
     </h1>
     <div class="field">
       <div class="control">
         <a class="button is-primary" v-on:click="init">リセット</a>
       </div>
     </div>
-    <div class="box" v-for="(box, key, index) in store.terminals" :key="index">
+    <div class="box" v-for="(box, key, index) in shop.terminals" :key="index">
       <div class="title is-5 has-text-grey">
         Box番号: {{ box.terminalCode }}
       </div>
@@ -45,164 +45,164 @@
 </style>
 
 <script lang="ts">
-import Vue from "vue";
-import axios from "axios";
-import {
-  HubConnection,
-  HubConnectionBuilder,
-  LogLevel,
-  JsonHubProtocol
-} from "@aspnet/signalr";
+import { defineComponent, ref, onMounted } from 'vue'
+import axios, { AxiosRequestConfig } from 'axios'
+import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 
 type Item = {
-  itemCode: string;
-  itemName: string | null;
-  quantity: number;
-  updated: boolean;
-};
+  itemCode: string
+  itemName: string | null
+  quantity: number
+  updated: boolean
+}
 
-type Store = {
-  storeCode: string;
-  terminals: [
-    {
-      terminalCode: number;
-      items: Item[];
+type Terminal = {
+  terminalCode: number
+  items: Item[]
+}
+
+type Shop = {
+  shopCode: string
+  terminals: Terminal[]
+}
+
+export default defineComponent({
+  setup() {
+    const baseUrl: string = process.env.VUE_APP_HOST as string
+    const companyCode = ref('00100') // TODO: 画面からセットする
+    const shop = ref({
+      shopCode: '12345', // TODO: 画面からセットする
+      terminals: [
+        {
+          terminalCode: 0,
+          items: [
+            {
+              itemCode: '',
+              itemName: null,
+              quantity: 0,
+              updated: false,
+            },
+          ],
+        },
+      ],
+    })
+
+    const getAxiosConfig = (): AxiosRequestConfig => {
+      const config = {
+        headers: {
+          'x-functions-key': process.env.VUE_APP_KEY,
+        },
+      }
+      return config
     }
-  ];
-};
 
-export default Vue.extend({
-  data() {
-    return {
-      baseUrl: process.env.VUE_APP_HOST as string,
-      companyCode: "00100" as string, // TODO: 画面からセットする
-      store: {
-        storeCode: "12345", // TODO: 画面からセットする
-        terminals: [
-          {
-            terminalCode: 0,
-            items: [
-              {
-                itemCode: "",
-                itemName: null,
-                quantity: 0,
-                updated: false
-              }
-            ]
-          }
-        ]
-      } as Store
-    };
-  },
-  methods: {
-    init: async function(): Promise<void> {
+    const sleep = (time: number): Promise<void> => {
+      return new Promise(function(resolve) {
+        window.setTimeout(resolve, time)
+      })
+    }
+
+    // データ初期化
+    const init = async (): Promise<void> => {
       const route =
-        "/v1/company/" +
-        this.companyCode +
-        "/store/" +
-        this.store.storeCode +
-        "/stocks";
+        '/v1/company/' +
+        companyCode.value +
+        '/store/' +
+        shop.value.shopCode +
+        '/stocks'
       const resp = await axios.post(
         process.env.VUE_APP_HOST + route,
         null,
-        getAxiosConfig()
-      );
-      this.store = resp.data.store;
-      console.log("Initialized!");
-    },
-    update: async function(
+        getAxiosConfig(),
+      )
+      shop.value = resp.data.store
+      console.log('Initialized!')
+    }
+
+    // データ更新
+    const update = async (
       terminalCode: number,
-      itemCode: string
-    ): Promise<void> {
-      console.log("Called from SignalR! " + terminalCode + "-" + itemCode);
+      itemCode: string,
+    ): Promise<void> => {
+      console.log('Called from SignalR! ' + terminalCode + '-' + itemCode)
 
       // 更新対象のBoxを特定する
-      const targetBoxIndex = this.store.terminals.findIndex(terminal => {
-        return terminal.terminalCode === terminalCode;
-      });
+      const targetBoxIndex = shop.value.terminals.findIndex(
+        (terminal: Terminal) => {
+          return terminal.terminalCode === terminalCode
+        },
+      )
 
       // 更新対象のItemを特定する
-      const targetItemIndex = this.store.terminals[
+      const targetItemIndex = shop.value.terminals[
         targetBoxIndex
-      ].items.findIndex(item => {
-        return item.itemCode === itemCode;
-      });
+      ].items.findIndex((item: Item) => {
+        return item.itemCode === itemCode
+      })
 
       // APIからItemの最新データを取得
       const route =
-        "/v1/company/" +
-        this.companyCode +
-        "/store/" +
-        this.store.storeCode +
-        "/terminal/" +
+        '/v1/company/' +
+        companyCode.value +
+        '/store/' +
+        shop.value.shopCode +
+        '/terminal/' +
         terminalCode +
-        "/item/" +
+        '/item/' +
         itemCode +
-        "/stock";
+        '/stock'
       const resp = await axios.post(
         process.env.VUE_APP_HOST + route,
         null,
-        getAxiosConfig()
-      );
-      this.$set(
-        this.store.terminals[targetBoxIndex].items[targetItemIndex],
-        "quantity",
+        getAxiosConfig(),
+      )
+      shop.value.terminals[targetBoxIndex].items[targetItemIndex].quantity =
         resp.data.quantity
-      );
 
       // 変更したitemの背景を変化させる
-      this.$set(
-        this.store.terminals[targetBoxIndex].items[targetItemIndex],
-        "updated",
-        true
-      );
-      await sleep(500);
-      this.$set(
-        this.store.terminals[targetBoxIndex].items[targetItemIndex],
-        "updated",
-        false
-      );
+      shop.value.terminals[targetBoxIndex].items[targetItemIndex].updated = true
 
-      console.log("Updated! " + resp.data.quantity);
+      await sleep(500)
+      shop.value.terminals[targetBoxIndex].items[
+        targetItemIndex
+      ].updated = false
+
+      console.log('Updated! ' + resp.data.quantity)
+    }
+
+    onMounted(
+      async (): Promise<void> => {
+        console.log('init')
+
+        // 初回のデータを取得する
+        await init()
+
+        // SignalRとコネクションを確立する
+        const connection = new HubConnectionBuilder()
+          .withUrl(baseUrl)
+          .configureLogging(LogLevel.Information)
+          .build()
+        console.log('connecting...')
+
+        // SignalR Serviceへの接続
+        connection
+          .start()
+          .then(() => console.log('connected!'))
+          .catch(console.error)
+
+        // SignalRからの呼び出し
+        connection.on('update', update)
+
+        // 切断
+        connection.onclose(() => console.log('disconnected'))
+      },
+    )
+
+    return {
+      companyCode,
+      shop,
+      init,
     }
   },
-  mounted: async function(): Promise<void> {
-    // 初回のデータを取得する
-    this.init();
-
-    // SignalRとコネクションを確立する
-    const connection = new HubConnectionBuilder()
-      .withUrl(this.baseUrl)
-      .configureLogging(LogLevel.Information)
-      .build();
-    console.log("connecting...");
-
-    // SignalR Serviceへの接続
-    connection
-      .start()
-      .then(() => console.log("connected!"))
-      .catch(console.error);
-
-    // SignalRからの呼び出し
-    connection.on("update", this.update);
-
-    // 切断
-    connection.onclose(() => console.log("disconnected"));
-  }
-});
-
-function getAxiosConfig(): Object {
-  const config = {
-    headers: {
-      "x-functions-key": process.env.VUE_APP_KEY
-    }
-  };
-  return config;
-}
-
-function sleep(time: number): Promise<void> {
-  return new Promise(function(resolve, reject) {
-    window.setTimeout(resolve, time);
-  });
-}
+})
 </script>

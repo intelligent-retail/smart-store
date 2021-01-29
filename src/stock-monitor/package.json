@@ -1,36 +1,35 @@
 {
-  "name": "stock-monitor",
+  "name": "stock-monitor-v3",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "test:unit": "vue-cli-service test:unit"
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@aspnet/signalr": "^1.1.4",
-    "buefy": "^0.7.10",
-    "vue": "^2.6.12",
-    "vue-router": "^3.4.9"
+    "@microsoft/signalr": "^5.0.2",
+    "bulma": "^0.9.1",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0-0"
   },
   "devDependencies": {
-    "@types/jest": "^24.9.1",
-    "@vue/cli-plugin-eslint": "^3.12.1",
-    "@vue/cli-plugin-typescript": "^3.12.1",
-    "@vue/cli-plugin-unit-jest": "^4.5.10",
-    "@vue/cli-service": "^4.5.10",
-    "@vue/eslint-config-prettier": "^4.0.1",
-    "@vue/eslint-config-typescript": "^4.0.0",
-    "@vue/test-utils": "1.0.0-beta.29",
+    "@typescript-eslint/eslint-plugin": "^4.14.0",
+    "@typescript-eslint/parser": "^4.14.0",
+    "@vue/cli-plugin-eslint": "~4.5.10",
+    "@vue/cli-plugin-router": "~4.5.10",
+    "@vue/cli-plugin-typescript": "~4.5.10",
+    "@vue/cli-service": "~4.5.10",
+    "@vue/compiler-sfc": "^3.0.5",
+    "@vue/eslint-config-prettier": "^6.0.0",
+    "@vue/eslint-config-typescript": "^7.0.0",
     "axios": "^0.21.1",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^5.16.0",
-    "eslint-plugin-vue": "^5.2.3",
-    "ts-jest": "^26.4.4",
-    "typescript": "^3.9.7",
-    "vue-cli-plugin-axios": "0.0.4",
-    "vue-cli-plugin-buefy": "^0.3.8",
-    "vue-template-compiler": "^2.6.12"
+    "eslint": "^7.18.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-vue": "^7.4.1",
+    "node-sass": "^5.0.0",
+    "prettier": "^2.2.1",
+    "sass-loader": "^10.1.1",
+    "typescript": "~4.1.3"
   }
 }

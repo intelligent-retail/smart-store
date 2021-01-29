@@ -7,14 +7,17 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Header from "@/components/Header.vue";
-import Footer from "@/components/Footer.vue";
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 
-export default Vue.extend({
+export default {
   components: {
     Header,
-    Footer
-  }
-});
+    Footer,
+  },
+}
 </script>
+
+<style lang="scss">
+@import '../node_modules/bulma/bulma.sass';
+</style>

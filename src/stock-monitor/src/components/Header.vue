@@ -41,9 +41,9 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
-  name: "Header"
-});
+export default defineComponent({
+  name: 'Header',
+})
 </script>
