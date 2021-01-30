@@ -1,7 +1,9 @@
 locals {
-  portal_ips            = ["104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
-  ip_addresses_to_allow = var.workspace_ip_address_permitted != "" ? concat([var.workspace_ip_address_permitted], local.portal_ips) : local.portal_ips
-  ip_range_filter       = join(",", local.ip_addresses_to_allow)
+  cosmosdb_portal_ips            = ["104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
+  cosmosdb_ip_addresses_to_allow = var.workspace_ip_address_permitted != "" ? concat([var.workspace_ip_address_permitted], local.cosmosdb_portal_ips) : local.cosmosdb_portal_ips
+  cosmosdb = {
+    ip_range_filter = join(",", local.cosmosdb_ip_addresses_to_allow)
+  }
 }
 
 resource "azurerm_cosmosdb_account" "item_service" {
@@ -10,7 +12,7 @@ resource "azurerm_cosmosdb_account" "item_service" {
   resource_group_name               = var.resource_group.name
   offer_type                        = "Standard"
   kind                              = "GlobalDocumentDB"
-  ip_range_filter                   = local.ip_range_filter
+  ip_range_filter                   = local.cosmosdb.ip_range_filter
   is_virtual_network_filter_enabled = true
 
   consistency_policy {
@@ -123,8 +125,8 @@ resource "azurerm_monitor_diagnostic_setting" "cosmosdb_account_item_service" {
   }
 }
 
-resource "azurerm_key_vault_secret" "cosmosdb_account_item_service" {
-  name         = azurerm_cosmosdb_account.item_service.name
+resource "azurerm_key_vault_secret" "item_service_cosmosdb_conn_string" {
+  name         = local.key_vault_secret_name_cosmos_db_conn_string
   value        = azurerm_cosmosdb_account.item_service.connection_strings[0]
   key_vault_id = data.azurerm_key_vault.shared.id
 }

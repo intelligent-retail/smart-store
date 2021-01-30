@@ -65,3 +65,21 @@ resource "azurerm_monitor_diagnostic_setting" "storage_account_item_service" {
     }
   }
 }
+
+# -----------------------------------------------------------------------------
+# Storage for assets (Public)
+# -----------------------------------------------------------------------------
+resource "azurerm_storage_account" "item_service_assets" {
+  name                     = "st${substr(random_string.item_service_name.result, 15, 6)}assets"
+  location                 = var.resource_group.location
+  resource_group_name      = var.resource_group.name
+  account_kind             = var.storage_account.kind
+  account_tier             = var.storage_account.tier
+  account_replication_type = var.storage_account.replication_type
+}
+
+resource "azurerm_storage_container" "item_service_assets" {
+  name                  = "item-images"
+  storage_account_name  = azurerm_storage_account.item_service_assets.name
+  container_access_type = "container"
+}

@@ -1,14 +1,14 @@
 locals {
-  ip_restriction_priority_initial_value = 300
+  function_app_ip_restriction_priority_initial_value = 300
   ip_restrictions = [
     for index, subnet in var.subnets_permitted : {
       virtual_network_subnet_id = subnet["id"]
       name                      = subnet["name"]
-      priority                  = local.ip_restriction_priority_initial_value + index
+      priority                  = local.function_app_ip_restriction_priority_initial_value + index
       action                    = "Allow"
     }
   ]
-  function_name = "func-${local.identifier_in_module}"
+  function_app_name = "func-${local.identifier_in_module}"
   asset_names = {
     item_service = "ItemService.ItemMaster.zip"
   }
@@ -27,7 +27,7 @@ data "azurerm_storage_account" "for_fileshare" {
 }
 
 resource "azurerm_function_app" "item_service" {
-  name                       = local.function_name
+  name                       = local.function_app_name
   location                   = var.resource_group.location
   resource_group_name        = var.resource_group.name
   app_service_plan_id        = azurerm_app_service_plan.item_service.id
@@ -60,7 +60,7 @@ resource "azurerm_function_app" "item_service" {
       content {
         ip_address = "${var.workspace_ip_address_permitted}/32"
         name       = "workspace"
-        priority   = local.ip_restriction_priority_initial_value + length(local.ip_restrictions)
+        priority   = local.function_app_ip_restriction_priority_initial_value + length(local.ip_restrictions)
         action     = "Allow"
       }
     }
@@ -68,10 +68,16 @@ resource "azurerm_function_app" "item_service" {
 
   app_settings = {
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = data.azurerm_storage_account.for_fileshare.primary_connection_string
-    WEBSITE_CONTENTSHARE                     = local.function_name
+    WEBSITE_CONTENTSHARE                     = local.function_app_name
     FUNCTIONS_WORKER_RUNTIME                 = "dotnet"
     WEBSITE_VNET_ROUTE_ALL                   = 1
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url.item_service.download_url
+    APPINSIGHTS_INSTRUMENTATIONKEY           = azurerm_application_insights.item_service.instrumentation_key
+    CosmosDBConnection                       = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.item_service_cosmosdb_conn_string.version})"
+  }
+
+  identity {
+    type = "SystemAssigned"
   }
 
   depends_on = [
@@ -82,4 +88,41 @@ resource "azurerm_function_app" "item_service" {
 resource "azurerm_app_service_virtual_network_swift_connection" "function_app_item_service" {
   app_service_id = azurerm_function_app.item_service.id
   subnet_id      = azurerm_subnet.item_service.id
+}
+
+resource "azurerm_monitor_diagnostic_setting" "function_app_item_service" {
+  name                       = "diag-${azurerm_function_app.item_service.name}"
+  target_resource_id         = azurerm_function_app.item_service.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  log {
+    category = "FunctionAppLogs"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+}
+
+resource "azurerm_key_vault_access_policy" "function_app_item_service" {
+  key_vault_id = data.azurerm_key_vault.shared.id
+  tenant_id    = azurerm_function_app.item_service.identity[0].tenant_id
+  object_id    = azurerm_function_app.item_service.identity[0].principal_id
+
+  secret_permissions = [
+    "get",
+    "list"
+  ]
 }
