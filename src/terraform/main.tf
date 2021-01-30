@@ -15,7 +15,7 @@ locals {
   vnet_address_space     = "10.0.0.0/16"
   snet_mask              = 24
   snet_bitdiff           = 8
-  snet_kinds             = ["bastion", "pos_service", "item_service"]
+  snet_kinds             = ["bastion", "pos_service", "item_service", "stock_service"]
   snet_address_prefixies = { for index, kind in local.snet_kinds : kind => cidrsubnet(local.vnet_address_space, local.snet_bitdiff, index) }
 }
 
@@ -41,6 +41,7 @@ module "pos_service" {
   app_service_plan                   = var.app_service_plan
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
   item_api_function_host             = "" # module.item_service.item_api_function_host
+  # stock_api_function_host            = module.stock_service.stock_api_function_host
 
   depends_on = [
     module.shared
@@ -54,6 +55,27 @@ module "item_service" {
   identifier                     = var.identifier
   vnet_name                      = module.shared.vnet_name
   snet_address_prefix            = local.snet_address_prefixies["item_service"]
+  key_vault_name                 = module.shared.key_vault_name
+  log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted = var.workspace_ip_address_permitted
+  subnets_permitted = [
+    module.pos_service.subnet
+  ]
+  app_service_plan                   = var.app_service_plan
+  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
+
+  depends_on = [
+    module.shared
+  ]
+}
+
+module "stock_service" {
+  source = "./modules/stock_service"
+
+  resource_group                 = module.shared.resource_group
+  identifier                     = var.identifier
+  vnet_name                      = module.shared.vnet_name
+  snet_address_prefix            = local.snet_address_prefixies["stock_service"]
   key_vault_name                 = module.shared.key_vault_name
   log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
   workspace_ip_address_permitted = var.workspace_ip_address_permitted
