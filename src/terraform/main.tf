@@ -40,6 +40,7 @@ module "pos_service" {
   workspace_ip_address_permitted     = var.workspace_ip_address_permitted
   app_service_plan                   = var.app_service_plan
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
+  item_api_function_host             = "" # module.item_service.item_api_function_host
 
   depends_on = [
     module.shared

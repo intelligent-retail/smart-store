@@ -42,3 +42,11 @@ variable "subnets_permitted" {
 variable "storage_account_for_fileshare_name" {
   type = string
 }
+
+variable "item_api_function_host" {
+  type = string
+}
+
+# variable "stock_api_function_host" {
+#   type = string
+# }

@@ -32,8 +32,9 @@ resource "azurerm_storage_account" "pos_service" {
 }
 
 resource "azurerm_storage_account_network_rules" "pos_service" {
-  resource_group_name        = var.resource_group.name
-  storage_account_name       = azurerm_storage_account.pos_service.name
+  resource_group_name  = var.resource_group.name
+  storage_account_name = azurerm_storage_account.pos_service.name
+
   default_action             = "Deny"
   bypass                     = ["Logging", "Metrics", "AzureServices"]
   virtual_network_subnet_ids = [azurerm_subnet.pos_service.id]

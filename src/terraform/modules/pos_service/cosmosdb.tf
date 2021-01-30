@@ -1,6 +1,6 @@
 locals {
-  consmos_db_portal_ips            = ["104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
-  consmos_db_ip_addresses_to_allow = var.workspace_ip_address_permitted != "" ? concat([var.workspace_ip_address_permitted], local.consmos_db_portal_ips) : local.consmos_db_portal_ips
+  cosmosdb_portal_ips            = ["104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
+  cosmosdb_ip_addresses_to_allow = var.workspace_ip_address_permitted != "" ? concat([var.workspace_ip_address_permitted], local.cosmosdb_portal_ips) : local.cosmosdb_portal_ips
   cosmosdb = {
     database_name       = "smartretailpos"
     database_throughput = 500
@@ -27,7 +27,7 @@ locals {
         partition_key_path = "/terminalKey"
       }
     }
-    ip_range_filter = join(",", local.consmos_db_ip_addresses_to_allow)
+    ip_range_filter = join(",", local.cosmosdb_ip_addresses_to_allow)
   }
 }
 
