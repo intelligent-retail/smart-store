@@ -44,3 +44,13 @@ variable "app_service_plan" {
     })
   })
 }
+
+variable "sql_administrator_username" {
+  type      = string
+  sensitive = true
+}
+
+variable "sql_administrator_password" {
+  type      = string
+  sensitive = true
+}

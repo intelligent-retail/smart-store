@@ -2,6 +2,18 @@ locals {
   cosmosdb_portal_ips            = ["104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
   cosmosdb_ip_addresses_to_allow = var.workspace_ip_address_permitted != "" ? concat([var.workspace_ip_address_permitted], local.cosmosdb_portal_ips) : local.cosmosdb_portal_ips
   cosmosdb = {
+    database_name       = "StockBackend"
+    database_throughput = 400
+    containers = {
+      leases = {
+        name               = "leases"
+        partition_key_path = "/id"
+      }
+      stock_transation = {
+        name               = "StockTransaction"
+        partition_key_path = "/terminalCode"
+      }
+    }
     ip_range_filter = join(",", local.cosmosdb_ip_addresses_to_allow)
   }
 }
@@ -27,6 +39,23 @@ resource "azurerm_cosmosdb_account" "stock_service" {
   virtual_network_rule {
     id = azurerm_subnet.stock_service.id
   }
+}
+
+resource "azurerm_cosmosdb_sql_database" "stock_service" {
+  name                = local.cosmosdb.database_name
+  resource_group_name = var.resource_group.name
+  account_name        = azurerm_cosmosdb_account.stock_service.name
+  throughput          = local.cosmosdb.database_throughput
+}
+
+resource "azurerm_cosmosdb_sql_container" "stock_service" {
+  for_each = local.cosmosdb.containers
+
+  name                = each.value.name
+  resource_group_name = var.resource_group.name
+  account_name        = azurerm_cosmosdb_account.stock_service.name
+  database_name       = azurerm_cosmosdb_sql_database.stock_service.name
+  partition_key_path  = each.value.partition_key_path
 }
 
 resource "azurerm_monitor_diagnostic_setting" "cosmosdb_account_stock_service" {

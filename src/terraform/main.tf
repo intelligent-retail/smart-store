@@ -84,6 +84,8 @@ module "stock_service" {
   ]
   app_service_plan                   = var.app_service_plan
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
+  sql_administrator_username         = var.sql_administrator_username
+  sql_administrator_password         = var.sql_administrator_password
 
   depends_on = [
     module.shared

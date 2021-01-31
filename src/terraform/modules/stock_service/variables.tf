@@ -42,3 +42,13 @@ variable "subnets_permitted" {
 variable "storage_account_for_fileshare_name" {
   type = string
 }
+
+variable "sql_administrator_username" {
+  type      = string
+  sensitive = true
+}
+
+variable "sql_administrator_password" {
+  type      = string
+  sensitive = true
+}
