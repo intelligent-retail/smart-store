@@ -15,7 +15,7 @@ locals {
   vnet_address_space     = "10.0.0.0/16"
   snet_mask              = 24
   snet_bitdiff           = 8
-  snet_kinds             = ["bastion", "pos_service", "item_service", "stock_service"]
+  snet_kinds             = ["bastion", "pos_service", "item_service", "stock_service", "box_service"]
   snet_address_prefixies = { for index, kind in local.snet_kinds : kind => cidrsubnet(local.vnet_address_space, local.snet_bitdiff, index) }
 }
 
@@ -31,13 +31,16 @@ module "shared" {
 module "pos_service" {
   source = "./modules/pos_service"
 
-  resource_group                     = module.shared.resource_group
-  identifier                         = var.identifier
-  vnet_name                          = module.shared.vnet_name
-  snet_address_prefix                = local.snet_address_prefixies["pos_service"]
-  key_vault_name                     = module.shared.key_vault_name
-  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
+  resource_group                 = module.shared.resource_group
+  identifier                     = var.identifier
+  vnet_name                      = module.shared.vnet_name
+  snet_address_prefix            = local.snet_address_prefixies["pos_service"]
+  key_vault_name                 = module.shared.key_vault_name
+  log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted = var.workspace_ip_address_permitted
+  subnets_permitted = [
+    module.box_service.subnet
+  ]
   app_service_plan                   = var.app_service_plan
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
   item_api_function_host             = "" # module.item_service.item_api_function_host
@@ -86,6 +89,24 @@ module "stock_service" {
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
   sql_administrator_username         = var.sql_administrator_username
   sql_administrator_password         = var.sql_administrator_password
+
+  depends_on = [
+    module.shared
+  ]
+}
+
+module "box_service" {
+  source = "./modules/box_service"
+
+  resource_group                     = module.shared.resource_group
+  identifier                         = var.identifier
+  vnet_name                          = module.shared.vnet_name
+  snet_address_prefix                = local.snet_address_prefixies["box_service"]
+  key_vault_name                     = module.shared.key_vault_name
+  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
+  app_service_plan                   = var.app_service_plan
+  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
 
   depends_on = [
     module.shared
