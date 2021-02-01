@@ -18,12 +18,22 @@ locals {
   functions = {
     stock_service_command = {
       name = "func-${local.identifier_in_module}-stock-command-api"
+      app_settings = {
+        CosmosDBConnection = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.stock_service_cosmosdb_conn_string.version})"
+      }
     }
     stock_service_processor = {
       name = "func-${local.identifier_in_module}-stock-processor"
+      app_settings = {
+        CosmosDBConnection = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.stock_service_cosmosdb_conn_string.version})"
+        KeyVaultEndpoint   = data.azurerm_key_vault.shared.vault_uri
+      }
     }
     stock_service_query = {
       name = "func-${local.identifier_in_module}-stock-query-api"
+      app_settings = {
+        KeyVaultEndpoint = data.azurerm_key_vault.shared.vault_uri
+      }
     }
   }
 }
@@ -82,16 +92,14 @@ resource "azurerm_function_app" "stock_service" {
     }
   }
 
-  app_settings = {
+  app_settings = merge({
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = data.azurerm_storage_account.for_fileshare.primary_connection_string
     WEBSITE_CONTENTSHARE                     = each.value.name
     FUNCTIONS_WORKER_RUNTIME                 = "dotnet"
     WEBSITE_VNET_ROUTE_ALL                   = 1
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url[each.key].download_url
     APPINSIGHTS_INSTRUMENTATIONKEY           = azurerm_application_insights.stock_service.instrumentation_key
-
-    # TODO:
-  }
+  }, each.value.app_settings)
 
   identity {
     type = "SystemAssigned"

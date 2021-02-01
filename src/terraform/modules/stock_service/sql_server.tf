@@ -48,3 +48,150 @@ resource "azurerm_sql_database" "stock_service" {
   #   authentication_type = "SQL"
   # }
 }
+
+resource "azurerm_sql_firewall_rule" "stock_service" {
+  name                = "AllowAccessFromAzureServices"
+  resource_group_name = var.resource_group.name
+  server_name         = azurerm_mssql_server.stock_service.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
+
+resource "azurerm_sql_virtual_network_rule" "stock_service" {
+  name                = azurerm_subnet.stock_service.name
+  resource_group_name = var.resource_group.name
+  server_name         = azurerm_mssql_server.stock_service.name
+  subnet_id           = azurerm_subnet.stock_service.id
+}
+
+resource "azurerm_monitor_diagnostic_setting" "sql_database_stock_service" {
+  name                       = "diag-${azurerm_sql_database.stock_service.name}"
+  target_resource_id         = azurerm_sql_database.stock_service.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  log {
+    category = "SQLInsights"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "AutomaticTuning"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "QueryStoreRuntimeStatistics"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "QueryStoreWaitStatistics"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "Errors"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "DatabaseWaitStatistics"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "Timeouts"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "Blocks"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "Deadlocks"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  metric {
+    category = "Basic"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  metric {
+    category = "InstanceAndAppAdvanced"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  metric {
+    category = "WorkloadManagement"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+}
+
+resource "azurerm_key_vault_secret" "stock_service_sql_database_conn_string" {
+  name         = local.key_vault_secret_name_sql_database_conn_string
+  value        = "Server=tcp:${azurerm_mssql_server.stock_service.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_sql_database.stock_service.name};Persist Security Info=False;User ID=${var.sql_administrator_username};Password=${var.sql_administrator_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  key_vault_id = data.azurerm_key_vault.shared.id
+}
