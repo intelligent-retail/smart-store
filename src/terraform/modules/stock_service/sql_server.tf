@@ -159,6 +159,26 @@ resource "azurerm_monitor_diagnostic_setting" "sql_database_stock_service" {
     }
   }
 
+  log {
+    category = "DevOpsOperationsAudit"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
+  log {
+    category = "SQLSecurityAuditEvents"
+    enabled  = true
+
+    retention_policy {
+      days    = 30
+      enabled = true
+    }
+  }
+
   metric {
     category = "Basic"
     enabled  = true
