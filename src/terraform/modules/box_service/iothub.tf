@@ -30,9 +30,10 @@ resource "azurerm_iothub" "box_service" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "iothub_box_service" {
-  name                       = "diag-${azurerm_iothub.box_service.name}"
-  target_resource_id         = azurerm_iothub.box_service.id
-  log_analytics_workspace_id = var.log_analytics_workspace_id
+  name                           = "diag-${azurerm_iothub.box_service.name}"
+  target_resource_id             = azurerm_iothub.box_service.id
+  log_analytics_workspace_id     = var.log_analytics_workspace_id
+  log_analytics_destination_type = "AzureDiagnostics"
 
   log {
     category = "Connections"
