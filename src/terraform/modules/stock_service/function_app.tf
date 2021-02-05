@@ -1,9 +1,27 @@
+data "azurerm_subnet" "permitted" {
+  for_each = { for snet in var.snets_permitted_to_access_function : snet.key => snet.name }
+
+  name                 = each.value
+  resource_group_name  = var.resource_group.name
+  virtual_network_name = var.vnet_name
+
+  depends_on = [
+    azurerm_storage_account.stock_service,
+    azurerm_key_vault_secret.stock_service_cosmosdb_conn_string
+  ]
+}
+
+data "azurerm_storage_account" "for_fileshare" {
+  name                = var.storage_account_for_fileshare_name
+  resource_group_name = var.resource_group.name
+}
+
 locals {
   function_app_ip_restriction_priority_initial_value = 300
   ip_restrictions = [
-    for index, subnet in var.subnets_permitted : {
-      virtual_network_subnet_id = subnet["id"]
-      name                      = subnet["name"]
+    for index, snet in var.snets_permitted_to_access_function : {
+      virtual_network_subnet_id = data.azurerm_subnet.permitted[snet.key].id
+      name                      = data.azurerm_subnet.permitted[snet.key].name
       priority                  = local.function_app_ip_restriction_priority_initial_value + index
       action                    = "Allow"
     }
@@ -43,11 +61,6 @@ module "get_function_package_url" {
   source   = "../get_function_package_url"
 
   asset_name = each.value
-}
-
-data "azurerm_storage_account" "for_fileshare" {
-  name                = var.storage_account_for_fileshare_name
-  resource_group_name = var.resource_group.name
 }
 
 resource "azurerm_function_app" "stock_service" {

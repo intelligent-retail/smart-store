@@ -12,11 +12,31 @@ provider "azurerm" {
 }
 
 locals {
+  modules = {
+    "box_service" = {
+      resource_name_identifier = "box-service"
+    }
+    "pos_service" = {
+      resource_name_identifier = "pos-service"
+    }
+    "item_service" = {
+      resource_name_identifier = "item-service"
+    }
+    "stock_service" = {
+      resource_name_identifier = "stock-service"
+    }
+  }
   vnet_address_space     = "10.0.0.0/16"
-  snet_mask              = 24
   snet_bitdiff           = 8
-  snet_kinds             = ["bastion", "pos_service", "item_service", "stock_service", "box_service"]
+  snet_kinds             = concat(["bastion"], keys(local.modules))
   snet_address_prefixies = { for index, kind in local.snet_kinds : kind => cidrsubnet(local.vnet_address_space, local.snet_bitdiff, index) }
+  module_snets = {
+    for key, module in local.modules : key => {
+      key            = key
+      name           = "snet-${var.identifier}-${module.resource_name_identifier}"
+      address_prefix = local.snet_address_prefixies[key]
+    }
+  }
 }
 
 module "shared" {
@@ -28,23 +48,42 @@ module "shared" {
   bastion_snet_address_prefix = local.snet_address_prefixies["bastion"]
 }
 
+module "box_service" {
+  source = "./modules/box_service"
+
+  resource_group                     = module.shared.resource_group
+  identifier                         = var.identifier
+  resource_name_identifier           = local.modules["box_service"].resource_name_identifier
+  vnet_name                          = module.shared.vnet_name
+  snet                               = local.module_snets["box_service"]
+  key_vault_name                     = module.shared.key_vault_name
+  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
+  app_service_plan                   = var.app_service_plan
+  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
+  pos_api_function_host              = module.pos_service.pos_api_function_host
+
+  depends_on = [
+    module.shared
+  ]
+}
+
 module "pos_service" {
   source = "./modules/pos_service"
 
-  resource_group                 = module.shared.resource_group
-  identifier                     = var.identifier
-  vnet_name                      = module.shared.vnet_name
-  snet_address_prefix            = local.snet_address_prefixies["pos_service"]
-  key_vault_name                 = module.shared.key_vault_name
-  log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted = var.workspace_ip_address_permitted
-  subnets_permitted = [
-    module.box_service.subnet
-  ]
+  resource_group                     = module.shared.resource_group
+  identifier                         = var.identifier
+  resource_name_identifier           = local.modules["pos_service"].resource_name_identifier
+  vnet_name                          = module.shared.vnet_name
+  snet                               = local.module_snets["pos_service"]
+  key_vault_name                     = module.shared.key_vault_name
+  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
+  snets_permitted_to_access_function = [local.module_snets["box_service"]]
   app_service_plan                   = var.app_service_plan
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
-  item_api_function_host             = "" # module.item_service.item_api_function_host
-  # stock_api_function_host            = module.stock_service.stock_api_function_host
+  item_api_function_host             = module.item_service.item_api_function_host
+  stock_command_api_function_host    = module.stock_service.stock_command_api_function_host
 
   depends_on = [
     module.shared
@@ -54,16 +93,15 @@ module "pos_service" {
 module "item_service" {
   source = "./modules/item_service"
 
-  resource_group                 = module.shared.resource_group
-  identifier                     = var.identifier
-  vnet_name                      = module.shared.vnet_name
-  snet_address_prefix            = local.snet_address_prefixies["item_service"]
-  key_vault_name                 = module.shared.key_vault_name
-  log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted = var.workspace_ip_address_permitted
-  subnets_permitted = [
-    module.pos_service.subnet
-  ]
+  resource_group                     = module.shared.resource_group
+  identifier                         = var.identifier
+  resource_name_identifier           = local.modules["item_service"].resource_name_identifier
+  vnet_name                          = module.shared.vnet_name
+  snet                               = local.module_snets["item_service"]
+  key_vault_name                     = module.shared.key_vault_name
+  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
+  snets_permitted_to_access_function = [local.module_snets["pos_service"]]
   app_service_plan                   = var.app_service_plan
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
 
@@ -75,38 +113,19 @@ module "item_service" {
 module "stock_service" {
   source = "./modules/stock_service"
 
-  resource_group                 = module.shared.resource_group
-  identifier                     = var.identifier
-  vnet_name                      = module.shared.vnet_name
-  snet_address_prefix            = local.snet_address_prefixies["stock_service"]
-  key_vault_name                 = module.shared.key_vault_name
-  log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted = var.workspace_ip_address_permitted
-  subnets_permitted = [
-    module.pos_service.subnet
-  ]
+  resource_group                     = module.shared.resource_group
+  identifier                         = var.identifier
+  resource_name_identifier           = local.modules["stock_service"].resource_name_identifier
+  vnet_name                          = module.shared.vnet_name
+  snet                               = local.module_snets["stock_service"]
+  key_vault_name                     = module.shared.key_vault_name
+  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
+  snets_permitted_to_access_function = [local.module_snets["pos_service"]]
   app_service_plan                   = var.app_service_plan
   storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
   sql_administrator_username         = var.sql_administrator_username
   sql_administrator_password         = var.sql_administrator_password
-
-  depends_on = [
-    module.shared
-  ]
-}
-
-module "box_service" {
-  source = "./modules/box_service"
-
-  resource_group                     = module.shared.resource_group
-  identifier                         = var.identifier
-  vnet_name                          = module.shared.vnet_name
-  snet_address_prefix                = local.snet_address_prefixies["box_service"]
-  key_vault_name                     = module.shared.key_vault_name
-  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
-  app_service_plan                   = var.app_service_plan
-  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
 
   depends_on = [
     module.shared

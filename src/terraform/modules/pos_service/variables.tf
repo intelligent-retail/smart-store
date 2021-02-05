@@ -10,12 +10,19 @@ variable "identifier" {
   type = string
 }
 
+variable "resource_name_identifier" {
+  type = string
+}
+
 variable "vnet_name" {
   type = string
 }
 
-variable "snet_address_prefix" {
-  type = string
+variable "snet" {
+  type = object({
+    name           = string
+    address_prefix = string
+  })
 }
 
 variable "key_vault_name" {
@@ -31,12 +38,11 @@ variable "workspace_ip_address_permitted" {
   default = ""
 }
 
-variable "subnets_permitted" {
+variable "snets_permitted_to_access_function" {
   type = list(object({
-    id   = string
+    key  = string
     name = string
   }))
-  default = []
 }
 
 variable "storage_account_for_fileshare_name" {
@@ -47,6 +53,6 @@ variable "item_api_function_host" {
   type = string
 }
 
-# variable "stock_api_function_host" {
-#   type = string
-# }
+variable "stock_command_api_function_host" {
+  type = string
+}

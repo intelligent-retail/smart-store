@@ -18,7 +18,7 @@ resource "random_string" "item_service_name" {
   special = false
   keepers = {
     resource_group = var.resource_group.id
-    module         = local.module_name
+    module         = local.identifier_in_module
   }
 }
 

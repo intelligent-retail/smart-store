@@ -56,16 +56,16 @@ resource "azurerm_function_app" "box_service" {
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url.box_service.download_url
     APPINSIGHTS_INSTRUMENTATIONKEY           = azurerm_application_insights.box_service.instrumentation_key
     CosmosDBConnection                       = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.box_service_cosmosdb_conn_string.version})"
-    # PosCartsUri = 
-    PosApiKeyHeader                  = "x-functions-key"
-    PosCartItemsPath                 = "items/"
-    PosCartSubtotalPath              = "subtotal/"
-    PosCartPaymentsPath              = "payments/"
-    PosCartBillPath                  = "bill/"
-    IotHubConnectionString           = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_iothub_conn_string};SecretVersion=${azurerm_key_vault_secret.box_service_iothub_conn_string.version})"
-    IotHubEventConnectionString      = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_iothub_event_conn_string};SecretVersion=${azurerm_key_vault_secret.box_service_iothub_event_conn_string.version})"
-    NotificaitonHubConnectionStrings = "Endpoint=sb://${azurerm_notification_hub_namespace.box_service.name}.servicebus.windows.net/;SharedAccessKeyName=${azurerm_notification_hub_authorization_rule.box_service_full_access.name};SharedAccessKey=${azurerm_notification_hub_authorization_rule.box_service_full_access.primary_access_key}"
-    NotificationHubName              = azurerm_notification_hub.box_service.name
+    PosCartsUri                              = "https://${var.pos_api_function_host}/api/v1/carts/"
+    PosApiKeyHeader                          = "x-functions-key"
+    PosCartItemsPath                         = "items/"
+    PosCartSubtotalPath                      = "subtotal/"
+    PosCartPaymentsPath                      = "payments/"
+    PosCartBillPath                          = "bill/"
+    IotHubConnectionString                   = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_iothub_conn_string};SecretVersion=${azurerm_key_vault_secret.box_service_iothub_conn_string.version})"
+    IotHubEventConnectionString              = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_iothub_event_conn_string};SecretVersion=${azurerm_key_vault_secret.box_service_iothub_event_conn_string.version})"
+    NotificaitonHubConnectionStrings         = "Endpoint=sb://${azurerm_notification_hub_namespace.box_service.name}.servicebus.windows.net/;SharedAccessKeyName=${azurerm_notification_hub_authorization_rule.box_service_full_access.name};SharedAccessKey=${azurerm_notification_hub_authorization_rule.box_service_full_access.primary_access_key}"
+    NotificationHubName                      = azurerm_notification_hub.box_service.name
   }
 
   identity {

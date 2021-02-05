@@ -1,8 +1,8 @@
 resource "azurerm_subnet" "item_service" {
-  name                 = "snet-${local.identifier_in_module}"
+  name                 = var.snet.name
   resource_group_name  = var.resource_group.name
   virtual_network_name = data.azurerm_virtual_network.shared.name
-  address_prefixes     = [var.snet_address_prefix]
+  address_prefixes     = [var.snet.address_prefix]
   service_endpoints    = ["Microsoft.Storage", "Microsoft.AzureCosmosDB", "Microsoft.Web"]
 
   delegation {

@@ -9,8 +9,7 @@ data "azurerm_key_vault" "shared" {
 }
 
 locals {
-  module_name                                    = "stock-service"
-  identifier_in_module                           = "${var.identifier}-${local.module_name}"
+  identifier_in_module                           = "${var.identifier}-${var.resource_name_identifier}"
   key_vault_secret_name_cosmos_db_conn_string    = "stockServiceCosmosDbConnectionString"
   key_vault_secret_name_sql_database_conn_string = "stockServiceSqlDatabaseConnectionString"
 }

@@ -9,8 +9,7 @@ data "azurerm_key_vault" "shared" {
 }
 
 locals {
-  module_name                                    = "box-service"
-  identifier_in_module                           = "${var.identifier}-${local.module_name}"
+  identifier_in_module                           = "${var.identifier}-${var.resource_name_identifier}"
   key_vault_secret_name_cosmos_db_conn_string    = "boxServiceCosmosDbConnectionString"
   key_vault_secret_name_iothub_conn_string       = "boxServiceIoTHubConnectionString"
   key_vault_secret_name_iothub_event_conn_string = "boxServiceIoTHubEventConnectionString"

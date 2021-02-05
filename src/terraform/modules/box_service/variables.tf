@@ -10,12 +10,19 @@ variable "identifier" {
   type = string
 }
 
+variable "resource_name_identifier" {
+  type = string
+}
+
 variable "vnet_name" {
   type = string
 }
 
-variable "snet_address_prefix" {
-  type = string
+variable "snet" {
+  type = object({
+    name           = string
+    address_prefix = string
+  })
 }
 
 variable "key_vault_name" {
@@ -32,5 +39,9 @@ variable "workspace_ip_address_permitted" {
 }
 
 variable "storage_account_for_fileshare_name" {
+  type = string
+}
+
+variable "pos_api_function_host" {
   type = string
 }
