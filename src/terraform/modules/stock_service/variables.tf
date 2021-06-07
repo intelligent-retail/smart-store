@@ -45,10 +45,6 @@ variable "snets_permitted_to_access_function" {
   }))
 }
 
-variable "storage_account_for_fileshare_name" {
-  type = string
-}
-
 variable "sql_administrator_username" {
   type      = string
   sensitive = true

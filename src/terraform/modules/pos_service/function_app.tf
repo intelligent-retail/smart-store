@@ -11,11 +11,6 @@ data "azurerm_subnet" "permitted" {
   ]
 }
 
-data "azurerm_storage_account" "for_fileshare" {
-  name                = var.storage_account_for_fileshare_name
-  resource_group_name = var.resource_group.name
-}
-
 locals {
   function_app_ip_restriction_priority_initial_value = 300
   function_app_ip_restrictions = [
@@ -73,22 +68,25 @@ resource "azurerm_function_app" "pos_service" {
       content {
         ip_address = "${var.workspace_ip_address_permitted}/32"
         name       = "workspace"
-        priority   = local.function_app_ip_restriction_priority_initial_value + length(local.ip_restrictions)
+        priority   = local.function_app_ip_restriction_priority_initial_value + length(local.function_app_ip_restrictions)
         action     = "Allow"
       }
     }
   }
 
   app_settings = {
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = data.azurerm_storage_account.for_fileshare.primary_connection_string
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = azurerm_storage_account.pos_service.primary_connection_string
     WEBSITE_CONTENTSHARE                     = local.function_app_name
     FUNCTIONS_WORKER_RUNTIME                 = "dotnet"
+    WEBSITE_CONTENTOVERVNET                  = 1
     WEBSITE_VNET_ROUTE_ALL                   = 1
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url.pos_service.download_url
     APPINSIGHTS_INSTRUMENTATIONKEY           = azurerm_application_insights.pos_service.instrumentation_key
     CosmosDbConnectionString                 = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.pos_service_cosmosdb_conn_string.version})"
     ItemMasterUri                            = "https://${var.item_api_function_host}/api/v1/company/{company-code}/store/{store-code}/items"
+    ItemMasterApiKey                         = var.item_api_function_app_host_keys
     StockUri                                 = "https://${var.stock_command_api_function_host}/api/v1/stocks"
+    StockApiKey                              = var.stock_command_api_function_app_host_keys
     ApplicationTimeZone                      = "Tokyo Standard Time"
     FunctionsApiKeyHeader                    = "x-functions-key"
   }
@@ -99,8 +97,14 @@ resource "azurerm_function_app" "pos_service" {
 
   depends_on = [
     module.get_function_package_url,
-    data.azurerm_subnet.permitted
+    data.azurerm_subnet.permitted,
+    azurerm_storage_share.pos_service
   ]
+}
+
+resource "azurerm_storage_share" "pos_service" {
+  name                 = local.function_app_name
+  storage_account_name = azurerm_storage_account.pos_service.name
 }
 
 resource "azurerm_app_service_virtual_network_swift_connection" "function_app_pos_service" {
@@ -142,5 +146,13 @@ resource "azurerm_key_vault_access_policy" "function_app_pos_service" {
   secret_permissions = [
     "get",
     "list"
+  ]
+}
+
+data "azurerm_function_app_host_keys" "pos_service" {
+  name                = azurerm_function_app.pos_service.name
+  resource_group_name = var.resource_group.name
+  depends_on = [
+    azurerm_function_app.pos_service
   ]
 }

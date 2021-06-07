@@ -38,10 +38,11 @@ variable "workspace_ip_address_permitted" {
   default = ""
 }
 
-variable "storage_account_for_fileshare_name" {
+variable "pos_api_function_host" {
   type = string
 }
 
-variable "pos_api_function_host" {
-  type = string
+variable "pos_api_function_app_host_keys" {
+  type      = string
+  sensitive = true
 }

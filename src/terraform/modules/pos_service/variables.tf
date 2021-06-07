@@ -45,14 +45,20 @@ variable "snets_permitted_to_access_function" {
   }))
 }
 
-variable "storage_account_for_fileshare_name" {
-  type = string
-}
-
 variable "item_api_function_host" {
   type = string
 }
 
+variable "item_api_function_app_host_keys" {
+  type      = string
+  sensitive = true
+}
+
 variable "stock_command_api_function_host" {
   type = string
+}
+
+variable "stock_command_api_function_app_host_keys" {
+  type      = string
+  sensitive = true
 }

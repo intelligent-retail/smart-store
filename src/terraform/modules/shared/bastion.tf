@@ -3,7 +3,7 @@ variable "bastion_snet_address_prefix" {
 }
 
 locals {
-  bastion_name        = "bastion-${local.identifier_in_module}"
+  bastion_name        = "bas-${local.identifier_in_module}"
   bastion_subnet_name = "AzureBastionSubnet"
 }
 

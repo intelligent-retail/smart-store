@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 2.41"
+      version = ">= 2.62"
     }
   }
 }
@@ -51,17 +51,17 @@ module "shared" {
 module "box_service" {
   source = "./modules/box_service"
 
-  resource_group                     = module.shared.resource_group
-  identifier                         = var.identifier
-  resource_name_identifier           = local.modules["box_service"].resource_name_identifier
-  vnet_name                          = module.shared.vnet_name
-  snet                               = local.module_snets["box_service"]
-  key_vault_name                     = module.shared.key_vault_name
-  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
-  app_service_plan                   = var.app_service_plan
-  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
-  pos_api_function_host              = module.pos_service.pos_api_function_host
+  resource_group                 = module.shared.resource_group
+  identifier                     = var.identifier
+  resource_name_identifier       = local.modules["box_service"].resource_name_identifier
+  vnet_name                      = module.shared.vnet_name
+  snet                           = local.module_snets["box_service"]
+  key_vault_name                 = module.shared.key_vault_name
+  log_analytics_workspace_id     = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted = var.workspace_ip_address_permitted
+  app_service_plan               = var.app_service_plan
+  pos_api_function_host          = module.pos_service.pos_api_function_host
+  pos_api_function_app_host_keys = module.pos_service.pos_api_function_app_host_keys
 
   depends_on = [
     module.shared
@@ -71,19 +71,20 @@ module "box_service" {
 module "pos_service" {
   source = "./modules/pos_service"
 
-  resource_group                     = module.shared.resource_group
-  identifier                         = var.identifier
-  resource_name_identifier           = local.modules["pos_service"].resource_name_identifier
-  vnet_name                          = module.shared.vnet_name
-  snet                               = local.module_snets["pos_service"]
-  key_vault_name                     = module.shared.key_vault_name
-  log_analytics_workspace_id         = module.shared.log_analytics_workspace_id
-  workspace_ip_address_permitted     = var.workspace_ip_address_permitted
-  snets_permitted_to_access_function = [local.module_snets["box_service"]]
-  app_service_plan                   = var.app_service_plan
-  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
-  item_api_function_host             = module.item_service.item_api_function_host
-  stock_command_api_function_host    = module.stock_service.stock_command_api_function_host
+  resource_group                           = module.shared.resource_group
+  identifier                               = var.identifier
+  resource_name_identifier                 = local.modules["pos_service"].resource_name_identifier
+  vnet_name                                = module.shared.vnet_name
+  snet                                     = local.module_snets["pos_service"]
+  key_vault_name                           = module.shared.key_vault_name
+  log_analytics_workspace_id               = module.shared.log_analytics_workspace_id
+  workspace_ip_address_permitted           = var.workspace_ip_address_permitted
+  snets_permitted_to_access_function       = [local.module_snets["box_service"]]
+  app_service_plan                         = var.app_service_plan
+  item_api_function_host                   = module.item_service.item_api_function_host
+  item_api_function_app_host_keys          = module.item_service.item_api_function_app_host_keys
+  stock_command_api_function_host          = module.stock_service.stock_command_api_function_host
+  stock_command_api_function_app_host_keys = module.stock_service.stock_command_api_function_app_host_keys
 
   depends_on = [
     module.shared
@@ -103,7 +104,6 @@ module "item_service" {
   workspace_ip_address_permitted     = var.workspace_ip_address_permitted
   snets_permitted_to_access_function = [local.module_snets["pos_service"]]
   app_service_plan                   = var.app_service_plan
-  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
 
   depends_on = [
     module.shared
@@ -123,7 +123,6 @@ module "stock_service" {
   workspace_ip_address_permitted     = var.workspace_ip_address_permitted
   snets_permitted_to_access_function = [local.module_snets["pos_service"]]
   app_service_plan                   = var.app_service_plan
-  storage_account_for_fileshare_name = module.shared.storage_account_for_fileshare_name
   sql_administrator_username         = var.sql_administrator_username
   sql_administrator_password         = var.sql_administrator_password
 

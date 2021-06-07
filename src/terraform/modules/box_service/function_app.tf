@@ -13,11 +13,6 @@ module "get_function_package_url" {
   asset_name = each.value
 }
 
-data "azurerm_storage_account" "for_fileshare" {
-  name                = var.storage_account_for_fileshare_name
-  resource_group_name = var.resource_group.name
-}
-
 resource "azurerm_function_app" "box_service" {
   name                       = local.function_app_name
   location                   = var.resource_group.location
@@ -36,27 +31,19 @@ resource "azurerm_function_app" "box_service" {
     cors {
       allowed_origins = ["*"]
     }
-
-    dynamic "ip_restriction" {
-      for_each = var.workspace_ip_address_permitted != "" ? [1] : []
-      content {
-        ip_address = "${var.workspace_ip_address_permitted}/32"
-        name       = "workspace"
-        priority   = local.function_app_ip_restriction_priority_initial_value + length(local.ip_restrictions)
-        action     = "Allow"
-      }
-    }
   }
 
   app_settings = {
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = data.azurerm_storage_account.for_fileshare.primary_connection_string
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = azurerm_storage_account.box_service.primary_connection_string
     WEBSITE_CONTENTSHARE                     = local.function_app_name
     FUNCTIONS_WORKER_RUNTIME                 = "dotnet"
+    WEBSITE_CONTENTOVERVNET                  = 1
     WEBSITE_VNET_ROUTE_ALL                   = 1
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url.box_service.download_url
     APPINSIGHTS_INSTRUMENTATIONKEY           = azurerm_application_insights.box_service.instrumentation_key
-    CosmosDBConnection                       = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.box_service_cosmosdb_conn_string.version})"
+    CosmosDbConnectionString                 = "@Microsoft.KeyVault(VaultName=${data.azurerm_key_vault.shared.name};SecretName=${local.key_vault_secret_name_cosmos_db_conn_string};SecretVersion=${azurerm_key_vault_secret.box_service_cosmosdb_conn_string.version})"
     PosCartsUri                              = "https://${var.pos_api_function_host}/api/v1/carts/"
+    PosApiKey                                = var.pos_api_function_app_host_keys
     PosApiKeyHeader                          = "x-functions-key"
     PosCartItemsPath                         = "items/"
     PosCartSubtotalPath                      = "subtotal/"
@@ -73,8 +60,14 @@ resource "azurerm_function_app" "box_service" {
   }
 
   depends_on = [
-    module.get_function_package_url
+    module.get_function_package_url,
+    azurerm_storage_share.box_service
   ]
+}
+
+resource "azurerm_storage_share" "box_service" {
+  name                 = local.function_app_name
+  storage_account_name = azurerm_storage_account.box_service.name
 }
 
 resource "azurerm_app_service_virtual_network_swift_connection" "function_app_box_service" {
@@ -116,5 +109,13 @@ resource "azurerm_key_vault_access_policy" "function_app_box_service" {
   secret_permissions = [
     "get",
     "list"
+  ]
+}
+
+data "azurerm_function_app_host_keys" "box_service" {
+  name                = azurerm_function_app.box_service.name
+  resource_group_name = var.resource_group.name
+  depends_on = [
+    azurerm_function_app.box_service
   ]
 }

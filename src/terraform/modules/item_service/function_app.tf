@@ -11,11 +11,6 @@ data "azurerm_subnet" "permitted" {
   ]
 }
 
-data "azurerm_storage_account" "for_fileshare" {
-  name                = var.storage_account_for_fileshare_name
-  resource_group_name = var.resource_group.name
-}
-
 locals {
   function_app_ip_restriction_priority_initial_value = 300
   ip_restrictions = [
@@ -80,9 +75,10 @@ resource "azurerm_function_app" "item_service" {
   }
 
   app_settings = {
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = data.azurerm_storage_account.for_fileshare.primary_connection_string
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = azurerm_storage_account.item_service.primary_connection_string
     WEBSITE_CONTENTSHARE                     = local.function_app_name
     FUNCTIONS_WORKER_RUNTIME                 = "dotnet"
+    WEBSITE_CONTENTOVERVNET                  = 1
     WEBSITE_VNET_ROUTE_ALL                   = 1
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url.item_service.download_url
     APPINSIGHTS_INSTRUMENTATIONKEY           = azurerm_application_insights.item_service.instrumentation_key
@@ -94,8 +90,14 @@ resource "azurerm_function_app" "item_service" {
   }
 
   depends_on = [
-    module.get_function_package_url
+    module.get_function_package_url,
+    azurerm_storage_share.item_service
   ]
+}
+
+resource "azurerm_storage_share" "item_service" {
+  name                 = local.function_app_name
+  storage_account_name = azurerm_storage_account.item_service.name
 }
 
 resource "azurerm_app_service_virtual_network_swift_connection" "function_app_item_service" {
@@ -137,5 +139,14 @@ resource "azurerm_key_vault_access_policy" "function_app_item_service" {
   secret_permissions = [
     "get",
     "list"
+  ]
+}
+
+data "azurerm_function_app_host_keys" "item_service" {
+  name                = azurerm_function_app.item_service.name
+  resource_group_name = var.resource_group.name
+
+  depends_on = [
+    azurerm_function_app.item_service
   ]
 }

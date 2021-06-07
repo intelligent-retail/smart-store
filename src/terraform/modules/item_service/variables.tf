@@ -44,7 +44,3 @@ variable "snets_permitted_to_access_function" {
     name = string
   }))
 }
-
-variable "storage_account_for_fileshare_name" {
-  type = string
-}

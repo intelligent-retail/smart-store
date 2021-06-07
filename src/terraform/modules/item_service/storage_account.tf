@@ -38,6 +38,7 @@ resource "azurerm_storage_account_network_rules" "item_service" {
   default_action             = "Deny"
   bypass                     = ["Logging", "Metrics", "AzureServices"]
   virtual_network_subnet_ids = [azurerm_subnet.item_service.id]
+  ip_rules                   = [var.workspace_ip_address_permitted]
 }
 
 resource "azurerm_monitor_diagnostic_setting" "storage_account_item_service" {

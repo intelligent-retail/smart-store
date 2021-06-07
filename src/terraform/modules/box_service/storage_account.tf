@@ -38,6 +38,7 @@ resource "azurerm_storage_account_network_rules" "box_service" {
   default_action             = "Deny"
   bypass                     = ["Logging", "Metrics", "AzureServices"]
   virtual_network_subnet_ids = [azurerm_subnet.box_service.id]
+  ip_rules                   = [var.workspace_ip_address_permitted]
 }
 
 resource "azurerm_monitor_diagnostic_setting" "storage_account_box_service" {
@@ -64,23 +65,4 @@ resource "azurerm_monitor_diagnostic_setting" "storage_account_box_service" {
       enabled = true
     }
   }
-}
-
-# -----------------------------------------------------------------------------
-# Storage for assets (Public)
-# -----------------------------------------------------------------------------
-resource "azurerm_storage_account" "box_service_assets" {
-  name                     = "st${substr(random_string.box_service_name.result, 0, 16)}assets"
-  location                 = var.resource_group.location
-  resource_group_name      = var.resource_group.name
-  account_kind             = var.storage_account.kind
-  account_tier             = var.storage_account.tier
-  account_replication_type = var.storage_account.replication_type
-  allow_blob_public_access = true
-}
-
-resource "azurerm_storage_container" "box_service_assets" {
-  name                  = "item-images"
-  storage_account_name  = azurerm_storage_account.box_service_assets.name
-  container_access_type = "container"
 }

@@ -11,11 +11,6 @@ data "azurerm_subnet" "permitted" {
   ]
 }
 
-data "azurerm_storage_account" "for_fileshare" {
-  name                = var.storage_account_for_fileshare_name
-  resource_group_name = var.resource_group.name
-}
-
 locals {
   function_app_ip_restriction_priority_initial_value = 300
   ip_restrictions = [
@@ -106,9 +101,10 @@ resource "azurerm_function_app" "stock_service" {
   }
 
   app_settings = merge({
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = data.azurerm_storage_account.for_fileshare.primary_connection_string
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING = azurerm_storage_account.stock_service.primary_connection_string
     WEBSITE_CONTENTSHARE                     = each.value.name
     FUNCTIONS_WORKER_RUNTIME                 = "dotnet"
+    WEBSITE_CONTENTOVERVNET                  = 1
     WEBSITE_VNET_ROUTE_ALL                   = 1
     WEBSITE_RUN_FROM_PACKAGE                 = module.get_function_package_url[each.key].download_url
     APPINSIGHTS_INSTRUMENTATIONKEY           = azurerm_application_insights.stock_service.instrumentation_key
@@ -119,8 +115,15 @@ resource "azurerm_function_app" "stock_service" {
   }
 
   depends_on = [
-    module.get_function_package_url
+    module.get_function_package_url,
+    azurerm_storage_share.stock_service
   ]
+}
+
+resource "azurerm_storage_share" "stock_service" {
+  for_each             = local.functions
+  name                 = each.value.name
+  storage_account_name = azurerm_storage_account.stock_service.name
 }
 
 resource "azurerm_app_service_virtual_network_swift_connection" "function_app_stock_service" {
@@ -168,5 +171,13 @@ resource "azurerm_key_vault_access_policy" "function_app_stock_service" {
   secret_permissions = [
     "get",
     "list"
+  ]
+}
+
+data "azurerm_function_app_host_keys" "stock_service_command_api" {
+  name                = azurerm_function_app.stock_service["stock_service_command"].name
+  resource_group_name = var.resource_group.name
+  depends_on = [
+    azurerm_function_app.stock_service["stock_service_command"]
   ]
 }
